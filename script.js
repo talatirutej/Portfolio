@@ -119,25 +119,38 @@ function firecrackerEffect(element, count = 25) {
     setTimeout(() => particle.remove(), 1800);
   }
 }
-/* === THEME TOGGLE BUTTON LIGHT BURST === */
+/* === THEME TOGGLE BUTTON (white → black → funky) === */
 const themeToggleBtn = document.getElementById("themeToggleTop");
+let themeMode = "white";
 
 if (themeToggleBtn) {
   themeToggleBtn.addEventListener("click", () => {
-    // Toggle theme
-    document.body.classList.toggle("black");
+    // Clear any polka dots before switching
+    document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
 
-    // Create a soft burst of light around the button
+    if (themeMode === "white") {
+      document.body.classList.add("black");
+      document.body.classList.remove("funky");
+      themeMode = "black";
+    } else if (themeMode === "black") {
+      enableFunkyTheme(); // activate polka-dot theme
+      themeMode = "funky";
+    } else {
+      document.body.classList.remove("black", "funky");
+      themeMode = "white";
+    }
+
+    // burst animation for click feedback
     const burst = document.createElement("div");
     burst.classList.add("theme-burst");
     const rect = themeToggleBtn.getBoundingClientRect();
     burst.style.left = `${rect.left + rect.width / 2}px`;
     burst.style.top = `${rect.top + rect.height / 2}px`;
     document.body.appendChild(burst);
-
     setTimeout(() => burst.remove(), 800);
   });
 }
+
 // === SCROLL PROGRESS BAR ===
 window.addEventListener("scroll", () => {
   const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -203,5 +216,38 @@ document.querySelectorAll(".contact-btn").forEach(btn => {
     card.classList.toggle("active");
   });
 });
+
+/* === POLKA DOT BACKGROUND GENERATOR === */
+function createPolkaDots(count = 35) {
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement("div");
+    dot.classList.add("polka-dot");
+
+    const size = Math.random() * 30 + 10; // size between 10–40px
+    dot.style.width = `${size}px`;
+    dot.style.height = `${size}px`;
+
+    dot.style.left = `${Math.random() * 100}vw`;
+    dot.style.top = `${Math.random() * 100}vh`;
+
+    dot.style.animationDuration = `${15 + Math.random() * 10}s`;
+    dot.style.animationDelay = `${Math.random() * 5}s`;
+
+    document.body.appendChild(dot);
+  }
+}
+
+/* === Activate Funky Theme === */
+function enableFunkyTheme() {
+  // Remove other themes
+  document.body.classList.remove("black");
+  document.body.classList.add("funky");
+
+  // Remove old dots (if any)
+  document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
+
+  // Create new ones
+  createPolkaDots(40);
+}
 
 
