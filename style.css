@@ -391,7 +391,7 @@ body.black #leadership .exp-card:hover {
   box-shadow: 0 0 35px rgba(215, 139, 255, 0.9);
 }
 
-/* === INTERACTIVE CONTACT SECTION === */
+/* === CONTACT SECTION – Button Style Cards with Hover Reveal === */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -401,86 +401,127 @@ body.black #leadership .exp-card:hover {
 }
 
 .contact-card {
-  background: transparent;
+  position: relative;
   border: 2px solid #000;
   border-radius: 12px;
-  padding: 1.5rem 1rem;
-  transition: all 0.4s ease;
-  position: relative;
-  overflow: hidden;
+  background: #f7f7f7;
+  padding: 2rem 1rem;
+  transition: all 0.35s ease;
   cursor: pointer;
+  overflow: hidden;
+  color: #000;
 }
 
-/* Contact color hovers */
+.contact-card:hover {
+  transform: translateY(-5px) scale(1.03);
+}
+
+/* “Label” (default view) */
+.contact-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 10px;
+  padding: 0.7rem 1.4rem;
+  transition: all 0.35s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.contact-card:hover .contact-label {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+
+/* Hidden info appears on hover */
+.contact-info {
+  opacity: 0;
+  transform: translateY(15px);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.4s ease;
+}
+
+.contact-card:hover .contact-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === Colored hover fills === */
 .contact-card:nth-child(1):hover {
   background: #ff4b3e;
   border-color: #ff4b3e;
   color: #fff;
   box-shadow: 0 0 25px rgba(255, 75, 62, 0.6);
 }
-
 .contact-card:nth-child(2):hover {
   background: #1a73e8;
   border-color: #1a73e8;
   color: #fff;
-  box-shadow: 0 0 25px rgba(26, 115, 232, 0.6);
+  box-shadow: 0 0 25px rgba(26,115,232,0.6);
 }
-
 .contact-card:nth-child(3):hover {
   background: #00c853;
   border-color: #00c853;
   color: #fff;
-  box-shadow: 0 0 25px rgba(0, 200, 83, 0.6);
+  box-shadow: 0 0 25px rgba(0,200,83,0.6);
 }
-
 .contact-card:nth-child(4):hover {
   background: #ffa500;
   border-color: #ffa500;
   color: #000;
-  box-shadow: 0 0 25px rgba(255, 165, 0, 0.6);
+  box-shadow: 0 0 25px rgba(255,165,0,0.6);
 }
-
 .contact-card:nth-child(5):hover {
   background: #9c27b0;
   border-color: #9c27b0;
   color: #fff;
-  box-shadow: 0 0 25px rgba(156, 39, 176, 0.6);
+  box-shadow: 0 0 25px rgba(156,39,176,0.6);
 }
 
-.contact-btn {
-  background: transparent;
-  border: 2px solid #000;
-  border-radius: 30px;
-  padding: 0.7rem 1.4rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #000;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.contact-btn:hover {
-  transform: scale(1.07);
-  background: rgba(255, 255, 255, 0.15);
-  border-color: currentColor;
-}
-
-/* === BLACK MODE === */
-body.black {
-  background: #000;
-  color: #fff;
-}
-
-body.black section,
-body.black footer,
-body.black .skills-grid span {
-  border-color: #fff;
-}
-
+/* === DARK MODE VARIANTS === */
 body.black .contact-card {
   border-color: #fff;
+  background: #111;
   color: #fff;
 }
+
+body.black .contact-card:hover {
+  color: #000;
+}
+
+body.black .contact-label {
+  background: #000;
+  border-color: #fff;
+  color: #fff;
+}
+
+body.black .contact-card:nth-child(1):hover {
+  background: #ff6659;
+  border-color: #ff6659;
+}
+body.black .contact-card:nth-child(2):hover {
+  background: #4c8bf5;
+  border-color: #4c8bf5;
+}
+body.black .contact-card:nth-child(3):hover {
+  background: #33e07a;
+  border-color: #33e07a;
+}
+body.black .contact-card:nth-child(4):hover {
+  background: #ffbf47;
+  border-color: #ffbf47;
+}
+body.black .contact-card:nth-child(5):hover {
+  background: #d78bff;
+  border-color: #d78bff;
+}
+
+
 
 /* === SCROLL PROGRESS BAR === */
 #scrollProgressContainer {
