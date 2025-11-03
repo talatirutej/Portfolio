@@ -1,0 +1,638 @@
+/* === UNIVERSAL RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* === BODY (DEFAULT WHITE MODE) === */
+body {
+  background: #fff;
+  color: #000;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* === HEADER & NAVBAR === */
+header {
+  background: #000;
+  color: #fff;
+  padding-bottom: 4rem;
+  position: relative;
+  animation: fadeInUp 1.2s ease both;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  flex: 1;
+  text-align: left;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  flex: 2;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  left: 0;
+  bottom: -4px;
+  background: #fff;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.nav-links a:hover {
+  transform: scale(1.05);
+}
+
+/* === THEME TOGGLE BUTTON === */
+#themeToggleTop {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  z-index: 1000;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#themeToggleTop:hover {
+  background: #fff;
+  color: #000;
+  transform: rotate(20deg);
+}
+
+/* === HERO SECTION === */
+.hero-content {
+  text-align: center;
+  padding: 3rem 2rem;
+  animation: fadeInUp 1.5s ease both;
+}
+
+.typing-line {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0.3rem 0;
+}
+
+.tagline {
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* === HERO BUTTONS === */
+.hero-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  padding: 0.9rem 1.8rem;
+  margin: 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  border: 2px solid #fff;
+  border-radius: 50px;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn:hover,
+.btn-secondary:hover {
+  transform: scale(1.08);
+  border-width: 2.5px;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+/* Always white in both themes */
+body.black .btn,
+body.black .btn-secondary,
+body:not(.black) .btn,
+body:not(.black) .btn-secondary {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* === SECTION STRUCTURE === */
+section {
+  max-width: 950px;
+  margin: 3rem auto;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.4s ease;
+  background: transparent;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: fadeInUp 1s ease forwards;
+}
+
+section:nth-of-type(even) {
+  animation-delay: 0.2s;
+}
+
+section:nth-of-type(odd) {
+  animation-delay: 0.4s;
+}
+
+/* === SECTION HOVER COLORS === */
+body:not(.black) section:hover {
+  background: #d6e9ff;
+  border-width: 4px;
+}
+
+body.black section:hover {
+  background: #0a2540;
+  border-width: 4px;
+}
+
+/* === PROJECT CARDS === */
+.project-card {
+  position: relative;
+  border: 2px solid currentColor;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  background: transparent;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  background: #ffeb3b;
+  color: #000;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+}
+
+/* === ABOUT CARD === */
+.about-card {
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.8rem;
+  margin-top: 1.5rem;
+  background: transparent;
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  text-align: justify;
+  cursor: default;
+}
+
+/* Light mode: only card turns yellow */
+body:not(.black) .about-card:hover {
+  background: #ffeb3b; /* bright yellow */
+  border-color: #ffeb3b;
+  box-shadow: 0 0 20px rgba(255, 235, 59, 0.5);
+  transform: none;
+  color: #000;
+}
+
+/* Dark mode: softer amber tone */
+body.black .about-card:hover {
+  background: #ffc107; /* warm yellow for dark mode */
+  border-color: #ffc107;
+  box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+  transform: none;
+  color: #000;
+}
+
+
+/* === SKILLS === */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  text-align: center;
+}
+
+.skills-grid span {
+  border: 1px solid #000;
+  padding: 0.8rem;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.skills-grid span:hover {
+  background: #00e676;
+  color: #000;
+  transform: scale(1.15);
+  animation: bounceSkill 0.6s ease;
+}
+
+/* === EXPERIENCE SECTION === */
+#experience .exp-card {
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: transparent;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  color: inherit;
+}
+
+#experience .exp-card:hover {
+  background: #ff7b00;
+  border-color: #ff7b00;
+  color: #fff;
+  box-shadow: 0 0 35px rgba(255, 123, 0, 0.8);
+  transform: translateY(-6px) scale(1.03);
+}
+
+body.black #experience .exp-card {
+  border-color: #fff;
+}
+
+body.black #experience .exp-card:hover {
+  background: #ffa733;
+  border-color: #ffa733;
+  color: #000;
+  box-shadow: 0 0 40px rgba(255, 167, 51, 0.9);
+}
+
+.exp-details {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  padding-top: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.5s ease;
+}
+
+.exp-details.visible {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+body.black .exp-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.learn-more {
+  background: transparent;
+  color: inherit;
+  border: 1.5px solid currentColor;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.learn-more:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.exp-bullets {
+  list-style: none;
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.exp-bullets li {
+  position: relative;
+  font-size: 0.96rem;
+  line-height: 1.6;
+  text-align: justify;
+  padding-left: 0.2rem;
+  transition: transform 0.25s ease;
+}
+
+.exp-bullets li:hover {
+  transform: translateX(5px);
+}
+
+/* === LEADERSHIP SECTION === */
+#leadership .exp-card {
+  background: transparent;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.35s ease;
+  cursor: pointer;
+  color: inherit;
+}
+
+#leadership .exp-card:hover {
+  background: #9c27b0;
+  border-color: #9c27b0;
+  color: #fff;
+  box-shadow: 0 0 30px rgba(156, 39, 176, 0.8);
+  transform: translateY(-6px) scale(1.03);
+}
+
+body.black #leadership .exp-card {
+  border-color: #fff;
+}
+
+body.black #leadership .exp-card:hover {
+  background: #d78bff;
+  border-color: #d78bff;
+  color: #000;
+  box-shadow: 0 0 35px rgba(215, 139, 255, 0.9);
+}
+
+/* === INTERACTIVE CONTACT SECTION === */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.contact-card {
+  background: transparent;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Contact color hovers */
+.contact-card:nth-child(1):hover {
+  background: #ff4b3e;
+  border-color: #ff4b3e;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(255, 75, 62, 0.6);
+}
+
+.contact-card:nth-child(2):hover {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(26, 115, 232, 0.6);
+}
+
+.contact-card:nth-child(3):hover {
+  background: #00c853;
+  border-color: #00c853;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(0, 200, 83, 0.6);
+}
+
+.contact-card:nth-child(4):hover {
+  background: #ffa500;
+  border-color: #ffa500;
+  color: #000;
+  box-shadow: 0 0 25px rgba(255, 165, 0, 0.6);
+}
+
+.contact-card:nth-child(5):hover {
+  background: #9c27b0;
+  border-color: #9c27b0;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(156, 39, 176, 0.6);
+}
+
+.contact-btn {
+  background: transparent;
+  border: 2px solid #000;
+  border-radius: 30px;
+  padding: 0.7rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+  transform: scale(1.07);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: currentColor;
+}
+
+/* === BLACK MODE === */
+body.black {
+  background: #000;
+  color: #fff;
+}
+
+body.black section,
+body.black footer,
+body.black .skills-grid span {
+  border-color: #fff;
+}
+
+body.black .contact-card {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* === SCROLL PROGRESS BAR === */
+#scrollProgressContainer {
+  position: fixed;
+  right: 10px;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  border-radius: 4px;
+}
+
+#scrollProgressBar {
+  width: 100%;
+  height: 0%;
+  background: #000;
+  border-radius: 4px;
+  transition: height 0.25s ease-out;
+}
+
+body.black #scrollProgressContainer {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.black #scrollProgressBar {
+  background: #fff;
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceSkill {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+  }
+
+  .nav-links {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  section {
+    margin: 2rem 1rem;
+  }
+
+  .hero-content {
+    padding: 2rem 1rem;
+  }
+}
+/* === FOOTER STYLING === */
+footer {
+  position: relative;        /* keeps it at the bottom of the page content */
+  text-align: center;        /* centers the text horizontally */
+  padding: 1rem 0;           /* vertical spacing */
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: inherit;            /* adapts to theme color */
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin-top: 2rem;
+}
+
+/* Dark mode footer border */
+body.black footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+/* === FUN FACT POPUP === */
+.fun-fact-popup {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #ffeb3b;
+  color: #000;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  opacity: 0;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 25px rgba(255, 235, 59, 0.4);
+  z-index: 9999;
+}
+
+.fun-fact-popup.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+body.black .fun-fact-popup {
+  background: #ff9800;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(255, 152, 0, 0.6);
+}
+
+/* === FIRECRACKER PARTICLES === */
+.firecracker {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* === THEME TOGGLE BURST === */
+.theme-burst {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
+  transform: translate(-50%, -50%) scale(1);
+  animation: themeBurstAnim 0.8s ease-out forwards;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+@keyframes themeBurstAnim {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(30);
+    opacity: 0;
+  }
+}
