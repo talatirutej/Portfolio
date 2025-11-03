@@ -529,16 +529,7 @@ body.black .contact-card:nth-child(5):hover {
 
 
 /* === SCROLL PROGRESS BAR === */
-#scrollProgressContainer {
-  position: fixed;
-  right: 10px;
-  top: 0;
-  width: 6px;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-  border-radius: 4px;
-}
+
 
 #scrollProgressBar {
   width: 100%;
@@ -769,6 +760,14 @@ body.funky #scrollProgressContainer {
 
 body.funky #scrollProgressBar {
   background: #000; /* black progress for blue background */
+}
+body.funky section:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #000;
+}
+
+body.funky footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 
