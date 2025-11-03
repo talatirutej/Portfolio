@@ -770,4 +770,39 @@ body.funky footer {
   border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
+// === EXPERIENCE / LEADERSHIP CARD ACCORDION EXPAND / COLLAPSE ===
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".learn-more");
+
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      const card = button.closest(".exp-card");
+      const details = card.querySelector(".exp-details");
+      if (!details) return;
+
+      const allDetails = document.querySelectorAll(".exp-details");
+      const allButtons = document.querySelectorAll(".learn-more");
+
+      // If this card is already open, just close it
+      if (details.classList.contains("visible")) {
+        details.style.maxHeight = "0";
+        details.classList.remove("visible");
+        button.textContent = "Show More";
+      } 
+      // Otherwise, close others first, then open this one
+      else {
+        allDetails.forEach((d, i) => {
+          d.style.maxHeight = "0";
+          d.classList.remove("visible");
+          allButtons[i].textContent = "Show More";
+        });
+
+        details.classList.add("visible");
+        details.style.maxHeight = details.scrollHeight + "px";
+        button.textContent = "Show Less";
+      }
+    });
+  });
+});
+
 
