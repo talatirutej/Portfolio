@@ -239,4 +239,29 @@ window.addEventListener("resize", () => {
   }
 });
 
+// === EXPERIENCE / LEADERSHIP CARD EXPAND / COLLAPSE ===
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".learn-more");
+
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      // Find the .exp-details inside the same card
+      const card = button.closest(".exp-card");
+      const details = card.querySelector(".exp-details");
+      if (!details) return;
+
+      // Toggle open / close
+      if (details.classList.contains("visible")) {
+        details.style.maxHeight = "0";
+        details.classList.remove("visible");
+        button.textContent = "Show More";
+      } else {
+        details.classList.add("visible");
+        details.style.maxHeight = details.scrollHeight + "px";
+        button.textContent = "Show Less";
+      }
+    });
+  });
+});
+
 
