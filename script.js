@@ -127,7 +127,9 @@ if (themeToggleBtn) {
   themeToggleBtn.addEventListener("click", () => {
     // Clear any polka dots before switching
     document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-
+// Clear any polka dots before switching
+  document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
+    
     if (themeMode === "white") {
       document.body.classList.add("black");
       document.body.classList.remove("funky");
@@ -150,65 +152,33 @@ if (themeToggleBtn) {
     setTimeout(() => burst.remove(), 800);
   });
 }
-// === HORIZONTAL TOP SCROLL PROGRESS BAR ===
+// === COMBINED SCROLL HANDLER ===
 window.addEventListener("scroll", () => {
+  
+  // Scroll progress bar
   const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
   const scrollPercent = (scrollTop / scrollHeight) * 100;
-  document.getElementById("scrollProgressBar").style.width = scrollPercent + "%";
-});
+  const scrollBar = document.getElementById("scrollProgressBar");
+  if (scrollBar) scrollBar.style.width = scrollPercent + "%";
 
-
-// === EXPERIENCE / LEADERSHIP CARD EXPAND / COLLAPSE ===
-document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".learn-more");
-
-  buttons.forEach(button => {
-    button.addEventListener("click", () => {
-      const details = button.nextElementSibling;
-      if (!details) return;
-
-      // Toggle visibility with smooth animation
-      if (details.classList.contains("visible")) {
-        details.style.maxHeight = "0";
-        details.classList.remove("visible");
-        details.classList.add("hidden");
-        button.textContent = "Learn More";
-      } else {
-        details.classList.remove("hidden");
-        details.style.maxHeight = details.scrollHeight + "px";
-        details.classList.add("visible");
-        button.textContent = "Show Less";
-      }
-    });
-  });
-});
-
-// === TIMELINE REVEAL ON SCROLL ===
-window.addEventListener("scroll", () => {
+  // Timeline reveal
   const items = document.querySelectorAll(".timeline-item");
-  const triggerBottom = window.innerHeight * 0.85;
-
+  const triggerBottomTimeline = window.innerHeight * 0.85;
   items.forEach(item => {
     const rect = item.getBoundingClientRect();
-    if (rect.top < triggerBottom) {
-      item.classList.add("visible");
-    }
+    if (rect.top < triggerBottomTimeline) item.classList.add("visible");
   });
-});
 
-// === SECTION FADE-IN ON SCROLL ===
-window.addEventListener("scroll", () => {
+  // Section fade-in
   const sections = document.querySelectorAll("section");
-  const triggerBottom = window.innerHeight * 0.9;
-
+  const triggerBottomSections = window.innerHeight * 0.9;
   sections.forEach(section => {
     const rect = section.getBoundingClientRect();
-    if (rect.top < triggerBottom) {
-      section.classList.add("visible");
-    }
+    if (rect.top < triggerBottomSections) section.classList.add("visible");
   });
 });
+
 // === CONTACT BUTTON TOGGLE ===
 document.querySelectorAll(".contact-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -234,6 +204,9 @@ function createPolkaDots(count = 35) {
     dot.style.animationDelay = `${Math.random() * 5}s`;
 
     document.body.appendChild(dot);
+    dot.style.setProperty("--x", `${Math.random() * 100 - 50}px`);
+dot.style.setProperty("--y", `${Math.random() * 100 - 50}px`);
+
   }
 }
 
@@ -250,5 +223,20 @@ function enableFunkyTheme() {
   createPolkaDots(40);
 }
 
+// Detect current theme on load
+if (document.body.classList.contains("black")) {
+  themeMode = "black";
+} else if (document.body.classList.contains("funky")) {
+  themeMode = "funky";
+} else {
+  themeMode = "white";
+}
+
+window.addEventListener("resize", () => {
+  if (document.body.classList.contains("funky")) {
+    document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
+    createPolkaDots(40);
+  }
+});
 
 
