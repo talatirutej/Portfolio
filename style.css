@@ -677,3 +677,53 @@ body.black .fun-fact-popup {
     opacity: 0;
   }
 }
+/* === FUNKY BLUE POLKA DOT THEME === */
+body.funky {
+  background: #4db8ff; /* bright blue base */
+  color: #000; /* black text */
+  overflow: hidden;
+  position: relative;
+}
+
+/* Moving black dots */
+.polka-dot {
+  position: fixed;
+  border-radius: 50%;
+  background: #000;
+  opacity: 0.25;
+  z-index: 0;
+  animation: floatDots 18s linear infinite;
+}
+
+/* Floating effect */
+@keyframes floatDots {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(40px, -60px);
+  }
+  50% {
+    transform: translate(-60px, -20px);
+  }
+  75% {
+    transform: translate(-30px, 50px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Keep content above dots */
+header,
+section,
+footer {
+  position: relative;
+  z-index: 5;
+}
+
+/* Optional: subtle transition for theme change */
+body.funky * {
+  transition: color 0.5s ease, background 0.5s ease;
+}
+
