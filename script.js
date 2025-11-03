@@ -150,14 +150,14 @@ if (themeToggleBtn) {
     setTimeout(() => burst.remove(), 800);
   });
 }
-
-// === SCROLL PROGRESS BAR ===
+// === HORIZONTAL TOP SCROLL PROGRESS BAR ===
 window.addEventListener("scroll", () => {
   const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
   const scrollPercent = (scrollTop / scrollHeight) * 100;
-  document.getElementById("scrollProgressBar").style.height = scrollPercent + "%";
+  document.getElementById("scrollProgressBar").style.width = scrollPercent + "%";
 });
+
 
 // === EXPERIENCE / LEADERSHIP CARD EXPAND / COLLAPSE ===
 document.addEventListener("DOMContentLoaded", () => {
@@ -249,5 +249,6 @@ function enableFunkyTheme() {
   // Create new ones
   createPolkaDots(40);
 }
+
 
 
