@@ -41,21 +41,6 @@ function typeLine() {
 }
 typeLine();
 
-// === Theme toggle (white <-> black only) ===
-let currentTheme = "white";
-const themeToggleTop = document.getElementById("themeToggleTop");
-themeToggleTop.addEventListener("click", () => {
-  if (currentTheme === "white") {
-    document.body.classList.add("black");
-    currentTheme = "black";
-  } else {
-    document.body.classList.remove("black");
-    currentTheme = "white";
-  }
-});
-
-
-
 /* === FUN FACTS BUTTON WITH CELEBRATION === */
 const funFactsBtn = document.getElementById("funFactsBtn");
 
@@ -218,4 +203,5 @@ document.querySelectorAll(".contact-btn").forEach(btn => {
     card.classList.toggle("active");
   });
 });
+
 
