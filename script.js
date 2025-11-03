@@ -153,12 +153,6 @@ if (themeToggleBtn) {
     setTimeout(() => burst.remove(), 800);
   });
 }
-
-    // Remove after animation
-    setTimeout(() => particle.remove(), 1500);
-  
-
-
 // === SCROLL PROGRESS BAR ===
 window.addEventListener("scroll", () => {
   const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -224,3 +218,4 @@ document.querySelectorAll(".contact-btn").forEach(btn => {
     card.classList.toggle("active");
   });
 });
+
