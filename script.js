@@ -1,9 +1,21 @@
-// === Typing animation with fade-in (no cursor) ===
+// === Typing animation with dynamic greeting (no cursor) ===
+const hour = new Date().getHours();
+let greeting;
+
+if (hour < 12) {
+  greeting = "Good morning!";
+} else if (hour < 18) {
+  greeting = "Good afternoon!";
+} else {
+  greeting = "Good evening!";
+}
+
 const lines = [
-  "Hi",
-  "My name is Rutej Talati",
-  "Looking forward to connecting with you."
+  greeting,
+  "Welcome to my portfolio!",
+  
 ];
+
 let lineIndex = 0, charIndex = 0;
 
 function fadeInLine(el) {
@@ -50,12 +62,16 @@ const funFactsBtn = document.getElementById("funFactsBtn");
 if (funFactsBtn) {
   funFactsBtn.addEventListener("click", () => {
     const funFacts = [
-      "🏎️ I can explain Formula 1 car setups better than some commentators.",
-      "🤖 I once programmed an Arduino robot that follows a light source.",
-      "🎶 I love working with lo-fi music playing in the background.",
-      "🌍 I’ve worked on engineering projects across two continents.",
-      "⚙️ I once 3D-modeled an entire drivetrain just for fun.",
-      "🧩 I’m obsessed with optimizing small details — like making my portfolio pixel-perfect!"
+      "🏎️ Published two research papers analyzing the aerodynamic wake flow of 2026-spec Formula 1 cars.",
+      "🌏 Collaborated with Shanghai Jiao Tong University on drivetrain stress optimization for heavy-duty vehicles.",
+      "🥋 Achieved a Black Belt in Karate which taught me balance, discipline, and precision under pressure.",
+      "🧠 Built CFD models comparing rear-wing downforce effects across 4 different diffuser geometries.",
+      "⚙️ Modeled a complete electric motorcycle drivetrain for vibration and NVH optimization.",
+      "📊 Conducted benchmarking for Caterpillar and Tata-Hitachi to improve hydraulic efficiency by 7%.",
+      "🚀 Created a MATLAB-based flow simulation tool used for my Penn State turbine-cooling lab analysis.",
+      "🎯 Designed a low-cost RedBot line-following robot integrating IR and encoder feedback for autonomous control.",
+      "💡 Believe great engineering blends creativity, computation, and curiosity.",
+      "📚 Penn State Mechanical Engineering senior — always chasing the next design challenge."
     ];
 
     const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
