@@ -10,7 +10,6 @@
 html {
   scroll-behavior: smooth;
 }
-
 /* === BODY (DEFAULT WHITE MODE) === */
 body {
   background: #fff;
@@ -1674,3 +1673,4 @@ body:not(.black) .learn-more:hover {
   75% { transform: scale(1.25) rotate(6deg); background: #ffeb3b; }
   100% { transform: scale(1); background: transparent; color: inherit; }
 }
+
