@@ -123,26 +123,28 @@ function firecrackerEffect(element, count = 25) {
 const themeToggleBtn = document.getElementById("themeToggleTop");
 let themeMode = "white";
 
+// detect current mode on load
+if (document.body.classList.contains("black")) themeMode = "black";
+else if (document.body.classList.contains("funky")) themeMode = "funky";
+
 if (themeToggleBtn) {
   themeToggleBtn.addEventListener("click", () => {
-    // Clear any polka dots before switching
+    // remove all dots first
     document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-// Clear any polka dots before switching
-  document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-    
+
     if (themeMode === "white") {
       document.body.classList.add("black");
       document.body.classList.remove("funky");
       themeMode = "black";
     } else if (themeMode === "black") {
-      enableFunkyTheme(); // activate polka-dot theme
+      enableFunkyTheme();
       themeMode = "funky";
     } else {
       document.body.classList.remove("black", "funky");
       themeMode = "white";
     }
 
-    // burst animation for click feedback
+    // click burst animation
     const burst = document.createElement("div");
     burst.classList.add("theme-burst");
     const rect = themeToggleBtn.getBoundingClientRect();
@@ -152,6 +154,7 @@ if (themeToggleBtn) {
     setTimeout(() => burst.remove(), 800);
   });
 }
+
 // === COMBINED SCROLL HANDLER ===
 window.addEventListener("scroll", () => {
   
@@ -270,6 +273,35 @@ if (backToTopBtn) {
   backToTopBtn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+}
+
+function createPolkaDots(count = 35) {
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement("div");
+    dot.classList.add("polka-dot");
+
+    const size = Math.random() * 30 + 10;
+    dot.style.width = `${size}px`;
+    dot.style.height = `${size}px`;
+
+    dot.style.left = `${Math.random() * 100}vw`;
+    dot.style.top = `${Math.random() * 100}vh`;
+
+    dot.style.animationDuration = `${15 + Math.random() * 10}s`;
+    dot.style.animationDelay = `${Math.random() * 5}s`;
+
+    dot.style.setProperty("--x", `${Math.random() * 100 - 50}px`);
+    dot.style.setProperty("--y", `${Math.random() * 100 - 50}px`);
+
+    document.body.appendChild(dot);
+  }
+}
+
+function enableFunkyTheme() {
+  document.body.classList.remove("black");
+  document.body.classList.add("funky");
+  document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
+  createPolkaDots(40);
 }
 
 
