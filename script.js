@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
     el.style.transition = "opacity 0.6s ease";
     setTimeout(() => (el.style.opacity = "1"), 100);
   }
-
   function typeLine() {
     if (lineIndex < lines.length) {
       const el = document.getElementById(`line${lineIndex + 1}`);
@@ -33,8 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   typeLine();
-
-
   /* === FUN FACTS BUTTON WITH CELEBRATION === */
   const funFactsBtn = document.getElementById("funFactsBtn");
   if (funFactsBtn) {
@@ -255,3 +252,4 @@ expButtons.forEach(button => {
   }
 
 }); // end DOMContentLoaded
+
