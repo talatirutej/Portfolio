@@ -595,6 +595,52 @@ body.black #scrollProgressBar {
     padding: 2rem 1rem;
   }
 }
+/* === CONTACT SECTION (ICON GRID STYLE) === */
+#contact {
+  text-align: center;
+  padding: 4rem 2rem;
+  border: none;
+  background: transparent;
+}
+
+#contact h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+#contact p {
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+  color: inherit;
+}
+
+/* Icon row */
+.contact-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.contact-icons .icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 14px;
+  font-size: 1.8rem;
+  color: #000;
+  text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Bright colors for each icon */
+.icon.email { backgrou
+
 /* === FOOTER STYLING === */
 footer {
   position: relative;        /* keeps it at the bottom of the page content */
@@ -804,5 +850,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
 
