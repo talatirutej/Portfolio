@@ -18,7 +18,8 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
-/* === DARK THEME (BLACK BACKGROUND) === */
+
+/* === DARK THEME === */
 body.black {
   background: #000;
   color: #fff;
@@ -122,6 +123,99 @@ nav {
   margin-top: 1rem;
   font-style: italic;
 }
+/* === SUPER THEME TOGGLE ANIMATION === */
+#themeToggleTop {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  z-index: 1000;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Hover: gentle tilt and glow */
+#themeToggleTop:hover {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+}
+
+/* Click: spin, pulse, and emit burst */
+#themeToggleTop:active {
+  animation: themeExplosion 0.8s cubic-bezier(0.3, 1, 0.3, 1);
+}
+
+/* Internal ripple burst effect */
+#themeToggleTop::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffeb3b 10%, transparent 70%);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+/* Trigger ripple animation on press */
+#themeToggleTop:active::after {
+  animation: themeRipple 0.6s ease-out;
+}
+
+/* ✨ Explosion effect (rotation + scale + glow) */
+@keyframes themeExplosion {
+  0% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  25% {
+    transform: scale(1.3) rotate(90deg);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.5) rotate(180deg);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.4);
+  }
+  75% {
+    transform: scale(0.9) rotate(270deg);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    background: transparent;
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+/* 🌊 Expanding ripple animation */
+@keyframes themeRipple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.9;
+  }
+  70% {
+    width: 180px;
+    height: 180px;
+    opacity: 0.4;
+  }
+  100% {
+    width: 260px;
+    height: 260px;
+    opacity: 0;
+  }
+}
 
 /* === HERO BUTTONS === */
 .hero-buttons {
@@ -160,15 +254,6 @@ nav {
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
 }
 
-/* Always white in both themes */
-body.black .btn,
-body.black .btn-secondary,
-body:not(.black) .btn,
-body:not(.black) .btn-secondary {
-  border-color: #fff;
-  color: #fff;
-}
-
 /* === SECTION STRUCTURE === */
 section {
   max-width: 950px;
@@ -183,28 +268,8 @@ section {
   animation: fadeInUp 1s ease forwards;
 }
 
-section:nth-of-type(even) {
-  animation-delay: 0.2s;
-}
-
-section:nth-of-type(odd) {
-  animation-delay: 0.4s;
-}
-
-/* === SECTION HOVER COLORS === */
-body:not(.black) section:hover {
-  background: #d6e9ff;
-  border-width: 4px;
-}
-
-body.black section:hover {
-  background: rgba(255, 255, 255, 0.05); /* subtle lift on hover */
-  border-width: 4px;
-}
-
 /* === PROJECT CARDS === */
 .project-card {
-  position: relative;
   border: 2px solid currentColor;
   border-radius: 12px;
   padding: 1.5rem;
@@ -228,32 +293,392 @@ body.black section:hover {
   padding: 1.8rem;
   margin-top: 1.5rem;
   background: transparent;
-  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   line-height: 1.6;
   font-size: 1.05rem;
   text-align: justify;
   cursor: default;
+  transition: 0.4s;
 }
 
-/* Light mode: only card turns yellow */
 body:not(.black) .about-card:hover {
-  background: #ffeb3b; /* bright yellow */
+  background: #ffeb3b;
   border-color: #ffeb3b;
   box-shadow: 0 0 20px rgba(255, 235, 59, 0.5);
-  transform: none;
   color: #000;
 }
 
-/* Dark mode: softer amber tone */
 body.black .about-card:hover {
-  background: #ffc107; /* warm yellow for dark mode */
+  background: #ffc107;
   border-color: #ffc107;
   box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
-  transform: none;
+  color: #000;
+}
+
+/* === EXPERIENCE SECTION === */
+#experience .exp-card {
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+#experience .exp-card:hover {
+  background: #ff7b00;
+  border-color: #ff7b00;
+  color: #fff;
+  box-shadow: 0 0 35px rgba(255, 123, 0, 0.8);
+  transform: translateY(-6px) scale(1.03);
+}
+
+/* === LEADERSHIP SECTION === */
+#leadership .exp-card {
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.35s ease;
+  cursor: pointer;
+}
+
+#leadership .exp-card:hover {
+  background: #9c27b0;
+  border-color: #9c27b0;
+  color: #fff;
+  box-shadow: 0 0 30px rgba(156, 39, 176, 0.8);
+  transform: translateY(-6px) scale(1.03);
+}
+
+/* === CONTACT SECTION (Hover-Reveal Animation) === */
+#contact {
+  text-align: center;
+  padding: 5rem 2rem;
+  border: none;
+  background: transparent;
+}
+
+.contact-icons {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+/* Each item wraps icon + text */
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* === ICON BUTTONS === */
+.icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 85px;
+  height: 85px;
+  border-radius: 18px;
+  font-size: 2rem;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Theme-specific colors */
+.icon.email {
+  background: #1a73e8; /* blue */
+}
+
+.icon.phone {
+  background: #00c853; /* green */
+}
+
+.icon.linkedin {
+  background: #0077b5; /* LinkedIn blue */
+}
+
+/* Hover motion (bounce up) */
+.icon:hover {
+  transform: translateY(-5px) scale(1.08);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+}
+
+/* === CONTACT INFO REVEAL === */
+.contact-info {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: inherit;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.45s cubic-bezier(0.22, 1.61, 0.36, 1);
+  pointer-events: none;
+}
+
+/* When hovered — shoots downward */
+.contact-item:hover .contact-info {
+  opacity: 1;
+  transform: translateY(15px);
+}
+
+/* === THEME COMPATIBILITY === */
+body.black .contact-info {
+  color: #fff;
+}
+
+body.funky .contact-info {
   color: #000;
 }
 
 
+
+/* === FUN FACT POPUP === */
+.fun-fact-popup {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: #ffeb3b;
+  color: #000;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  opacity: 0;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
+  z-index: 99999;
+}
+
+.fun-fact-popup.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+body.black .fun-fact-popup {
+  background: #ff9800;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(255, 152, 0, 0.6);
+}
+
+/* === CONFETTI EFFECT === */
+.confetti {
+  position: fixed;
+  top: -10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation: fallConfetti linear forwards;
+  z-index: 9999;
+}
+@keyframes fallConfetti {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* === FUNKY THEME === */
+body.funky {
+  background: #4db8ff;
+  color: #000;
+  overflow-x: hidden;
+}
+
+.polka-dot {
+  position: fixed;
+  border-radius: 50%;
+  background: #000;
+  opacity: 0.25;
+  z-index: 0;
+  animation: floatDots 18s linear infinite;
+}
+
+@keyframes floatDots {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(40px, -60px); }
+  50% { transform: translate(-60px, -20px); }
+  75% { transform: translate(-30px, 50px); }
+  100% { transform: translate(0, 0); }
+}
+
+header, section, footer { position: relative; z-index: 5; }
+
+/* === FOOTER === */
+footer {
+  position: relative;
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin-top: 2rem;
+}
+
+body.black footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* === SCROLL PROGRESS BAR === */
+#scrollProgressContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+}
+
+#scrollProgressBar {
+  width: 0%;
+  height: 100%;
+  background: #ffeb3b;
+  transition: width 0.15s ease-out;
+}
+
+body.black #scrollProgressContainer {
+  background: rgba(255, 255, 255, 0.1);
+}
+body.black #scrollProgressBar {
+  background: #fff;
+}
+body.funky #scrollProgressBar {
+  background: #000;
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounceSkill {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+/* === EXPERIENCE / LEADERSHIP DETAILS COLLAPSE === */
+.exp-details {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  padding-top: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow: hidden;          /* ✅ hides text when collapsed */
+  max-height: 0;             /* ✅ fully collapsed by default */
+  opacity: 0;                /* ✅ invisible initially */
+  transition: max-height 0.6s ease, opacity 0.4s ease;
+}
+
+.exp-details.visible {
+  max-height: 1000px;        /* ✅ expands smoothly */
+  opacity: 1;
+}
+
+.learn-more {
+  margin-top: 0.8rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.learn-more:hover {
+  background: currentColor;
+  color: #fff;
+}
+/* === DARK THEME BORDER FIXES === */
+body.black section,
+body.black .about-card,
+body.black .exp-card,
+body.black .project-card {
+  border-color: #fff !important;
+}
+
+body.black #experience .exp-card:hover {
+  background: #ff7b00;
+  border-color: #fff;
+  color: #000;
+}
+
+body.black #leadership .exp-card:hover {
+  background: #9c27b0;
+  border-color: #fff;
+  color: #fff;
+}
+
+body.black footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  nav { flex-direction: column; }
+  .nav-links { justify-content: center; gap: 1rem; }
+  section { margin: 2rem 1rem; }
+  .hero-content { padding: 2rem 1rem; }
+}
+/* === BACK TO TOP BUTTON (CENTERED + GLOW) === */
+.back-to-top-container {
+  position: fixed;
+  bottom: 15px;    /* ⬇ closer to bottom edge */
+  right: 20px;     /* ⬅ closer to right edge */
+  z-index: 9999;
+}
+
+
+.back-to-top {
+  background: #ffeb3b;
+  color: #000;
+  border: none;
+  border-radius: 40px;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 235, 59, 0.7);
+  transition: all 0.3s ease;
+}
+
+.back-to-top:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px rgba(255, 235, 59, 1);
+}
+
+
+/* === DARK & FUNKY MODES === */
+body.black #backToTop {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+}
+body.funky #backToTop {
+  background: #000;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* === PULSE ANIMATION === */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 35px rgba(255, 235, 59, 0.8);
+  }
+}
 /* === SKILLS === */
 .skills-grid {
   display: grid;
@@ -276,16 +701,465 @@ body.black .about-card:hover {
   animation: bounceSkill 0.6s ease;
 }
 
+/* === DARK THEME VARIANT === */
+body.black .skills-grid span {
+  border-color: #fff;           /* white borders in black mode */
+  color: #fff;                  /* ensure text is visible */
+}
+
+body.black .skills-grid span:hover {
+  background: #fff;
+  color: #000;
+  transform: scale(1.15);
+  animation: bounceSkill 0.6s ease;
+}
+/* === BLACK THEME CARD HOVER (WHITE FILL + BLUE BORDER) === */
+body.black .about-card:hover,
+body.black #experience .exp-card:hover,
+body.black #leadership .exp-card:hover,
+body.black .project-card:hover {
+  background: #fff !important;        /* Card turns white */
+  color: #000 !important;             /* Text turns black */
+  border-color: #1a73e8 !important;   /* Blue border accent */
+  box-shadow: 0 0 25px rgba(26, 115, 232, 0.7);  /* Blue glow */
+  transform: translateY(-5px) scale(1.02);
+}
+
+/* === Ensure nested text also turns black (but not entire section) === */
+body.black .about-card:hover *,
+body.black #experience .exp-card:hover *,
+body.black #leadership .exp-card:hover *,
+body.black .project-card:hover * {
+  color: #000 !important;
+}
+
+/* === Smooth hover transition === */
+.about-card,
+#experience .exp-card,
+#leadership .exp-card,
+.project-card {
+  transition: all 0.3s ease;
+}
+/* === SHOW MORE / SHOW LESS BUTTON (BLACK THEME DEFAULT) === */
+body.black .learn-more {
+  background: transparent !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  border-radius: 25px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* === WHEN CARD IS HOVERED (INVERT COLORS) === */
+body.black .exp-card:hover .learn-more,
+body.black .about-card:hover .learn-more,
+body.black .project-card:hover .learn-more {
+  background: #1a73e8 !important;      /* Blue highlight */
+  border-color: #1a73e8 !important;    /* Blue border */
+  color: #fff !important;              /* Keep text white for contrast */
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(26, 115, 232, 0.7);
+}
+
+/* === OPTIONAL: Hover effect directly on button === */
+body.black .learn-more:hover {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+  transform: scale(1.08);
+}
+
+
+
+
+
+
+
+/* === SHOW MORE / SHOW LESS BUTTON — WHITE & FUNKY THEMES === */
+body:not(.black) .learn-more {
+  background: transparent;
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 25px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* === Hover only scales up (no color change) === */
+body:not(.black) .learn-more:hover {
+  transform: scale(1.1);
+  background: transparent;
+  color: inherit;
+  border-color: inherit;
+  box-shadow: none;
+}
+
+
+/* === CRAZY FUN FACT BUTTON ANIMATION === */
+#funFactsBtn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+#funFactsBtn:active {
+  transform: scale(0.9) rotate(-5deg);
+}
+
+/* Ripple wave effect */
+#funFactsBtn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, #ffeb3b 20%, transparent 70%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#funFactsBtn.animate {
+  animation: crazyBtnPulse 0.8s ease forwards;
+}
+
+@keyframes crazyBtnPulse {
+  0% { transform: scale(1); background: #1a73e8; color: #fff; }
+  25% { transform: scale(1.3) rotate(8deg); background: #ff4081; }
+  50% { transform: scale(1) rotate(-8deg); background: #00e676; }
+  75% { transform: scale(1.25) rotate(6deg); background: #ffeb3b; }
+  100% { transform: scale(1); background: transparent; color: inherit; }
+}
+/* === UNIVERSAL RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* === BODY (DEFAULT WHITE MODE) === */
+body {
+  background: #fff;
+  color: #000;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* === DARK THEME === */
+body.black {
+  background: #000;
+  color: #fff;
+}
+
+/* === HEADER & NAVBAR === */
+header {
+  background: #000;
+  color: #fff;
+  padding-bottom: 4rem;
+  position: relative;
+  animation: fadeInUp 1.2s ease both;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  flex: 1;
+  text-align: left;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  flex: 2;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  left: 0;
+  bottom: -4px;
+  background: #fff;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.nav-links a:hover {
+  transform: scale(1.05);
+}
+
+/* === THEME TOGGLE BUTTON === */
+#themeToggleTop {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  z-index: 1000;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#themeToggleTop:hover {
+  background: #fff;
+  color: #000;
+  transform: rotate(20deg);
+}
+
+/* === HERO SECTION === */
+.hero-content {
+  text-align: center;
+  padding: 3rem 2rem;
+  animation: fadeInUp 1.5s ease both;
+}
+
+.typing-line {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0.3rem 0;
+}
+
+.tagline {
+  margin-top: 1rem;
+  font-style: italic;
+}
+/* === SUPER THEME TOGGLE ANIMATION === */
+#themeToggleTop {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  z-index: 1000;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Hover: gentle tilt and glow */
+#themeToggleTop:hover {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+}
+
+/* Click: spin, pulse, and emit burst */
+#themeToggleTop:active {
+  animation: themeExplosion 0.8s cubic-bezier(0.3, 1, 0.3, 1);
+}
+
+/* Internal ripple burst effect */
+#themeToggleTop::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffeb3b 10%, transparent 70%);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+/* Trigger ripple animation on press */
+#themeToggleTop:active::after {
+  animation: themeRipple 0.6s ease-out;
+}
+
+/* ✨ Explosion effect (rotation + scale + glow) */
+@keyframes themeExplosion {
+  0% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  25% {
+    transform: scale(1.3) rotate(90deg);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.5) rotate(180deg);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.4);
+  }
+  75% {
+    transform: scale(0.9) rotate(270deg);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    background: transparent;
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+/* 🌊 Expanding ripple animation */
+@keyframes themeRipple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.9;
+  }
+  70% {
+    width: 180px;
+    height: 180px;
+    opacity: 0.4;
+  }
+  100% {
+    width: 260px;
+    height: 260px;
+    opacity: 0;
+  }
+}
+
+/* === HERO BUTTONS === */
+.hero-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  padding: 0.9rem 1.8rem;
+  margin: 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  border: 2px solid #fff;
+  border-radius: 50px;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn:hover,
+.btn-secondary:hover {
+  transform: scale(1.08);
+  border-width: 2.5px;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+/* === SECTION STRUCTURE === */
+section {
+  max-width: 950px;
+  margin: 3rem auto;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.4s ease;
+  background: transparent;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: fadeInUp 1s ease forwards;
+}
+
+/* === PROJECT CARDS === */
+.project-card {
+  border: 2px solid currentColor;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  background: transparent;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  background: #ffeb3b;
+  color: #000;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+}
+
+/* === ABOUT CARD === */
+.about-card {
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 1.8rem;
+  margin-top: 1.5rem;
+  background: transparent;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  text-align: justify;
+  cursor: default;
+  transition: 0.4s;
+}
+
+body:not(.black) .about-card:hover {
+  background: #ffeb3b;
+  border-color: #ffeb3b;
+  box-shadow: 0 0 20px rgba(255, 235, 59, 0.5);
+  color: #000;
+}
+
+body.black .about-card:hover {
+  background: #ffc107;
+  border-color: #ffc107;
+  box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+  color: #000;
+}
+
 /* === EXPERIENCE SECTION === */
 #experience .exp-card {
   border: 2px solid #000;
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  background: transparent;
   transition: all 0.4s ease;
   cursor: pointer;
-  color: inherit;
 }
 
 #experience .exp-card:hover {
@@ -296,85 +1170,14 @@ body.black .about-card:hover {
   transform: translateY(-6px) scale(1.03);
 }
 
-body.black #experience .exp-card {
-  border-color: #fff;
-}
-
-body.black #experience .exp-card:hover {
-  background: #ffa733;
-  border-color: #ffa733;
-  color: #000;
-  box-shadow: 0 0 40px rgba(255, 167, 51, 0.9);
-}
-
-.exp-details {
-  margin-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
-  padding-top: 1rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.6s ease, opacity 0.5s ease;
-}
-
-.exp-details.visible {
-  max-height: 1000px;
-  opacity: 1;
-}
-
-body.black .exp-details {
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.learn-more {
-  background: transparent;
-  color: inherit;
-  border: 1.5px solid currentColor;
-  border-radius: 20px;
-  padding: 0.4rem 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.learn-more:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.exp-bullets {
-  list-style: none;
-  padding-left: 1rem;
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.exp-bullets li {
-  position: relative;
-  font-size: 0.96rem;
-  line-height: 1.6;
-  text-align: justify;
-  padding-left: 0.2rem;
-  transition: transform 0.25s ease;
-}
-
-.exp-bullets li:hover {
-  transform: translateX(5px);
-}
-
 /* === LEADERSHIP SECTION === */
 #leadership .exp-card {
-  background: transparent;
   border: 2px solid #000;
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   transition: all 0.35s ease;
   cursor: pointer;
-  color: inherit;
 }
 
 #leadership .exp-card:hover {
@@ -385,282 +1188,99 @@ body.black .exp-details {
   transform: translateY(-6px) scale(1.03);
 }
 
-body.black #leadership .exp-card {
-  border-color: #fff;
-}
-
-body.black #leadership .exp-card:hover {
-  background: #d78bff;
-  border-color: #d78bff;
-  color: #000;
-  box-shadow: 0 0 35px rgba(215, 139, 255, 0.9);
-}
-
-/* === CONTACT SECTION – Button Style Cards with Hover Reveal === */
-.contact-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.contact-card {
-  position: relative;
-  border: 2px solid #000;
-  border-radius: 12px;
-  background: #f7f7f7;
-  padding: 2rem 1rem;
-  transition: all 0.35s ease;
-  cursor: pointer;
-  overflow: hidden;
-  color: #000;
-}
-
-.contact-card:hover {
-  transform: translateY(-5px) scale(1.03);
-}
-
-/* “Label” (default view) */
-.contact-label {
-  font-size: 1.2rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  background: #fff;
-  border: 2px solid #000;
-  border-radius: 10px;
-  padding: 0.7rem 1.4rem;
-  transition: all 0.35s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.contact-card:hover .contact-label {
-  opacity: 0;
-  transform: translateY(-15px);
-}
-
-/* Hidden info appears on hover */
-.contact-info {
-  opacity: 0;
-  transform: translateY(15px);
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.4s ease;
-}
-
-.contact-card:hover .contact-info {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* === Colored hover fills === */
-.contact-card:nth-child(1):hover {
-  background: #ff4b3e;
-  border-color: #ff4b3e;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(255, 75, 62, 0.6);
-}
-.contact-card:nth-child(2):hover {
-  background: #1a73e8;
-  border-color: #1a73e8;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(26,115,232,0.6);
-}
-.contact-card:nth-child(3):hover {
-  background: #00c853;
-  border-color: #00c853;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(0,200,83,0.6);
-}
-.contact-card:nth-child(4):hover {
-  background: #ffa500;
-  border-color: #ffa500;
-  color: #000;
-  box-shadow: 0 0 25px rgba(255,165,0,0.6);
-}
-.contact-card:nth-child(5):hover {
-  background: #9c27b0;
-  border-color: #9c27b0;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(156,39,176,0.6);
-}
-
-/* === DARK MODE VARIANTS === */
-body.black .contact-card {
-  border-color: #fff;
-  background: #111;
-  color: #fff;
-}
-
-body.black .contact-card:hover {
-  color: #000;
-}
-
-body.black .contact-label {
-  background: #000;
-  border-color: #fff;
-  color: #fff;
-}
-
-body.black .contact-card:nth-child(1):hover {
-  background: #ff6659;
-  border-color: #ff6659;
-}
-body.black .contact-card:nth-child(2):hover {
-  background: #4c8bf5;
-  border-color: #4c8bf5;
-}
-body.black .contact-card:nth-child(3):hover {
-  background: #33e07a;
-  border-color: #33e07a;
-}
-body.black .contact-card:nth-child(4):hover {
-  background: #ffbf47;
-  border-color: #ffbf47;
-}
-body.black .contact-card:nth-child(5):hover {
-  background: #d78bff;
-  border-color: #d78bff;
-}
-
-
-
-/* === SCROLL PROGRESS BAR === */
-
-
-#scrollProgressBar {
-  width: 100%;
-  height: 0%;
-  background: #000;
-  border-radius: 4px;
-  transition: height 0.25s ease-out;
-}
-
-body.black #scrollProgressContainer {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-body.black #scrollProgressBar {
-  background: #fff;
-}
-
-/* === ANIMATIONS === */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes bounceSkill {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  nav {
-    flex-direction: column;
-  }
-
-  .nav-links {
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  section {
-    margin: 2rem 1rem;
-  }
-
-  .hero-content {
-    padding: 2rem 1rem;
-  }
-}
-/* === CONTACT SECTION (ICON GRID STYLE) === */
+/* === CONTACT SECTION (Hover-Reveal Animation) === */
 #contact {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 5rem 2rem;
   border: none;
   background: transparent;
 }
 
-#contact h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.8rem;
-}
-
-#contact p {
-  font-size: 1.05rem;
-  margin-bottom: 2rem;
-  color: inherit;
-}
-
-/* Icon row */
 .contact-icons {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
+  align-items: flex-start;
+  gap: 3rem;
   flex-wrap: wrap;
-  margin-bottom: 2.5rem;
-}
-
-.contact-icons .icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 14px;
-  font-size: 1.8rem;
-  color: #000;
-  text-decoration: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Bright colors for each icon */
-.icon.email { backgrou
-
-/* === FOOTER STYLING === */
-footer {
-  position: relative;        /* keeps it at the bottom of the page content */
-  text-align: center;        /* centers the text horizontally */
-  padding: 1rem 0;           /* vertical spacing */
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: inherit;            /* adapts to theme color */
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
   margin-top: 2rem;
 }
 
-/* Dark mode footer border */
-body.black footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+/* Each item wraps icon + text */
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
-/* === FUN FACT POPUP (fixed centered) === */
+
+/* === ICON BUTTONS === */
+.icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 85px;
+  height: 85px;
+  border-radius: 18px;
+  font-size: 2rem;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Theme-specific colors */
+.icon.email {
+  background: #1a73e8; /* blue */
+}
+
+.icon.phone {
+  background: #00c853; /* green */
+}
+
+.icon.linkedin {
+  background: #0077b5; /* LinkedIn blue */
+}
+
+/* Hover motion (bounce up) */
+.icon:hover {
+  transform: translateY(-5px) scale(1.08);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+}
+
+/* === CONTACT INFO REVEAL === */
+.contact-info {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: inherit;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.45s cubic-bezier(0.22, 1.61, 0.36, 1);
+  pointer-events: none;
+}
+
+/* When hovered — shoots downward */
+.contact-item:hover .contact-info {
+  opacity: 1;
+  transform: translateY(15px);
+}
+
+/* === THEME COMPATIBILITY === */
+body.black .contact-info {
+  color: #fff;
+}
+
+body.funky .contact-info {
+  color: #000;
+}
+
+
+
+/* === FUN FACT POPUP === */
 .fun-fact-popup {
   position: fixed;
-  bottom: 120px; /* raised so it’s above footer */
+  bottom: 120px;
   left: 50%;
   transform: translateX(-50%) translateY(30px);
   background: #ffeb3b;
@@ -672,7 +1292,7 @@ body.black footer {
   opacity: 0;
   transition: all 0.4s ease;
   box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
-  z-index: 99999; /* ensure always above everything */
+  z-index: 99999;
 }
 
 .fun-fact-popup.visible {
@@ -686,178 +1306,7 @@ body.black .fun-fact-popup {
   box-shadow: 0 0 25px rgba(255, 152, 0, 0.6);
 }
 
-body.funky .fun-fact-popup {
-  background: #000;
-  color: #fff;
-  box-shadow: 0 0 30px rgba(0,0,0,0.6);
-}
-
-
-/* === FIRECRACKER PARTICLES === */
-.firecracker {
-  position: fixed;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* === THEME TOGGLE BURST === */
-.theme-burst {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
-  transform: translate(-50%, -50%) scale(1);
-  animation: themeBurstAnim 0.8s ease-out forwards;
-  pointer-events: none;
-  z-index: 10000;
-}
-
-@keyframes themeBurstAnim {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(30);
-    opacity: 0;
-  }
-}
-/* === FUNKY BLUE POLKA DOT THEME === */
-body.funky {
-  background: #4db8ff; /* bright blue base */
-  color: #000;
-  overflow-x: hidden; /* ✅ only hide horizontal overflow */
-  position: relative;
-}
-
-
-/* Moving black dots */
-.polka-dot {
-  position: fixed;
-  border-radius: 50%;
-  background: #000;
-  opacity: 0.25;
-  z-index: 0;
-  animation: floatDots 18s linear infinite;
-}
-
-/* Floating effect */
-@keyframes floatDots {
-  0% {
-    transform: translate(0, 0);
-  }
-  25% {
-    transform: translate(40px, -60px);
-  }
-  50% {
-    transform: translate(-60px, -20px);
-  }
-  75% {
-    transform: translate(-30px, 50px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
-/* Keep content above dots */
-header,
-section,
-footer {
-  position: relative;
-  z-index: 5;
-}
-
-/* Optional: subtle transition for theme change */
-body.funky * {
-  transition: color 0.5s ease, background 0.5s ease;
-}
-body, section, header, footer {
-  transition: background 0.5s ease, color 0.5s ease;
-}
-/* === TOP SCROLL PROGRESS BAR === */
-#scrollProgressContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 6px; /* thickness of bar */
-  background: rgba(0, 0, 0, 0.1); /* background strip */
-  z-index: 9999;
-}
-
-#scrollProgressBar {
-  width: 0%;
-  height: 100%;
-  background: #ffeb3b; /* bright yellow progress */
-  transition: width 0.15s ease-out;
-}
-
-/* Dark mode bar */
-body.black #scrollProgressContainer {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-body.black #scrollProgressBar {
-  background: #ffffff;
-}
-
-/* Funky mode bar (blue theme) */
-body.funky #scrollProgressContainer {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-body.funky #scrollProgressBar {
-  background: #000; /* black progress for blue background */
-}
-body.funky section:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: #000;
-}
-
-body.funky footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-// === EXPERIENCE / LEADERSHIP CARD ACCORDION EXPAND / COLLAPSE ===
-document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".learn-more");
-
-  buttons.forEach(button => {
-    button.addEventListener("click", () => {
-      const card = button.closest(".exp-card");
-      const details = card.querySelector(".exp-details");
-      if (!details) return;
-
-      const allDetails = document.querySelectorAll(".exp-details");
-      const allButtons = document.querySelectorAll(".learn-more");
-
-      // If this card is already open, just close it
-      if (details.classList.contains("visible")) {
-        details.style.maxHeight = "0";
-        details.classList.remove("visible");
-        button.textContent = "Show More";
-      } 
-      // Otherwise, close others first, then open this one
-      else {
-        allDetails.forEach((d, i) => {
-          d.style.maxHeight = "0";
-          d.classList.remove("visible");
-          allButtons[i].textContent = "Show More";
-        });
-
-        details.classList.add("visible");
-        details.style.maxHeight = details.scrollHeight + "px";
-        button.textContent = "Show Less";
-      }
-    });
-  });
-});
-
+/* === CONFETTI EFFECT === */
 .confetti {
   position: fixed;
   top: -10px;
@@ -874,25 +1323,354 @@ document.addEventListener("DOMContentLoaded", () => {
     opacity: 0;
   }
 }
+
+/* === FUNKY THEME === */
 body.funky {
   background: #4db8ff;
   color: #000;
   overflow-x: hidden;
 }
 
-body.funky section {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: #000;
+.polka-dot {
+  position: fixed;
+  border-radius: 50%;
+  background: #000;
+  opacity: 0.25;
+  z-index: 0;
+  animation: floatDots 18s linear infinite;
 }
 
-body.funky header, body.funky footer {
-  background: rgba(0,0,0,0.2);
-  color: #000;
+@keyframes floatDots {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(40px, -60px); }
+  50% { transform: translate(-60px, -20px); }
+  75% { transform: translate(-30px, 50px); }
+  100% { transform: translate(0, 0); }
 }
 
+header, section, footer { position: relative; z-index: 5; }
+
+/* === FOOTER === */
+footer {
+  position: relative;
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin-top: 2rem;
+}
+
+body.black footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* === SCROLL PROGRESS BAR === */
+#scrollProgressContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+}
+
+#scrollProgressBar {
+  width: 0%;
+  height: 100%;
+  background: #ffeb3b;
+  transition: width 0.15s ease-out;
+}
+
+body.black #scrollProgressContainer {
+  background: rgba(255, 255, 255, 0.1);
+}
+body.black #scrollProgressBar {
+  background: #fff;
+}
 body.funky #scrollProgressBar {
   background: #000;
 }
 
+/* === ANIMATIONS === */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounceSkill {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+/* === EXPERIENCE / LEADERSHIP DETAILS COLLAPSE === */
+.exp-details {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  padding-top: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow: hidden;          /* ✅ hides text when collapsed */
+  max-height: 0;             /* ✅ fully collapsed by default */
+  opacity: 0;                /* ✅ invisible initially */
+  transition: max-height 0.6s ease, opacity 0.4s ease;
+}
+
+.exp-details.visible {
+  max-height: 1000px;        /* ✅ expands smoothly */
+  opacity: 1;
+}
+
+.learn-more {
+  margin-top: 0.8rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.learn-more:hover {
+  background: currentColor;
+  color: #fff;
+}
+/* === DARK THEME BORDER FIXES === */
+body.black section,
+body.black .about-card,
+body.black .exp-card,
+body.black .project-card {
+  border-color: #fff !important;
+}
+
+body.black #experience .exp-card:hover {
+  background: #ff7b00;
+  border-color: #fff;
+  color: #000;
+}
+
+body.black #leadership .exp-card:hover {
+  background: #9c27b0;
+  border-color: #fff;
+  color: #fff;
+}
+
+body.black footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  nav { flex-direction: column; }
+  .nav-links { justify-content: center; gap: 1rem; }
+  section { margin: 2rem 1rem; }
+  .hero-content { padding: 2rem 1rem; }
+}
+/* === BACK TO TOP BUTTON (CENTERED + GLOW) === */
+.back-to-top-container {
+  position: fixed;
+  bottom: 15px;    /* ⬇ closer to bottom edge */
+  right: 20px;     /* ⬅ closer to right edge */
+  z-index: 9999;
+}
 
 
+.back-to-top {
+  background: #ffeb3b;
+  color: #000;
+  border: none;
+  border-radius: 40px;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 235, 59, 0.7);
+  transition: all 0.3s ease;
+}
+
+.back-to-top:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px rgba(255, 235, 59, 1);
+}
+
+
+/* === DARK & FUNKY MODES === */
+body.black #backToTop {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+}
+body.funky #backToTop {
+  background: #000;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* === PULSE ANIMATION === */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 35px rgba(255, 235, 59, 0.8);
+  }
+}
+/* === SKILLS === */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  text-align: center;
+}
+
+.skills-grid span {
+  border: 1px solid #000;
+  padding: 0.8rem;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.skills-grid span:hover {
+  background: #00e676;
+  color: #000;
+  transform: scale(1.15);
+  animation: bounceSkill 0.6s ease;
+}
+
+/* === DARK THEME VARIANT === */
+body.black .skills-grid span {
+  border-color: #fff;           /* white borders in black mode */
+  color: #fff;                  /* ensure text is visible */
+}
+
+body.black .skills-grid span:hover {
+  background: #fff;
+  color: #000;
+  transform: scale(1.15);
+  animation: bounceSkill 0.6s ease;
+}
+/* === BLACK THEME CARD HOVER (WHITE FILL + BLUE BORDER) === */
+body.black .about-card:hover,
+body.black #experience .exp-card:hover,
+body.black #leadership .exp-card:hover,
+body.black .project-card:hover {
+  background: #fff !important;        /* Card turns white */
+  color: #000 !important;             /* Text turns black */
+  border-color: #1a73e8 !important;   /* Blue border accent */
+  box-shadow: 0 0 25px rgba(26, 115, 232, 0.7);  /* Blue glow */
+  transform: translateY(-5px) scale(1.02);
+}
+
+/* === Ensure nested text also turns black (but not entire section) === */
+body.black .about-card:hover *,
+body.black #experience .exp-card:hover *,
+body.black #leadership .exp-card:hover *,
+body.black .project-card:hover * {
+  color: #000 !important;
+}
+
+/* === Smooth hover transition === */
+.about-card,
+#experience .exp-card,
+#leadership .exp-card,
+.project-card {
+  transition: all 0.3s ease;
+}
+/* === SHOW MORE / SHOW LESS BUTTON (BLACK THEME DEFAULT) === */
+body.black .learn-more {
+  background: transparent !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  border-radius: 25px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* === WHEN CARD IS HOVERED (INVERT COLORS) === */
+body.black .exp-card:hover .learn-more,
+body.black .about-card:hover .learn-more,
+body.black .project-card:hover .learn-more {
+  background: #1a73e8 !important;      /* Blue highlight */
+  border-color: #1a73e8 !important;    /* Blue border */
+  color: #fff !important;              /* Keep text white for contrast */
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(26, 115, 232, 0.7);
+}
+
+/* === OPTIONAL: Hover effect directly on button === */
+body.black .learn-more:hover {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+  transform: scale(1.08);
+}
+
+
+
+
+
+
+
+/* === SHOW MORE / SHOW LESS BUTTON — WHITE & FUNKY THEMES === */
+body:not(.black) .learn-more {
+  background: transparent;
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 25px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* === Hover only scales up (no color change) === */
+body:not(.black) .learn-more:hover {
+  transform: scale(1.1);
+  background: transparent;
+  color: inherit;
+  border-color: inherit;
+  box-shadow: none;
+}
+
+
+/* === CRAZY FUN FACT BUTTON ANIMATION === */
+#funFactsBtn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+#funFactsBtn:active {
+  transform: scale(0.9) rotate(-5deg);
+}
+
+/* Ripple wave effect */
+#funFactsBtn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, #ffeb3b 20%, transparent 70%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#funFactsBtn.animate {
+  animation: crazyBtnPulse 0.8s ease forwards;
+}
+
+@keyframes crazyBtnPulse {
+  0% { transform: scale(1); background: #1a73e8; color: #fff; }
+  25% { transform: scale(1.3) rotate(8deg); background: #ff4081; }
+  50% { transform: scale(1) rotate(-8deg); background: #00e676; }
+  75% { transform: scale(1.25) rotate(6deg); background: #ffeb3b; }
+  100% { transform: scale(1); background: transparent; color: inherit; }
+}
