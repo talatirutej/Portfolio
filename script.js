@@ -118,64 +118,88 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => particle.remove(), 1800);
     }
   }
-
-  // === THEME TOGGLE BUTTON (white → black → funky) ===
-  const themeToggleBtn = document.getElementById("themeToggleTop");
-  let themeMode = "white";
-
-  if (document.body.classList.contains("black")) themeMode = "black";
-  else if (document.body.classList.contains("funky")) themeMode = "funky";
-
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener("click", () => {
-      document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-
-      if (themeMode === "white") {
-        document.body.classList.add("black");
-        document.body.classList.remove("funky");
-        themeMode = "black";
-      } else if (themeMode === "black") {
-        enableFunkyTheme();
-        themeMode = "funky";
-      } else {
-        document.body.classList.remove("black", "funky");
-        themeMode = "white";
-      }
-
-      const burst = document.createElement("div");
-      burst.classList.add("theme-burst");
-      const rect = themeToggleBtn.getBoundingClientRect();
-      burst.style.left = `${rect.left + rect.width / 2}px`;
-      burst.style.top = `${rect.top + rect.height / 2}px`;
-      document.body.appendChild(burst);
-      setTimeout(() => burst.remove(), 800);
-    });
+/* === CONFETTI FALL ANIMATION === */
+function launchConfetti() {
+  for (let i = 0; i < 40; i++) {
+    const confetti = document.createElement("span");
+    confetti.classList.add("confetti");
+    confetti.style.left = `${Math.random() * 100}vw`;
+    confetti.style.backgroundColor = 
+      ["#ff3b3b", "#ffeb3b", "#00e676", "#1a73e8", "#9c27b0"][Math.floor(Math.random() * 5)];
+    confetti.style.animationDuration = `${4 + Math.random() * 3}s`;
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 7000);
   }
+}
 
-  // === POLKA DOT GENERATOR + FUNKY THEME ===
-  function createPolkaDots(count = 35) {
-    for (let i = 0; i < count; i++) {
-      const dot = document.createElement("div");
-      dot.classList.add("polka-dot");
-      const size = Math.random() * 30 + 10;
-      dot.style.width = `${size}px`;
-      dot.style.height = `${size}px`;
-      dot.style.left = `${Math.random() * 100}vw`;
-      dot.style.top = `${Math.random() * 100}vh`;
-      dot.style.animationDuration = `${15 + Math.random() * 10}s`;
-      dot.style.animationDelay = `${Math.random() * 5}s`;
-      dot.style.setProperty("--x", `${Math.random() * 100 - 50}px`);
-      dot.style.setProperty("--y", `${Math.random() * 100 - 50}px`);
-      document.body.appendChild(dot);
-    }
-  }
+/* === THEME TOGGLE BUTTON (white → black → funky) === */
+const themeToggleBtn = document.getElementById("themeToggleTop");
+let themeMode = "white";
 
-  function enableFunkyTheme() {
-    document.body.classList.remove("black");
-    document.body.classList.add("funky");
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener("click", () => {
+    // Remove existing dots before switching
     document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-    createPolkaDots(40);
+
+    if (themeMode === "white") {
+      document.body.classList.add("black");
+      document.body.classList.remove("funky");
+      themeMode = "black";
+    } 
+    else if (themeMode === "black") {
+      enableFunkyTheme(); // activates funky mode
+      themeMode = "funky";
+    } 
+    else {
+      // back to white
+      document.body.classList.remove("black", "funky");
+      themeMode = "white";
+    }
+
+    // Burst animation feedback
+    const burst = document.createElement("div");
+    burst.classList.add("theme-burst");
+    const rect = themeToggleBtn.getBoundingClientRect();
+    burst.style.left = `${rect.left + rect.width / 2}px`;
+    burst.style.top = `${rect.top + rect.height / 2}px`;
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 800);
+  });
+}
+
+/* === POLKA DOT GENERATOR + FUNKY THEME === */
+function createPolkaDots(count = 35) {
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement("div");
+    dot.classList.add("polka-dot");
+
+    const size = Math.random() * 30 + 10; // random dot size
+    dot.style.width = `${size}px`;
+    dot.style.height = `${size}px`;
+
+    dot.style.left = `${Math.random() * 100}vw`;
+    dot.style.top = `${Math.random() * 100}vh`;
+    dot.style.animationDuration = `${15 + Math.random() * 10}s`;
+    dot.style.animationDelay = `${Math.random() * 5}s`;
+    dot.style.setProperty("--x", `${Math.random() * 100 - 50}px`);
+    dot.style.setProperty("--y", `${Math.random() * 100 - 50}px`);
+
+    document.body.appendChild(dot);
   }
+}
+
+function enableFunkyTheme() {
+  // Remove other themes
+  document.body.classList.remove("black");
+  document.body.classList.add("funky");
+
+  // Clear old dots
+  document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
+
+  // Generate new dots
+  createPolkaDots(40);
+}
+
 
   // === BACK TO TOP BUTTON ===
   const backToTopBtn = document.getElementById("backToTop");
@@ -185,3 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+funFactsBtn.addEventListener("click", () => {
+  const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+  showFunFact(randomFact);
+  launchConfetti(); // 🎉
+});
+
