@@ -1,1676 +1,408 @@
-/* === UNIVERSAL RESET === */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-  transition: all 0.3s ease;
-}
+document.addEventListener("DOMContentLoaded", () => {
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+  const root = document.documentElement;
 
-html {
-  scroll-behavior: smooth;
-}
-/* === BODY (DEFAULT WHITE MODE) === */
-body {
-  background: #fff;
-  color: #000;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
+  const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
-/* === DARK THEME === */
-body.black {
-  background: #000;
-  color: #fff;
-}
+  const rafThrottle = (fn) => {
+    let ticking = false;
+    return (...args) => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        fn(...args);
+        ticking = false;
+      });
+    };
+  };
 
-/* === HEADER & NAVBAR === */
-header {
-  background: #000;
-  color: #fff;
-  padding-bottom: 4rem;
-  position: relative;
-  animation: fadeInUp 1.2s ease both;
-}
+  /* =========================================================
+     RADIAL TECHNICAL SKILLS
+  ========================================================= */
+  document.querySelectorAll(".skills-soft li").forEach((li, i) => {
+    const pct = Number(li.dataset.percent || 0);
+    const cbar = li.querySelector(".cbar");
+    const small = li.querySelector("small");
+    if (!cbar) return;
 
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-}
+    const r = Number(cbar.getAttribute("r")) || 45;
+    const circumference = 2 * Math.PI * r;
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  flex: 1;
-  text-align: left;
-}
+    cbar.style.strokeDasharray = `${circumference}`;
+    cbar.style.strokeDashoffset = `${circumference}`;
 
-.nav-links {
-  list-style: none;
-  display: flex;
-  justify-content: center;
-  flex: 2;
-  gap: 2rem;
-}
+    setTimeout(() => {
+      cbar.style.strokeDashoffset = `${((100 - pct) / 100) * circumference}`;
+    }, i * 140);
 
-.nav-links a {
-  color: #fff;
-  text-decoration: none;
-  padding: 0.4rem 0.8rem;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  position: relative;
-}
+    if (small) {
+      let current = 0;
+      const duration = 900;
+      const start = performance.now() + i * 140;
 
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  width: 0%;
-  height: 2px;
-  left: 0;
-  bottom: -4px;
-  background: #fff;
-  transition: width 0.3s ease;
-}
+      const tick = (t) => {
+        if (t < start) return requestAnimationFrame(tick);
+        const p = Math.min((t - start) / duration, 1);
+        const val = Math.round(p * pct);
 
-.nav-links a:hover::after {
-  width: 100%;
-}
+        if (val !== current) {
+          current = val;
+          small.textContent = `${val}%`;
+        }
+        if (p < 1) requestAnimationFrame(tick);
+      };
 
-.nav-links a:hover {
-  transform: scale(1.05);
-}
+      requestAnimationFrame(tick);
+    }
+  });
 
-/* === THEME TOGGLE BUTTON === */
-#themeToggleTop {
-  position: fixed;
-  top: 15px;
-  right: 20px;
-  z-index: 1000;
-  background: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+  /* =========================================================
+     PROJECT HIGHLIGHT CHIPS
+  ========================================================= */
+  const clearClasses = (selector, ...classes) => {
+    document.querySelectorAll(selector).forEach((el) => el.classList.remove(...classes));
+  };
 
-#themeToggleTop:hover {
-  background: #fff;
-  color: #000;
-  transform: rotate(20deg);
-}
+  document.querySelectorAll(".highlight-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
 
-/* === HERO SECTION === */
-.hero-content {
-  text-align: center;
-  padding: 3rem 2rem;
-  animation: fadeInUp 1.5s ease both;
-}
+      clearClasses(".project-block", "focus");
+      clearClasses(".highlight-chip", "active");
+      btn.classList.add("active");
 
-.typing-line {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin: 0.3rem 0;
-}
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.classList.remove("focus");
+      void target.offsetWidth;
+      target.classList.add("focus");
 
-.tagline {
-  margin-top: 1rem;
-  font-style: italic;
-}
-/* === SUPER THEME TOGGLE ANIMATION === */
-#themeToggleTop {
-  position: fixed;
-  top: 15px;
-  right: 20px;
-  z-index: 1000;
-  background: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
+      setTimeout(() => target.classList.remove("focus"), 1200);
+    });
+  });
 
-/* Hover: gentle tilt and glow */
-#themeToggleTop:hover {
-  transform: scale(1.1) rotate(10deg);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
-}
+  /* =========================================================
+     LEADERSHIP CHIPS
+  ========================================================= */
+  document.querySelectorAll(".lead-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = document.querySelector(`.lead-block[data-lead="${btn.dataset.lead}"]`);
+      if (!target) return;
 
-/* Click: spin, pulse, and emit burst */
-#themeToggleTop:active {
-  animation: themeExplosion 0.8s cubic-bezier(0.3, 1, 0.3, 1);
-}
+      clearClasses(".lead-block", "focus");
+      clearClasses(".lead-chip", "active");
+      btn.classList.add("active");
 
-/* Internal ripple burst effect */
-#themeToggleTop::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, #ffeb3b 10%, transparent 70%);
-  transform: translate(-50%, -50%);
-  opacity: 0;
-}
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.classList.remove("focus");
+      void target.offsetWidth;
+      target.classList.add("focus");
 
-/* Trigger ripple animation on press */
-#themeToggleTop:active::after {
-  animation: themeRipple 0.6s ease-out;
-}
+      setTimeout(() => target.classList.remove("focus"), 1200);
+    });
+  });
 
-/* ✨ Explosion effect (rotation + scale + glow) */
-@keyframes themeExplosion {
-  0% {
-    transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  /* =========================================================
+     INTEREST MODAL
+  ========================================================= */
+  const modal = document.getElementById("interestModal");
+  if (modal) {
+    const title = modal.querySelector(".interest-modal__title");
+    const text = modal.querySelector(".interest-modal__text");
+    const closeBtn = modal.querySelector(".interest-modal__close");
+    const backdrop = modal.querySelector(".interest-modal__backdrop");
+
+    const close = () => {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    };
+
+    document.querySelectorAll(".interest-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (title) title.textContent = btn.dataset.title || "";
+        if (text) text.textContent = btn.dataset.text || "";
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+      });
+    });
+
+    closeBtn?.addEventListener("click", close);
+    backdrop?.addEventListener("click", close);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) close();
+    });
   }
-  25% {
-    transform: scale(1.3) rotate(90deg);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.2);
+
+  /* =========================================================
+     FEEDBACK FORM (FORMSPREE)
+  ========================================================= */
+  const form = document.querySelector(".feedback-form");
+  const status = document.getElementById("feedbackStatus");
+
+  if (form && status) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      status.textContent = "Sending…";
+      status.style.opacity = "0.9";
+
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+
+        if (res.ok) {
+          status.textContent = "Thank you for your feedback. Your message has been sent.";
+          form.reset();
+        } else {
+          status.textContent = "Something went wrong. Please try again.";
+        }
+      } catch {
+        status.textContent = "Network error. Please try again later.";
+      }
+    });
   }
-  50% {
-    transform: scale(1.5) rotate(180deg);
-    box-shadow: 0 0 40px rgba(255, 255, 255, 1);
-    background: rgba(255, 255, 255, 0.4);
+
+  /* =========================================================
+     GREETING + TYPING (ONE SINGLE CONTROLLER)
+     - Types normal greeting on load
+     - If scroll >= 90%: types thank-you message
+     - If scroll < 90%: types time greeting again
+  ========================================================= */
+  const greetingEl = document.getElementById("time-greeting");
+
+  const getTimeGreeting = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Good morning";
+    if (h >= 12 && h < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  // Prevent “retyping” if same message requested repeatedly
+  let lastGreetingText = "";
+  let typingTimer = null;
+
+  const typeText = (el, text, speed = 35) => {
+    if (!el) return;
+    if (text === lastGreetingText) return;
+
+    lastGreetingText = text;
+
+    // stop any existing typing
+    if (typingTimer) clearTimeout(typingTimer);
+
+    el.textContent = "";
+    el.classList.add("typing");
+
+    let i = 0;
+    const step = () => {
+      if (i < text.length) {
+        el.textContent += text.charAt(i++);
+        typingTimer = setTimeout(step, speed);
+      } else {
+        el.classList.remove("typing");
+        typingTimer = null;
+      }
+    };
+    step();
+  };
+
+  const normalGreeting = () => `${getTimeGreeting()}, welcome to my portfolio!`;
+  const endGreeting = () => `Thank you for visiting my page!`;
+
+  if (greetingEl) {
+    typeText(greetingEl, normalGreeting(), 35);
   }
-  75% {
-    transform: scale(0.9) rotate(270deg);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+
+  /* =========================================================
+     THEME: AUTO + TOGGLE (3 modes)
+     - Auto: light (morning), graphite (afternoon), dark (evening/night)
+     - Toggle cycles light -> graphite -> dark
+     - Saves override; right-click / long-press resets to auto
+  ========================================================= */
+  const themeBtn = document.getElementById("theme-toggle");
+  const STORAGE_KEY = "theme-override"; // "light" | "graphite" | "dark" | null
+
+  const getAutoTheme = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "light";
+    if (h >= 12 && h < 17) return "graphite";
+    return "dark";
+  };
+
+  const resolvedTheme = () => root.getAttribute("data-theme") || "graphite";
+
+  const applyTheme = (theme) => {
+    if (theme === "graphite") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", theme);
+
+    if (themeBtn) {
+      const label = theme === "graphite" ? "GRAPHITE" : theme.toUpperCase();
+      themeBtn.title = `Theme: ${label} (click to change)`;
+      themeBtn.setAttribute("aria-label", `Theme: ${label}. Click to change.`);
+    }
+  };
+
+  const saveOverride = (theme) => localStorage.setItem(STORAGE_KEY, theme);
+
+  const clearOverride = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    applyTheme(getAutoTheme());
+  };
+
+  // Init theme
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === "light" || saved === "dark" || saved === "graphite") {
+    applyTheme(saved);
+  } else {
+    applyTheme(getAutoTheme());
   }
-  100% {
-    transform: scale(1) rotate(360deg);
-    background: transparent;
-    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+
+  // Auto updates only when no override
+  setInterval(() => {
+    const hasOverride = !!localStorage.getItem(STORAGE_KEY);
+    if (hasOverride) return;
+
+    const next = getAutoTheme();
+    const cur = resolvedTheme();
+    if (cur !== next) applyTheme(next);
+  }, 60_000);
+
+  // Toggle click
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      const cur = resolvedTheme();
+      const next = cur === "light" ? "graphite" : cur === "graphite" ? "dark" : "light";
+      applyTheme(next);
+      saveOverride(next);
+    });
+
+    // Reset to auto: right click
+    themeBtn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      clearOverride();
+    });
+
+    // Reset to auto: long press
+    let pressTimer = null;
+    themeBtn.addEventListener(
+      "touchstart",
+      () => {
+        pressTimer = setTimeout(() => clearOverride(), 550);
+      },
+      { passive: true }
+    );
+    themeBtn.addEventListener("touchend", () => {
+      if (pressTimer) clearTimeout(pressTimer);
+    });
   }
-}
 
-/* 🌊 Expanding ripple animation */
-@keyframes themeRipple {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0.9;
+  /* =========================================================
+     SCROLL PROGRESS BAR + GREETING SYNC
+     - Green -> Yellow -> Red
+     - At >=90% scroll: switch greeting to thank-you
+  ========================================================= */
+  const bar = document.getElementById("scroll-progress");
+  let endShown = false;
+
+  const updateScroll = () => {
+    if (!bar) return;
+
+    const scrollTop = window.scrollY || 0;
+    const height = document.documentElement.scrollHeight - window.innerHeight;
+
+    // Avoid divide-by-zero
+    const progress = height > 0 ? clamp((scrollTop / height) * 100, 0, 100) : 0;
+
+    bar.style.width = `${progress}%`;
+
+    if (progress < 50) {
+      bar.style.background = "#2ecc71";
+      bar.style.boxShadow = "none";
+    } else if (progress < 90) {
+      bar.style.background = "#fdd835";
+      bar.style.boxShadow = "none";
+    } else {
+      bar.style.background = "#e53935";
+      bar.style.boxShadow = "0 0 10px rgba(229,57,53,.6)";
+    }
+
+    // Greeting sync
+    if (greetingEl) {
+      if (progress >= 90 && !endShown) {
+        typeText(greetingEl, endGreeting(), 28);
+        endShown = true;
+      } else if (progress < 90 && endShown) {
+        typeText(greetingEl, normalGreeting(), 35);
+        endShown = false;
+      }
+    }
+  };
+
+  const onScroll = rafThrottle(updateScroll);
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", updateScroll);
+  updateScroll();
+});
+/* =========================================
+   SCROLL: progress bar + traffic lights
+========================================= */
+(function () {
+  const fill = document.getElementById("scroll-progress");
+  const traffic = document.getElementById("scroll-traffic");
+  if (!fill || !traffic) return;
+
+  const green = traffic.querySelector('.bulb[data-color="green"]');
+  const yellow = traffic.querySelector('.bulb[data-color="yellow"]');
+  const red = traffic.querySelector('.bulb[data-color="red"]');
+
+  function setLights(stage){
+    // clear all
+    [green, yellow, red].forEach(b => b && b.classList.remove("is-on"));
+    // stage on
+    if (stage === "green" && green) green.classList.add("is-on");
+    if (stage === "yellow" && yellow) yellow.classList.add("is-on");
+    if (stage === "red" && red) red.classList.add("is-on");
   }
-  70% {
-    width: 180px;
-    height: 180px;
-    opacity: 0.4;
+
+  function update(){
+    const scrollTop = window.scrollY;
+    const height = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = height > 0 ? Math.min((scrollTop / height) * 100, 100) : 0;
+
+    fill.style.width = `${progress}%`;
+
+    // stage thresholds
+    if (progress < 50) {
+      fill.style.background = "#2ecc71";
+      setLights("green");
+    } else if (progress < 90) {
+      fill.style.background = "#fdd835";
+      setLights("yellow");
+    } else {
+      fill.style.background = "#e53935";
+      setLights("red");
+    }
   }
-  100% {
-    width: 260px;
-    height: 260px;
-    opacity: 0;
-  }
-}
 
-/* === HERO BUTTONS === */
-.hero-buttons {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.btn,
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 180px;
-  padding: 0.9rem 1.8rem;
-  margin: 0.4rem;
-  font-size: 1.05rem;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  border: 2px solid #fff;
-  border-radius: 50px;
-  background: transparent;
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.btn:hover,
-.btn-secondary:hover {
-  transform: scale(1.08);
-  border-width: 2.5px;
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-}
-
-/* === SECTION STRUCTURE === */
-section {
-  max-width: 950px;
-  margin: 3rem auto;
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.4s ease;
-  background: transparent;
-  opacity: 0;
-  transform: translateY(40px);
-  animation: fadeInUp 1s ease forwards;
-}
-
-/* === PROJECT CARDS === */
-.project-card {
-  border: 2px solid currentColor;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.3s ease;
-  background: transparent;
-  cursor: pointer;
-}
-
-.project-card:hover {
-  background: #ffeb3b;
-  color: #000;
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
-}
-
-/* === ABOUT CARD === */
-.about-card {
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 1.8rem;
-  margin-top: 1.5rem;
-  background: transparent;
-  line-height: 1.6;
-  font-size: 1.05rem;
-  text-align: justify;
-  cursor: default;
-  transition: 0.4s;
-}
-
-body:not(.black) .about-card:hover {
-  background: #ffeb3b;
-  border-color: #ffeb3b;
-  box-shadow: 0 0 20px rgba(255, 235, 59, 0.5);
-  color: #000;
-}
-
-body.black .about-card:hover {
-  background: #ffc107;
-  border-color: #ffc107;
-  box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
-  color: #000;
-}
-
-/* === EXPERIENCE SECTION === */
-#experience .exp-card {
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.4s ease;
-  cursor: pointer;
-}
-
-#experience .exp-card:hover {
-  background: #ff7b00;
-  border-color: #ff7b00;
-  color: #fff;
-  box-shadow: 0 0 35px rgba(255, 123, 0, 0.8);
-  transform: translateY(-6px) scale(1.03);
-}
-
-/* === LEADERSHIP SECTION === */
-#leadership .exp-card {
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.35s ease;
-  cursor: pointer;
-}
-
-#leadership .exp-card:hover {
-  background: #9c27b0;
-  border-color: #9c27b0;
-  color: #fff;
-  box-shadow: 0 0 30px rgba(156, 39, 176, 0.8);
-  transform: translateY(-6px) scale(1.03);
-}
-
-/* === CONTACT SECTION (Hover-Reveal Animation) === */
-#contact {
-  text-align: center;
-  padding: 5rem 2rem;
-  border: none;
-  background: transparent;
-}
-
-.contact-icons {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 3rem;
-  flex-wrap: wrap;
-  margin-top: 2rem;
-}
-
-/* Each item wraps icon + text */
-.contact-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-/* === ICON BUTTONS === */
-.icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 85px;
-  height: 85px;
-  border-radius: 18px;
-  font-size: 2rem;
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* Theme-specific colors */
-.icon.email {
-  background: #1a73e8; /* blue */
-}
-
-.icon.phone {
-  background: #00c853; /* green */
-}
-
-.icon.linkedin {
-  background: #0077b5; /* LinkedIn blue */
-}
-
-/* Hover motion (bounce up) */
-.icon:hover {
-  transform: translateY(-5px) scale(1.08);
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-}
-
-/* === CONTACT INFO REVEAL === */
-.contact-info {
-  margin-top: 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: inherit;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.45s cubic-bezier(0.22, 1.61, 0.36, 1);
-  pointer-events: none;
-}
-
-/* When hovered — shoots downward */
-.contact-item:hover .contact-info {
-  opacity: 1;
-  transform: translateY(15px);
-}
-
-/* === THEME COMPATIBILITY === */
-body.black .contact-info {
-  color: #fff;
-}
-
-body.funky .contact-info {
-  color: #000;
-}
-
-
-
-/* === FUN FACT POPUP === */
-.fun-fact-popup {
-  position: fixed;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%) translateY(30px);
-  background: #ffeb3b;
-  color: #000;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 1.05rem;
-  opacity: 0;
-  transition: all 0.4s ease;
-  box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
-  z-index: 99999;
-}
-
-.fun-fact-popup.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-body.black .fun-fact-popup {
-  background: #ff9800;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(255, 152, 0, 0.6);
-}
-
-/* === CONFETTI EFFECT === */
-.confetti {
-  position: fixed;
-  top: -10px;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  opacity: 0.9;
-  animation: fallConfetti linear forwards;
-  z-index: 9999;
-}
-@keyframes fallConfetti {
-  to {
-    transform: translateY(100vh) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-/* === FUNKY THEME === */
-body.funky {
-  background: #4db8ff;
-  color: #000;
-  overflow-x: hidden;
-}
-
-.polka-dot {
-  position: fixed;
-  border-radius: 50%;
-  background: #000;
-  opacity: 0.25;
-  z-index: 0;
-  animation: floatDots 18s linear infinite;
-}
-
-@keyframes floatDots {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(40px, -60px); }
-  50% { transform: translate(-60px, -20px); }
-  75% { transform: translate(-30px, 50px); }
-  100% { transform: translate(0, 0); }
-}
-
-header, section, footer { position: relative; z-index: 5; }
-
-/* === FOOTER === */
-footer {
-  position: relative;
-  text-align: center;
-  padding: 1rem 0;
-  font-size: 0.95rem;
-  font-weight: 400;
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
-  margin-top: 2rem;
-}
-
-body.black footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* === SCROLL PROGRESS BAR === */
-#scrollProgressContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-}
-
-#scrollProgressBar {
-  width: 0%;
-  height: 100%;
-  background: #ffeb3b;
-  transition: width 0.15s ease-out;
-}
-
-body.black #scrollProgressContainer {
-  background: rgba(255, 255, 255, 0.1);
-}
-body.black #scrollProgressBar {
-  background: #fff;
-}
-body.funky #scrollProgressBar {
-  background: #000;
-}
-
-/* === ANIMATIONS === */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes bounceSkill {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
-/* === EXPERIENCE / LEADERSHIP DETAILS COLLAPSE === */
-.exp-details {
-  margin-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
-  padding-top: 1rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  overflow: hidden;          /* ✅ hides text when collapsed */
-  max-height: 0;             /* ✅ fully collapsed by default */
-  opacity: 0;                /* ✅ invisible initially */
-  transition: max-height 0.6s ease, opacity 0.4s ease;
-}
-
-.exp-details.visible {
-  max-height: 1000px;        /* ✅ expands smoothly */
-  opacity: 1;
-}
-
-.learn-more {
-  margin-top: 0.8rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  border: 1px solid currentColor;
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.learn-more:hover {
-  background: currentColor;
-  color: #fff;
-}
-/* === DARK THEME BORDER FIXES === */
-body.black section,
-body.black .about-card,
-body.black .exp-card,
-body.black .project-card {
-  border-color: #fff !important;
-}
-
-body.black #experience .exp-card:hover {
-  background: #ff7b00;
-  border-color: #fff;
-  color: #000;
-}
-
-body.black #leadership .exp-card:hover {
-  background: #9c27b0;
-  border-color: #fff;
-  color: #fff;
-}
-
-body.black footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  nav { flex-direction: column; }
-  .nav-links { justify-content: center; gap: 1rem; }
-  section { margin: 2rem 1rem; }
-  .hero-content { padding: 2rem 1rem; }
-}
-/* === BACK TO TOP BUTTON (CENTERED + GLOW) === */
-.back-to-top-container {
-  position: fixed;
-  bottom: 15px;    /* ⬇ closer to bottom edge */
-  right: 20px;     /* ⬅ closer to right edge */
-  z-index: 9999;
-}
-
-
-.back-to-top {
-  background: #ffeb3b;
-  color: #000;
-  border: none;
-  border-radius: 40px;
-  padding: 0.9rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(255, 235, 59, 0.7);
-  transition: all 0.3s ease;
-}
-
-.back-to-top:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 35px rgba(255, 235, 59, 1);
-}
-
-
-/* === DARK & FUNKY MODES === */
-body.black #backToTop {
-  background: #fff;
-  color: #000;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
-}
-body.funky #backToTop {
-  background: #000;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-/* === PULSE ANIMATION === */
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 35px rgba(255, 235, 59, 0.8);
-  }
-}
-/* === SKILLS === */
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  text-align: center;
-}
-
-.skills-grid span {
-  border: 1px solid #000;
-  padding: 0.8rem;
-  border-radius: 8px;
-  transition: all 0.25s ease;
-}
-
-.skills-grid span:hover {
-  background: #00e676;
-  color: #000;
-  transform: scale(1.15);
-  animation: bounceSkill 0.6s ease;
-}
-
-/* === DARK THEME VARIANT === */
-body.black .skills-grid span {
-  border-color: #fff;           /* white borders in black mode */
-  color: #fff;                  /* ensure text is visible */
-}
-
-body.black .skills-grid span:hover {
-  background: #fff;
-  color: #000;
-  transform: scale(1.15);
-  animation: bounceSkill 0.6s ease;
-}
-/* === BLACK THEME CARD HOVER (WHITE FILL + BLUE BORDER) === */
-body.black .about-card:hover,
-body.black #experience .exp-card:hover,
-body.black #leadership .exp-card:hover,
-body.black .project-card:hover {
-  background: #fff !important;        /* Card turns white */
-  color: #000 !important;             /* Text turns black */
-  border-color: #1a73e8 !important;   /* Blue border accent */
-  box-shadow: 0 0 25px rgba(26, 115, 232, 0.7);  /* Blue glow */
-  transform: translateY(-5px) scale(1.02);
-}
-
-/* === Ensure nested text also turns black (but not entire section) === */
-body.black .about-card:hover *,
-body.black #experience .exp-card:hover *,
-body.black #leadership .exp-card:hover *,
-body.black .project-card:hover * {
-  color: #000 !important;
-}
-
-/* === Smooth hover transition === */
-.about-card,
-#experience .exp-card,
-#leadership .exp-card,
-.project-card {
-  transition: all 0.3s ease;
-}
-/* === SHOW MORE / SHOW LESS BUTTON (BLACK THEME DEFAULT) === */
-body.black .learn-more {
-  background: transparent !important;
-  color: #fff !important;
-  border: 2px solid #fff !important;
-  border-radius: 25px;
-  padding: 0.5rem 1.2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* === WHEN CARD IS HOVERED (INVERT COLORS) === */
-body.black .exp-card:hover .learn-more,
-body.black .about-card:hover .learn-more,
-body.black .project-card:hover .learn-more {
-  background: #1a73e8 !important;      /* Blue highlight */
-  border-color: #1a73e8 !important;    /* Blue border */
-  color: #fff !important;              /* Keep text white for contrast */
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(26, 115, 232, 0.7);
-}
-
-/* === OPTIONAL: Hover effect directly on button === */
-body.black .learn-more:hover {
-  background: #fff !important;
-  color: #000 !important;
-  border-color: #fff !important;
-  transform: scale(1.08);
-}
-
-
-
-
-
-
-
-/* === SHOW MORE / SHOW LESS BUTTON — WHITE & FUNKY THEMES === */
-body:not(.black) .learn-more {
-  background: transparent;
-  color: #000;
-  border: 2px solid #000;
-  border-radius: 25px;
-  padding: 0.5rem 1.2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* === Hover only scales up (no color change) === */
-body:not(.black) .learn-more:hover {
-  transform: scale(1.1);
-  background: transparent;
-  color: inherit;
-  border-color: inherit;
-  box-shadow: none;
-}
-
-
-/* === CRAZY FUN FACT BUTTON ANIMATION === */
-#funFactsBtn {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-#funFactsBtn:active {
-  transform: scale(0.9) rotate(-5deg);
-}
-
-/* Ripple wave effect */
-#funFactsBtn::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  background: radial-gradient(circle, #ffeb3b 20%, transparent 70%);
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-}
-
-#funFactsBtn.animate {
-  animation: crazyBtnPulse 0.8s ease forwards;
-}
-
-@keyframes crazyBtnPulse {
-  0% { transform: scale(1); background: #1a73e8; color: #fff; }
-  25% { transform: scale(1.3) rotate(8deg); background: #ff4081; }
-  50% { transform: scale(1) rotate(-8deg); background: #00e676; }
-  75% { transform: scale(1.25) rotate(6deg); background: #ffeb3b; }
-  100% { transform: scale(1); background: transparent; color: inherit; }
-}
-/* === UNIVERSAL RESET === */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-  transition: all 0.3s ease;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-/* === BODY (DEFAULT WHITE MODE) === */
-body {
-  background: #fff;
-  color: #000;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-/* === DARK THEME === */
-body.black {
-  background: #000;
-  color: #fff;
-}
-
-/* === HEADER & NAVBAR === */
-header {
-  background: #000;
-  color: #fff;
-  padding-bottom: 4rem;
-  position: relative;
-  animation: fadeInUp 1.2s ease both;
-}
-
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  flex: 1;
-  text-align: left;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  justify-content: center;
-  flex: 2;
-  gap: 2rem;
-}
-
-.nav-links a {
-  color: #fff;
-  text-decoration: none;
-  padding: 0.4rem 0.8rem;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  position: relative;
-}
-
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  width: 0%;
-  height: 2px;
-  left: 0;
-  bottom: -4px;
-  background: #fff;
-  transition: width 0.3s ease;
-}
-
-.nav-links a:hover::after {
-  width: 100%;
-}
-
-.nav-links a:hover {
-  transform: scale(1.05);
-}
-
-/* === THEME TOGGLE BUTTON === */
-#themeToggleTop {
-  position: fixed;
-  top: 15px;
-  right: 20px;
-  z-index: 1000;
-  background: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#themeToggleTop:hover {
-  background: #fff;
-  color: #000;
-  transform: rotate(20deg);
-}
-
-/* === HERO SECTION === */
-.hero-content {
-  text-align: center;
-  padding: 3rem 2rem;
-  animation: fadeInUp 1.5s ease both;
-}
-
-.typing-line {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin: 0.3rem 0;
-}
-
-.tagline {
-  margin-top: 1rem;
-  font-style: italic;
-}
-/* === SUPER THEME TOGGLE ANIMATION === */
-#themeToggleTop {
-  position: fixed;
-  top: 15px;
-  right: 20px;
-  z-index: 1000;
-  background: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-/* Hover: gentle tilt and glow */
-#themeToggleTop:hover {
-  transform: scale(1.1) rotate(10deg);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
-}
-
-/* Click: spin, pulse, and emit burst */
-#themeToggleTop:active {
-  animation: themeExplosion 0.8s cubic-bezier(0.3, 1, 0.3, 1);
-}
-
-/* Internal ripple burst effect */
-#themeToggleTop::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, #ffeb3b 10%, transparent 70%);
-  transform: translate(-50%, -50%);
-  opacity: 0;
-}
-
-/* Trigger ripple animation on press */
-#themeToggleTop:active::after {
-  animation: themeRipple 0.6s ease-out;
-}
-
-/* ✨ Explosion effect (rotation + scale + glow) */
-@keyframes themeExplosion {
-  0% {
-    transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
-  }
-  25% {
-    transform: scale(1.3) rotate(90deg);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    transform: scale(1.5) rotate(180deg);
-    box-shadow: 0 0 40px rgba(255, 255, 255, 1);
-    background: rgba(255, 255, 255, 0.4);
-  }
-  75% {
-    transform: scale(0.9) rotate(270deg);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
-  }
-  100% {
-    transform: scale(1) rotate(360deg);
-    background: transparent;
-    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
-  }
-}
-
-/* 🌊 Expanding ripple animation */
-@keyframes themeRipple {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0.9;
-  }
-  70% {
-    width: 180px;
-    height: 180px;
-    opacity: 0.4;
-  }
-  100% {
-    width: 260px;
-    height: 260px;
-    opacity: 0;
-  }
-}
-
-/* === HERO BUTTONS === */
-.hero-buttons {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.btn,
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 180px;
-  padding: 0.9rem 1.8rem;
-  margin: 0.4rem;
-  font-size: 1.05rem;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  border: 2px solid #fff;
-  border-radius: 50px;
-  background: transparent;
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.btn:hover,
-.btn-secondary:hover {
-  transform: scale(1.08);
-  border-width: 2.5px;
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-}
-
-/* === SECTION STRUCTURE === */
-section {
-  max-width: 950px;
-  margin: 3rem auto;
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.4s ease;
-  background: transparent;
-  opacity: 0;
-  transform: translateY(40px);
-  animation: fadeInUp 1s ease forwards;
-}
-
-/* === PROJECT CARDS === */
-.project-card {
-  border: 2px solid currentColor;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.3s ease;
-  background: transparent;
-  cursor: pointer;
-}
-
-.project-card:hover {
-  background: #ffeb3b;
-  color: #000;
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
-}
-
-/* === ABOUT CARD === */
-.about-card {
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 1.8rem;
-  margin-top: 1.5rem;
-  background: transparent;
-  line-height: 1.6;
-  font-size: 1.05rem;
-  text-align: justify;
-  cursor: default;
-  transition: 0.4s;
-}
-
-body:not(.black) .about-card:hover {
-  background: #ffeb3b;
-  border-color: #ffeb3b;
-  box-shadow: 0 0 20px rgba(255, 235, 59, 0.5);
-  color: #000;
-}
-
-body.black .about-card:hover {
-  background: #ffc107;
-  border-color: #ffc107;
-  box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
-  color: #000;
-}
-
-/* === EXPERIENCE SECTION === */
-#experience .exp-card {
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.4s ease;
-  cursor: pointer;
-}
-
-#experience .exp-card:hover {
-  background: #ff7b00;
-  border-color: #ff7b00;
-  color: #fff;
-  box-shadow: 0 0 35px rgba(255, 123, 0, 0.8);
-  transform: translateY(-6px) scale(1.03);
-}
-
-/* === LEADERSHIP SECTION === */
-#leadership .exp-card {
-  border: 2px solid #000;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.35s ease;
-  cursor: pointer;
-}
-
-#leadership .exp-card:hover {
-  background: #9c27b0;
-  border-color: #9c27b0;
-  color: #fff;
-  box-shadow: 0 0 30px rgba(156, 39, 176, 0.8);
-  transform: translateY(-6px) scale(1.03);
-}
-
-/* === CONTACT SECTION (Hover-Reveal Animation) === */
-#contact {
-  text-align: center;
-  padding: 5rem 2rem;
-  border: none;
-  background: transparent;
-}
-
-.contact-icons {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 3rem;
-  flex-wrap: wrap;
-  margin-top: 2rem;
-}
-
-/* Each item wraps icon + text */
-.contact-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-/* === ICON BUTTONS === */
-.icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 85px;
-  height: 85px;
-  border-radius: 18px;
-  font-size: 2rem;
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* Theme-specific colors */
-.icon.email {
-  background: #1a73e8; /* blue */
-}
-
-.icon.phone {
-  background: #00c853; /* green */
-}
-
-.icon.linkedin {
-  background: #0077b5; /* LinkedIn blue */
-}
-
-/* Hover motion (bounce up) */
-.icon:hover {
-  transform: translateY(-5px) scale(1.08);
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-}
-
-/* === CONTACT INFO REVEAL === */
-.contact-info {
-  margin-top: 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: inherit;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.45s cubic-bezier(0.22, 1.61, 0.36, 1);
-  pointer-events: none;
-}
-
-/* When hovered — shoots downward */
-.contact-item:hover .contact-info {
-  opacity: 1;
-  transform: translateY(15px);
-}
-
-/* === THEME COMPATIBILITY === */
-body.black .contact-info {
-  color: #fff;
-}
-
-body.funky .contact-info {
-  color: #000;
-}
-
-
-
-/* === FUN FACT POPUP === */
-.fun-fact-popup {
-  position: fixed;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%) translateY(30px);
-  background: #ffeb3b;
-  color: #000;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 1.05rem;
-  opacity: 0;
-  transition: all 0.4s ease;
-  box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
-  z-index: 99999;
-}
-
-.fun-fact-popup.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-body.black .fun-fact-popup {
-  background: #ff9800;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(255, 152, 0, 0.6);
-}
-
-/* === CONFETTI EFFECT === */
-.confetti {
-  position: fixed;
-  top: -10px;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  opacity: 0.9;
-  animation: fallConfetti linear forwards;
-  z-index: 9999;
-}
-@keyframes fallConfetti {
-  to {
-    transform: translateY(100vh) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-/* === FUNKY THEME === */
-body.funky {
-  background: #4db8ff;
-  color: #000;
-  overflow-x: hidden;
-}
-
-.polka-dot {
-  position: fixed;
-  border-radius: 50%;
-  background: #000;
-  opacity: 0.25;
-  z-index: 0;
-  animation: floatDots 18s linear infinite;
-}
-
-@keyframes floatDots {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(40px, -60px); }
-  50% { transform: translate(-60px, -20px); }
-  75% { transform: translate(-30px, 50px); }
-  100% { transform: translate(0, 0); }
-}
-
-header, section, footer { position: relative; z-index: 5; }
-
-/* === FOOTER === */
-footer {
-  position: relative;
-  text-align: center;
-  padding: 1rem 0;
-  font-size: 0.95rem;
-  font-weight: 400;
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
-  margin-top: 2rem;
-}
-
-body.black footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* === SCROLL PROGRESS BAR === */
-#scrollProgressContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-}
-
-#scrollProgressBar {
-  width: 0%;
-  height: 100%;
-  background: #ffeb3b;
-  transition: width 0.15s ease-out;
-}
-
-body.black #scrollProgressContainer {
-  background: rgba(255, 255, 255, 0.1);
-}
-body.black #scrollProgressBar {
-  background: #fff;
-}
-body.funky #scrollProgressBar {
-  background: #000;
-}
-
-/* === ANIMATIONS === */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes bounceSkill {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
-/* === EXPERIENCE / LEADERSHIP DETAILS COLLAPSE === */
-.exp-details {
-  margin-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
-  padding-top: 1rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  overflow: hidden;          /* ✅ hides text when collapsed */
-  max-height: 0;             /* ✅ fully collapsed by default */
-  opacity: 0;                /* ✅ invisible initially */
-  transition: max-height 0.6s ease, opacity 0.4s ease;
-}
-
-.exp-details.visible {
-  max-height: 1000px;        /* ✅ expands smoothly */
-  opacity: 1;
-}
-
-.learn-more {
-  margin-top: 0.8rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  border: 1px solid currentColor;
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.learn-more:hover {
-  background: currentColor;
-  color: #fff;
-}
-/* === DARK THEME BORDER FIXES === */
-body.black section,
-body.black .about-card,
-body.black .exp-card,
-body.black .project-card {
-  border-color: #fff !important;
-}
-
-body.black #experience .exp-card:hover {
-  background: #ff7b00;
-  border-color: #fff;
-  color: #000;
-}
-
-body.black #leadership .exp-card:hover {
-  background: #9c27b0;
-  border-color: #fff;
-  color: #fff;
-}
-
-body.black footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  nav { flex-direction: column; }
-  .nav-links { justify-content: center; gap: 1rem; }
-  section { margin: 2rem 1rem; }
-  .hero-content { padding: 2rem 1rem; }
-}
-/* === BACK TO TOP BUTTON (CENTERED + GLOW) === */
-.back-to-top-container {
-  position: fixed;
-  bottom: 15px;    /* ⬇ closer to bottom edge */
-  right: 20px;     /* ⬅ closer to right edge */
-  z-index: 9999;
-}
-
-
-.back-to-top {
-  background: #ffeb3b;
-  color: #000;
-  border: none;
-  border-radius: 40px;
-  padding: 0.9rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(255, 235, 59, 0.7);
-  transition: all 0.3s ease;
-}
-
-.back-to-top:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 35px rgba(255, 235, 59, 1);
-}
-
-
-/* === DARK & FUNKY MODES === */
-body.black #backToTop {
-  background: #fff;
-  color: #000;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
-}
-body.funky #backToTop {
-  background: #000;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-/* === PULSE ANIMATION === */
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 35px rgba(255, 235, 59, 0.8);
-  }
-}
-/* === SKILLS === */
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  text-align: center;
-}
-
-.skills-grid span {
-  border: 1px solid #000;
-  padding: 0.8rem;
-  border-radius: 8px;
-  transition: all 0.25s ease;
-}
-
-.skills-grid span:hover {
-  background: #00e676;
-  color: #000;
-  transform: scale(1.15);
-  animation: bounceSkill 0.6s ease;
-}
-
-/* === DARK THEME VARIANT === */
-body.black .skills-grid span {
-  border-color: #fff;           /* white borders in black mode */
-  color: #fff;                  /* ensure text is visible */
-}
-
-body.black .skills-grid span:hover {
-  background: #fff;
-  color: #000;
-  transform: scale(1.15);
-  animation: bounceSkill 0.6s ease;
-}
-/* === BLACK THEME CARD HOVER (WHITE FILL + BLUE BORDER) === */
-body.black .about-card:hover,
-body.black #experience .exp-card:hover,
-body.black #leadership .exp-card:hover,
-body.black .project-card:hover {
-  background: #fff !important;        /* Card turns white */
-  color: #000 !important;             /* Text turns black */
-  border-color: #1a73e8 !important;   /* Blue border accent */
-  box-shadow: 0 0 25px rgba(26, 115, 232, 0.7);  /* Blue glow */
-  transform: translateY(-5px) scale(1.02);
-}
-
-/* === Ensure nested text also turns black (but not entire section) === */
-body.black .about-card:hover *,
-body.black #experience .exp-card:hover *,
-body.black #leadership .exp-card:hover *,
-body.black .project-card:hover * {
-  color: #000 !important;
-}
-
-/* === Smooth hover transition === */
-.about-card,
-#experience .exp-card,
-#leadership .exp-card,
-.project-card {
-  transition: all 0.3s ease;
-}
-/* === SHOW MORE / SHOW LESS BUTTON (BLACK THEME DEFAULT) === */
-body.black .learn-more {
-  background: transparent !important;
-  color: #fff !important;
-  border: 2px solid #fff !important;
-  border-radius: 25px;
-  padding: 0.5rem 1.2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* === WHEN CARD IS HOVERED (INVERT COLORS) === */
-body.black .exp-card:hover .learn-more,
-body.black .about-card:hover .learn-more,
-body.black .project-card:hover .learn-more {
-  background: #1a73e8 !important;      /* Blue highlight */
-  border-color: #1a73e8 !important;    /* Blue border */
-  color: #fff !important;              /* Keep text white for contrast */
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(26, 115, 232, 0.7);
-}
-
-/* === OPTIONAL: Hover effect directly on button === */
-body.black .learn-more:hover {
-  background: #fff !important;
-  color: #000 !important;
-  border-color: #fff !important;
-  transform: scale(1.08);
-}
-
-
-
-
-
-
-
-/* === SHOW MORE / SHOW LESS BUTTON — WHITE & FUNKY THEMES === */
-body:not(.black) .learn-more {
-  background: transparent;
-  color: #000;
-  border: 2px solid #000;
-  border-radius: 25px;
-  padding: 0.5rem 1.2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* === Hover only scales up (no color change) === */
-body:not(.black) .learn-more:hover {
-  transform: scale(1.1);
-  background: transparent;
-  color: inherit;
-  border-color: inherit;
-  box-shadow: none;
-}
-
-
-/* === CRAZY FUN FACT BUTTON ANIMATION === */
-#funFactsBtn {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-#funFactsBtn:active {
-  transform: scale(0.9) rotate(-5deg);
-}
-
-/* Ripple wave effect */
-#funFactsBtn::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  background: radial-gradient(circle, #ffeb3b 20%, transparent 70%);
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-}
-
-#funFactsBtn.animate {
-  animation: crazyBtnPulse 0.8s ease forwards;
-}
-
-@keyframes crazyBtnPulse {
-  0% { transform: scale(1); background: #1a73e8; color: #fff; }
-  25% { transform: scale(1.3) rotate(8deg); background: #ff4081; }
-  50% { transform: scale(1) rotate(-8deg); background: #00e676; }
-  75% { transform: scale(1.25) rotate(6deg); background: #ffeb3b; }
-  100% { transform: scale(1); background: transparent; color: inherit; }
-}
-
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  window.addEventListener("resize", update);
+  update();
+})();
