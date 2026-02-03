@@ -1,255 +1,408 @@
-// === Run after the document loads ===
 document.addEventListener("DOMContentLoaded", () => {
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+  const root = document.documentElement;
 
-  /* === Typing animation with dynamic greeting === */
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning!" :
-    hour < 18 ? "Good afternoon!" :
-    "Good evening!";
-  const lines = [greeting, "Welcome to my portfolio!"];
-  let lineIndex = 0, charIndex = 0;
+  const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
-  function fadeInLine(el) {
-    el.style.opacity = "0";
-    el.style.transition = "opacity 0.6s ease";
-    setTimeout(() => (el.style.opacity = "1"), 100);
-  }
-  function typeLine() {
-    if (lineIndex < lines.length) {
-      const el = document.getElementById(`line${lineIndex + 1}`);
-      if (!el) return;
-      if (charIndex === 0) fadeInLine(el);
-      if (charIndex < lines[lineIndex].length) {
-        el.textContent += lines[lineIndex].charAt(charIndex);
-        charIndex++;
-        setTimeout(typeLine, 70);
-      } else {
-        charIndex = 0;
-        lineIndex++;
-        setTimeout(typeLine, 600);
-      }
-    }
-  }
-  typeLine();
-  /* === FUN FACTS BUTTON WITH CELEBRATION === */
-  const funFactsBtn = document.getElementById("funFactsBtn");
-  if (funFactsBtn) {
-    funFactsBtn.addEventListener("click", () => {
-      const funFacts = [
-        "🏎️ Published two research papers analyzing the aerodynamic wake flow of 2026-spec Formula 1 cars.",
-        "🌏 Collaborated with Shanghai Jiao Tong University on drivetrain stress optimization for heavy-duty vehicles.",
-        "🥋 Achieved a Black Belt in Karate — balance, discipline, precision under pressure.",
-        "🧠 Built CFD models comparing rear-wing downforce effects across diffuser geometries.",
-        "⚙️ Modeled a complete electric motorcycle drivetrain for vibration and NVH optimization.",
-        "📊 Conducted benchmarking for Caterpillar and Tata-Hitachi improving hydraulic efficiency by 7%.",
-        "🚀 Created a MATLAB-based flow simulation tool for turbine-cooling analysis at Penn State.",
-        "🎯 Designed a low-cost RedBot line-following robot with IR + encoder feedback.",
-        "💡 Believe great engineering blends creativity, computation, and curiosity.",
-        "📚 Penn State Mechanical Engineering senior — always chasing the next design challenge."
-      ];
+  const rafThrottle = (fn) => {
+    let ticking = false;
+    return (...args) => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        fn(...args);
+        ticking = false;
+      });
+    };
+  };
 
-      const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
-      showFunFact(randomFact);
-      firecrackerEffect(funFactsBtn, 50);
-      launchConfetti(funFactsBtn); // 🎉 extra confetti
-    });
-  }
+  /* =========================================================
+     RADIAL TECHNICAL SKILLS
+  ========================================================= */
+  document.querySelectorAll(".skills-soft li").forEach((li, i) => {
+    const pct = Number(li.dataset.percent || 0);
+    const cbar = li.querySelector(".cbar");
+    const small = li.querySelector("small");
+    if (!cbar) return;
 
-  /* === FUN FACT POPUP === */
-  function showFunFact(fact) {
-    const popup = document.createElement("div");
-    popup.textContent = fact;
-    popup.classList.add("fun-fact-popup");
-    document.body.appendChild(popup);
-    setTimeout(() => popup.classList.add("visible"), 50);
+    const r = Number(cbar.getAttribute("r")) || 45;
+    const circumference = 2 * Math.PI * r;
+
+    cbar.style.strokeDasharray = `${circumference}`;
+    cbar.style.strokeDashoffset = `${circumference}`;
+
     setTimeout(() => {
-      popup.classList.remove("visible");
-      setTimeout(() => popup.remove(), 400);
-    }, 3000);
-  }
+      cbar.style.strokeDashoffset = `${((100 - pct) / 100) * circumference}`;
+    }, i * 140);
 
-  /* === FIRECRACKER CELEBRATION EFFECT === */
-  function firecrackerEffect(element, count = 25) {
-    const rect = element.getBoundingClientRect();
-    const originX = rect.left + rect.width / 2;
-    const originY = rect.top + rect.height / 2;
+    if (small) {
+      let current = 0;
+      const duration = 900;
+      const start = performance.now() + i * 140;
 
-    for (let i = 0; i < count; i++) {
-      const particle = document.createElement("span");
-      particle.classList.add("firecracker");
-      document.body.appendChild(particle);
+      const tick = (t) => {
+        if (t < start) return requestAnimationFrame(tick);
+        const p = Math.min((t - start) / duration, 1);
+        const val = Math.round(p * pct);
 
-      const angle = Math.random() * 2 * Math.PI;
-      const distance = Math.random() * 180 + 80;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance;
+        if (val !== current) {
+          current = val;
+          small.textContent = `${val}%`;
+        }
+        if (p < 1) requestAnimationFrame(tick);
+      };
 
-      const colors = ["#ff3b3b", "#ffeb3b", "#00e676", "#1a73e8", "#ff9800", "#9c27b0"];
-      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-      particle.style.left = `${originX}px`;
-      particle.style.top = `${originY}px`;
-      particle.style.width = `${Math.random() * 10 + 5}px`;
-      particle.style.height = particle.style.width;
-
-      particle.animate(
-        [
-          { transform: "translate(0, 0) scale(1)", opacity: 1 },
-          { transform: `translate(${x}px, ${y}px) scale(0)`, opacity: 0 }
-        ],
-        { duration: 1200 + Math.random() * 600, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
-      );
-
-      setTimeout(() => particle.remove(), 1800);
-    }
-  }
-
-  /* === ALL-DIRECTIONS CONFETTI EXPLOSION === */
-function launchConfetti(element) {
-  const rect = element.getBoundingClientRect();
-  const originX = rect.left + rect.width / 2;
-  const originY = rect.top + rect.height / 2;
-
-  const colors = ["#ff3b3b", "#ffeb3b", "#00e676", "#1a73e8", "#ff9800", "#9c27b0"];
-
-  for (let i = 0; i < 60; i++) {
-    const confetti = document.createElement("span");
-    confetti.classList.add("confetti");
-    document.body.appendChild(confetti);
-
-    // random direction (360° spread)
-    const angle = Math.random() * 2 * Math.PI;
-    const distance = Math.random() * 200 + 80;
-    const x = Math.cos(angle) * distance;
-    const y = Math.sin(angle) * distance;
-
-    // random color and size
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    confetti.style.backgroundColor = color;
-    confetti.style.width = `${Math.random() * 8 + 4}px`;
-    confetti.style.height = confetti.style.width;
-    confetti.style.left = `${originX}px`;
-    confetti.style.top = `${originY}px`;
-
-    // animate explosion outward
-    confetti.animate(
-      [
-        { transform: "translate(0, 0) scale(1)", opacity: 1 },
-        { transform: `translate(${x}px, ${y}px) scale(0.8) rotate(${Math.random() * 720}deg)`, opacity: 0 }
-      ],
-      {
-        duration: 1500 + Math.random() * 800,
-        easing: "cubic-bezier(0.25, 0.1, 0.25, 1)",
-        fill: "forwards"
-      }
-    );
-
-    // remove element after animation
-    setTimeout(() => confetti.remove(), 2200);
-  }
-}
-
-
-  /* === THEME TOGGLE BUTTON (white → black → funky) === */
-  const themeToggleBtn = document.getElementById("themeToggleTop");
-  let themeMode = "white";
-
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener("click", () => {
-      document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-
-      if (themeMode === "white") {
-        document.body.classList.add("black");
-        document.body.classList.remove("funky");
-        themeMode = "black";
-      } else if (themeMode === "black") {
-        enableFunkyTheme();
-        themeMode = "funky";
-      } else {
-        document.body.classList.remove("black", "funky");
-        themeMode = "white";
-      }
-
-      // Burst animation feedback
-      const burst = document.createElement("div");
-      burst.classList.add("theme-burst");
-      const rect = themeToggleBtn.getBoundingClientRect();
-      burst.style.left = `${rect.left + rect.width / 2}px`;
-      burst.style.top = `${rect.top + rect.height / 2}px`;
-      document.body.appendChild(burst);
-      setTimeout(() => burst.remove(), 800);
-    });
-  }
-
-  /* === POLKA DOT GENERATOR + FUNKY THEME === */
-  function createPolkaDots(count = 35) {
-    for (let i = 0; i < count; i++) {
-      const dot = document.createElement("div");
-      dot.classList.add("polka-dot");
-
-      const size = Math.random() * 30 + 10;
-      dot.style.width = `${size}px`;
-      dot.style.height = `${size}px`;
-      dot.style.left = `${Math.random() * 100}vw`;
-      dot.style.top = `${Math.random() * 100}vh`;
-      dot.style.animationDuration = `${15 + Math.random() * 10}s`;
-      dot.style.animationDelay = `${Math.random() * 5}s`;
-      document.body.appendChild(dot);
-    }
-  }
-
-  function enableFunkyTheme() {
-    document.body.classList.remove("black");
-    document.body.classList.add("funky");
-    document.querySelectorAll(".polka-dot").forEach(dot => dot.remove());
-    createPolkaDots(40);
-  }
-
-  /* === EXPERIENCE / LEADERSHIP CARD EXPAND / COLLAPSE === */
-const expButtons = document.querySelectorAll(".learn-more");
-
-// Force all details to start collapsed
-document.querySelectorAll(".exp-details").forEach(details => {
-  details.style.maxHeight = "0";
-  details.classList.remove("visible");
-});
-
-expButtons.forEach(button => {
-  const card = button.closest(".exp-card");
-  const details = card.querySelector(".exp-details");
-
-  button.textContent = "Show More";
-
-  button.addEventListener("click", () => {
-    document.querySelectorAll(".exp-details.visible").forEach(open => {
-      if (open !== details) {
-        open.style.maxHeight = "0";
-        open.classList.remove("visible");
-        const otherBtn = open.closest(".exp-card").querySelector(".learn-more");
-        if (otherBtn) otherBtn.textContent = "Show More";
-      }
-    });
-
-    if (details.classList.contains("visible")) {
-      details.style.maxHeight = "0";
-      details.classList.remove("visible");
-      button.textContent = "Show More";
-    } else {
-      details.classList.add("visible");
-      details.style.maxHeight = details.scrollHeight + "px";
-      button.textContent = "Show Less";
+      requestAnimationFrame(tick);
     }
   });
-});
 
+  /* =========================================================
+     PROJECT HIGHLIGHT CHIPS
+  ========================================================= */
+  const clearClasses = (selector, ...classes) => {
+    document.querySelectorAll(selector).forEach((el) => el.classList.remove(...classes));
+  };
 
-  /* === BACK TO TOP BUTTON === */
-  const backToTopBtn = document.getElementById("backToTop");
-  if (backToTopBtn) {
-    backToTopBtn.addEventListener("click", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  document.querySelectorAll(".highlight-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+
+      clearClasses(".project-block", "focus");
+      clearClasses(".highlight-chip", "active");
+      btn.classList.add("active");
+
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.classList.remove("focus");
+      void target.offsetWidth;
+      target.classList.add("focus");
+
+      setTimeout(() => target.classList.remove("focus"), 1200);
+    });
+  });
+
+  /* =========================================================
+     LEADERSHIP CHIPS
+  ========================================================= */
+  document.querySelectorAll(".lead-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = document.querySelector(`.lead-block[data-lead="${btn.dataset.lead}"]`);
+      if (!target) return;
+
+      clearClasses(".lead-block", "focus");
+      clearClasses(".lead-chip", "active");
+      btn.classList.add("active");
+
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.classList.remove("focus");
+      void target.offsetWidth;
+      target.classList.add("focus");
+
+      setTimeout(() => target.classList.remove("focus"), 1200);
+    });
+  });
+
+  /* =========================================================
+     INTEREST MODAL
+  ========================================================= */
+  const modal = document.getElementById("interestModal");
+  if (modal) {
+    const title = modal.querySelector(".interest-modal__title");
+    const text = modal.querySelector(".interest-modal__text");
+    const closeBtn = modal.querySelector(".interest-modal__close");
+    const backdrop = modal.querySelector(".interest-modal__backdrop");
+
+    const close = () => {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    };
+
+    document.querySelectorAll(".interest-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (title) title.textContent = btn.dataset.title || "";
+        if (text) text.textContent = btn.dataset.text || "";
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+      });
+    });
+
+    closeBtn?.addEventListener("click", close);
+    backdrop?.addEventListener("click", close);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) close();
     });
   }
 
-}); // end DOMContentLoaded
+  /* =========================================================
+     FEEDBACK FORM (FORMSPREE)
+  ========================================================= */
+  const form = document.querySelector(".feedback-form");
+  const status = document.getElementById("feedbackStatus");
 
+  if (form && status) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      status.textContent = "Sending…";
+      status.style.opacity = "0.9";
+
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+
+        if (res.ok) {
+          status.textContent = "Thank you for your feedback. Your message has been sent.";
+          form.reset();
+        } else {
+          status.textContent = "Something went wrong. Please try again.";
+        }
+      } catch {
+        status.textContent = "Network error. Please try again later.";
+      }
+    });
+  }
+
+  /* =========================================================
+     GREETING + TYPING (ONE SINGLE CONTROLLER)
+     - Types normal greeting on load
+     - If scroll >= 90%: types thank-you message
+     - If scroll < 90%: types time greeting again
+  ========================================================= */
+  const greetingEl = document.getElementById("time-greeting");
+
+  const getTimeGreeting = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Good morning";
+    if (h >= 12 && h < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  // Prevent “retyping” if same message requested repeatedly
+  let lastGreetingText = "";
+  let typingTimer = null;
+
+  const typeText = (el, text, speed = 35) => {
+    if (!el) return;
+    if (text === lastGreetingText) return;
+
+    lastGreetingText = text;
+
+    // stop any existing typing
+    if (typingTimer) clearTimeout(typingTimer);
+
+    el.textContent = "";
+    el.classList.add("typing");
+
+    let i = 0;
+    const step = () => {
+      if (i < text.length) {
+        el.textContent += text.charAt(i++);
+        typingTimer = setTimeout(step, speed);
+      } else {
+        el.classList.remove("typing");
+        typingTimer = null;
+      }
+    };
+    step();
+  };
+
+  const normalGreeting = () => `${getTimeGreeting()}, welcome to my portfolio!`;
+  const endGreeting = () => `Thank you for visiting my page!`;
+
+  if (greetingEl) {
+    typeText(greetingEl, normalGreeting(), 35);
+  }
+
+  /* =========================================================
+     THEME: AUTO + TOGGLE (3 modes)
+     - Auto: light (morning), graphite (afternoon), dark (evening/night)
+     - Toggle cycles light -> graphite -> dark
+     - Saves override; right-click / long-press resets to auto
+  ========================================================= */
+  const themeBtn = document.getElementById("theme-toggle");
+  const STORAGE_KEY = "theme-override"; // "light" | "graphite" | "dark" | null
+
+  const getAutoTheme = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "light";
+    if (h >= 12 && h < 17) return "graphite";
+    return "dark";
+  };
+
+  const resolvedTheme = () => root.getAttribute("data-theme") || "graphite";
+
+  const applyTheme = (theme) => {
+    if (theme === "graphite") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", theme);
+
+    if (themeBtn) {
+      const label = theme === "graphite" ? "GRAPHITE" : theme.toUpperCase();
+      themeBtn.title = `Theme: ${label} (click to change)`;
+      themeBtn.setAttribute("aria-label", `Theme: ${label}. Click to change.`);
+    }
+  };
+
+  const saveOverride = (theme) => localStorage.setItem(STORAGE_KEY, theme);
+
+  const clearOverride = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    applyTheme(getAutoTheme());
+  };
+
+  // Init theme
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === "light" || saved === "dark" || saved === "graphite") {
+    applyTheme(saved);
+  } else {
+    applyTheme(getAutoTheme());
+  }
+
+  // Auto updates only when no override
+  setInterval(() => {
+    const hasOverride = !!localStorage.getItem(STORAGE_KEY);
+    if (hasOverride) return;
+
+    const next = getAutoTheme();
+    const cur = resolvedTheme();
+    if (cur !== next) applyTheme(next);
+  }, 60_000);
+
+  // Toggle click
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      const cur = resolvedTheme();
+      const next = cur === "light" ? "graphite" : cur === "graphite" ? "dark" : "light";
+      applyTheme(next);
+      saveOverride(next);
+    });
+
+    // Reset to auto: right click
+    themeBtn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      clearOverride();
+    });
+
+    // Reset to auto: long press
+    let pressTimer = null;
+    themeBtn.addEventListener(
+      "touchstart",
+      () => {
+        pressTimer = setTimeout(() => clearOverride(), 550);
+      },
+      { passive: true }
+    );
+    themeBtn.addEventListener("touchend", () => {
+      if (pressTimer) clearTimeout(pressTimer);
+    });
+  }
+
+  /* =========================================================
+     SCROLL PROGRESS BAR + GREETING SYNC
+     - Green -> Yellow -> Red
+     - At >=90% scroll: switch greeting to thank-you
+  ========================================================= */
+  const bar = document.getElementById("scroll-progress");
+  let endShown = false;
+
+  const updateScroll = () => {
+    if (!bar) return;
+
+    const scrollTop = window.scrollY || 0;
+    const height = document.documentElement.scrollHeight - window.innerHeight;
+
+    // Avoid divide-by-zero
+    const progress = height > 0 ? clamp((scrollTop / height) * 100, 0, 100) : 0;
+
+    bar.style.width = `${progress}%`;
+
+    if (progress < 50) {
+      bar.style.background = "#2ecc71";
+      bar.style.boxShadow = "none";
+    } else if (progress < 90) {
+      bar.style.background = "#fdd835";
+      bar.style.boxShadow = "none";
+    } else {
+      bar.style.background = "#e53935";
+      bar.style.boxShadow = "0 0 10px rgba(229,57,53,.6)";
+    }
+
+    // Greeting sync
+    if (greetingEl) {
+      if (progress >= 90 && !endShown) {
+        typeText(greetingEl, endGreeting(), 28);
+        endShown = true;
+      } else if (progress < 90 && endShown) {
+        typeText(greetingEl, normalGreeting(), 35);
+        endShown = false;
+      }
+    }
+  };
+
+  const onScroll = rafThrottle(updateScroll);
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", updateScroll);
+  updateScroll();
+});
+/* =========================================
+   SCROLL: progress bar + traffic lights
+========================================= */
+(function () {
+  const fill = document.getElementById("scroll-progress");
+  const traffic = document.getElementById("scroll-traffic");
+  if (!fill || !traffic) return;
+
+  const green = traffic.querySelector('.bulb[data-color="green"]');
+  const yellow = traffic.querySelector('.bulb[data-color="yellow"]');
+  const red = traffic.querySelector('.bulb[data-color="red"]');
+
+  function setLights(stage){
+    // clear all
+    [green, yellow, red].forEach(b => b && b.classList.remove("is-on"));
+    // stage on
+    if (stage === "green" && green) green.classList.add("is-on");
+    if (stage === "yellow" && yellow) yellow.classList.add("is-on");
+    if (stage === "red" && red) red.classList.add("is-on");
+  }
+
+  function update(){
+    const scrollTop = window.scrollY;
+    const height = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = height > 0 ? Math.min((scrollTop / height) * 100, 100) : 0;
+
+    fill.style.width = `${progress}%`;
+
+    // stage thresholds
+    if (progress < 50) {
+      fill.style.background = "#2ecc71";
+      setLights("green");
+    } else if (progress < 90) {
+      fill.style.background = "#fdd835";
+      setLights("yellow");
+    } else {
+      fill.style.background = "#e53935";
+      setLights("red");
+    }
+  }
+
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  window.addEventListener("resize", update);
+  update();
+})();
