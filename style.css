@@ -1,408 +1,1241 @@
-document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
-     HELPERS
-  ========================================================= */
-  const root = document.documentElement;
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap");
+@charset "UTF-8";
 
-  const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
+/* =========================================================
+   THEME TOKENS
+   Default = BLUE
+   Set via: <html data-theme="light|blue|dark">
+========================================================= */
 
-  const rafThrottle = (fn) => {
-    let ticking = false;
-    return (...args) => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        fn(...args);
-        ticking = false;
-      });
-    };
-  };
+/* AFTERNOON (SLATE / GRAPHITE) */
+:root {
+  --bg: #2a2d34;        /* slate background */
+  --panel: #343841;     /* cards */
+  --panel-2: #3e424d;   /* inner cards */
 
-  /* =========================================================
-     RADIAL TECHNICAL SKILLS
-  ========================================================= */
-  document.querySelectorAll(".skills-soft li").forEach((li, i) => {
-    const pct = Number(li.dataset.percent || 0);
-    const cbar = li.querySelector(".cbar");
-    const small = li.querySelector("small");
-    if (!cbar) return;
+  --text: #f2f3f7;
+  --text-muted: rgba(242, 243, 247, 0.82);
 
-    const r = Number(cbar.getAttribute("r")) || 45;
-    const circumference = 2 * Math.PI * r;
+  --accent: #ffb300;    /* yellow stays */
+  --accent-2: #ffd54f;
 
-    cbar.style.strokeDasharray = `${circumference}`;
-    cbar.style.strokeDashoffset = `${circumference}`;
+  --border: rgba(255, 255, 255, 0.12);
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 
-    setTimeout(() => {
-      cbar.style.strokeDashoffset = `${((100 - pct) / 100) * circumference}`;
-    }, i * 140);
+  --chip-bg: transparent;
+  --chip-icon: var(--accent);
+  --chip-hover-text: var(--accent-2);
+  --chip-active-bg: rgba(255, 179, 0, 0.14);
+  --chip-active-ring: 0 0 0 2px rgba(255, 213, 79, 0.25) inset;
 
-    if (small) {
-      let current = 0;
-      const duration = 900;
-      const start = performance.now() + i * 140;
+  --focus-ring: 0 0 0 2px rgba(255, 213, 79, 0.35),
+                0 0 0 6px rgba(255, 213, 79, 0.12);
 
-      const tick = (t) => {
-        if (t < start) return requestAnimationFrame(tick);
-        const p = Math.min((t - start) / duration, 1);
-        const val = Math.round(p * pct);
+  --icon-pill-bg: var(--accent);
+  --icon-pill-fg: #2a2d34;
 
-        if (val !== current) {
-          current = val;
-          small.textContent = `${val}%`;
-        }
-        if (p < 1) requestAnimationFrame(tick);
-      };
+  --input-bg: #3e424d;
+  --input-border: rgba(255, 255, 255, 0.18);
+  --input-placeholder: rgba(242, 243, 247, 0.55);
+}
 
-      requestAnimationFrame(tick);
-    }
-  });
 
-  /* =========================================================
-     PROJECT HIGHLIGHT CHIPS
-  ========================================================= */
-  const clearClasses = (selector, ...classes) => {
-    document.querySelectorAll(selector).forEach((el) => el.classList.remove(...classes));
-  };
+/* LIGHT */
+html[data-theme="light"] {
+  --bg: #f7f9ff;
+  --panel: #ffffff;
+  --panel-2: #eef2ff;
 
-  document.querySelectorAll(".highlight-chip").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const target = document.getElementById(btn.dataset.target);
-      if (!target) return;
+  --text: #0e1442;
+  --text-muted: rgba(14, 20, 66, 0.72);
 
-      clearClasses(".project-block", "focus");
-      clearClasses(".highlight-chip", "active");
-      btn.classList.add("active");
+  --accent: #1a237e;
+  --accent-2: #3949ab;
 
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      target.classList.remove("focus");
-      void target.offsetWidth;
-      target.classList.add("focus");
+  --border: rgba(14, 20, 66, 0.12);
+  --shadow: 0 10px 24px rgba(14, 20, 66, 0.10);
 
-      setTimeout(() => target.classList.remove("focus"), 1200);
-    });
-  });
+  --chip-bg: transparent;
+  --chip-icon: #3949ab;
+  --chip-hover-text: #1a237e;
+  --chip-active-bg: rgba(57, 73, 171, 0.10);
+  --chip-active-ring: 0 0 0 2px rgba(57, 73, 171, 0.18) inset;
 
-  /* =========================================================
-     LEADERSHIP CHIPS
-  ========================================================= */
-  document.querySelectorAll(".lead-chip").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const target = document.querySelector(`.lead-block[data-lead="${btn.dataset.lead}"]`);
-      if (!target) return;
+  --focus-ring: 0 10px 26px rgba(14, 20, 66, 0.14);
 
-      clearClasses(".lead-block", "focus");
-      clearClasses(".lead-chip", "active");
-      btn.classList.add("active");
+  --icon-pill-bg: rgba(57, 73, 171, 0.10);
+  --icon-pill-fg: #1a237e;
 
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      target.classList.remove("focus");
-      void target.offsetWidth;
-      target.classList.add("focus");
+  --input-bg: #eef2ff;
+  --input-border: rgba(14, 20, 66, 0.18);
+  --input-placeholder: rgba(14, 20, 66, 0.45);
+}
 
-      setTimeout(() => target.classList.remove("focus"), 1200);
-    });
-  });
+/* DARK (TRUE BLACK) */
+html[data-theme="dark"] {
+  --bg: #000000;        /* page background */
+  --panel: #0b0b0b;     /* cards / left panel */
+  --panel-2: #141414;   /* inner cards */
 
-  /* =========================================================
-     INTEREST MODAL
-  ========================================================= */
-  const modal = document.getElementById("interestModal");
-  if (modal) {
-    const title = modal.querySelector(".interest-modal__title");
-    const text = modal.querySelector(".interest-modal__text");
-    const closeBtn = modal.querySelector(".interest-modal__close");
-    const backdrop = modal.querySelector(".interest-modal__backdrop");
+  --text: #f5f5f5;
+  --text-muted: rgba(245, 245, 245, 0.82);
 
-    const close = () => {
-      modal.classList.remove("is-open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    };
+  --accent: #ffb300;    /* keep your yellow */
+  --accent-2: #ffe36a;
 
-    document.querySelectorAll(".interest-chip").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (title) title.textContent = btn.dataset.title || "";
-        if (text) text.textContent = btn.dataset.text || "";
-        modal.classList.add("is-open");
-        modal.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
-      });
-    });
+  --border: rgba(255, 255, 255, 0.14);
+  --shadow: 0 14px 34px rgba(0, 0, 0, 0.65);
 
-    closeBtn?.addEventListener("click", close);
-    backdrop?.addEventListener("click", close);
+  --chip-bg: transparent;
+  --chip-icon: var(--accent);
+  --chip-hover-text: var(--accent-2);
+  --chip-active-bg: rgba(255, 179, 0, 0.14);
+  --chip-active-ring: 0 0 0 2px rgba(255, 227, 106, 0.22) inset;
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modal.classList.contains("is-open")) close();
-    });
+  --focus-ring: 0 0 0 2px rgba(255, 227, 106, 0.30),
+                0 0 0 6px rgba(255, 227, 106, 0.10);
+
+  --icon-pill-bg: var(--accent);
+  --icon-pill-fg: #000000;  /* icons sit on yellow pills */
+
+  --input-bg: #141414;
+  --input-border: rgba(255, 255, 255, 0.18);
+  --input-placeholder: rgba(245, 245, 245, 0.55);
+}
+
+
+/* =========================================================
+   BASE RESET
+========================================================= */
+* { outline: none; }
+*,
+*:before,
+*:after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+a { text-decoration: none; transition: 0.25s ease; color: inherit; }
+ul { list-style: none; padding: 0; margin: 0; }
+
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.05em;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+small, .meta small {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* =========================================================
+   LAYOUT SHELL
+========================================================= */
+.resume {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  background: transparent;
+}
+
+/* LEFT */
+.resume .base {
+  width: 320px;
+  max-width: 35%;
+  padding: 30px 15px;
+  background: var(--panel);
+  color: var(--text);
+  flex: 0 0 auto;
+  border-right: 1px solid var(--border);
+}
+
+/* Profile */
+.resume .base .profile {
+  background: var(--accent);
+  padding: 30px 15px 40px 15px;
+  margin: -30px -15px 45px -15px;
+  position: relative;
+}
+
+.resume .base .profile::after {
+  content: "";
+  position: absolute;
+  background: var(--panel-2);
+  width: 100%;
+  height: 30px;
+  bottom: -15px;
+  left: 0;
+  transform: skewY(-5deg);
+}
+
+/* Rocket visibility across themes */
+.resume .base .profile .fa-rocket {
+  font-size: 96px;
+  color: #0e1442;
+}
+
+/* Light theme: ensure visible */
+html[data-theme="light"] .resume .base .profile .fa-rocket { color: #0e1442; }
+/* Dark theme: ensure visible */
+html[data-theme="dark"] .resume .base .profile .fa-rocket { color: #0c1026; }
+
+.resume .base .profile .info { text-align: center; }
+
+.resume .base .profile .info .name {
+  margin: 10px 0 0 0;
+  font-size: 1.75em;
+  text-transform: lowercase;
+  color: var(--bg);
+}
+
+.resume .base .profile .info .job {
+  margin: 10px 0 0 0;
+  font-size: 1.1em;
+  text-transform: lowercase;
+  color: var(--icon-pill-fg);
+}
+
+.resume .base .about {
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Contact icons */
+.resume .base .contact { line-height: 1.55; }
+
+.resume .base .contact-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.resume .base .contact-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--icon-pill-bg);
+  color: var(--icon-pill-fg);
+
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.resume .base .contact-icon i { color: var(--icon-pill-fg); }
+
+.resume .base .contact-icon:hover {
+  transform: translateY(-2px);
+  background: var(--panel-2);
+}
+
+/* RIGHT */
+.resume .func {
+  flex: 1;
+  padding: 30px;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  row-gap: 34px !important;
+  align-content: start !important;
+  background: transparent;
+}
+
+.resume .func > * { grid-column: 1 / -1 !important; }
+
+/* =========================================================
+   SECTION PANELS
+========================================================= */
+.resume .func .work,
+.resume .func .edu,
+.resume .func .lead,
+.resume .func .skills-soft,
+.resume .func .highlights,
+.resume .func .interests,
+.resume .func .feedback {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 15px;
+}
+
+/* Icon bubble in headings */
+.resume .func h3 i {
+  color: var(--icon-pill-fg);
+  background: var(--icon-pill-bg);
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+  line-height: 42px;
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* =========================================================
+   EXPERIENCE
+========================================================= */
+.resume .func .exp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resume .func .exp-card {
+  background: var(--panel-2);
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.resume .func .exp-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.resume .func .exp-head .exp-role {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.resume .func .exp-head small { display: block; line-height: 1.35; }
+
+.resume .func .exp-body p {
+  margin: 10px 0 0 0;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   EDUCATION — ONE CLEAN CARD (FIX)
+========================================================= */
+.resume .func .edu { padding: 12px 15px; }
+
+.resume .func .edu ul { margin: 0; padding: 0; }
+.resume .func .edu li { margin: 0; padding: 0; }
+
+.resume .func .edu small { display: block; margin-top: 4px; }
+
+.resume .func .edu .edu-focus {
+  margin: 10px 0 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* =========================================================
+   CHIPS (Leadership / Highlights / Interests)
+========================================================= */
+.resume .func .lead-items,
+.resume .func .highlights-items,
+.resume .func .interests-items {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  text-align: center;
+  padding: 0 0 10px;
+}
+
+.resume .func .lead-chip,
+.resume .func .highlight-chip,
+.resume .func .interest-chip {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  background: var(--chip-bg);
+  color: var(--text);
+  transition: transform 0.2s ease;
+}
+
+.resume .func .lead-chip i,
+.resume .func .highlight-chip i,
+.resume .func .interest-chip i {
+  font-size: 45px;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  color: var(--chip-icon);
+  transition: transform 0.2s ease;
+}
+
+.resume .func .lead-chip span,
+.resume .func .highlight-chip span,
+.resume .func .interest-chip span {
+  display: block;
+  margin-top: 4px;
+  font-weight: 800;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  color: var(--text);
+  transition: color 0.2s ease;
+}
+
+.resume .func .lead-chip:hover i,
+.resume .func .highlight-chip:hover i,
+.resume .func .interest-chip:hover i {
+  transform: scale(1.12);
+}
+
+.resume .func .lead-chip:hover span,
+.resume .func .highlight-chip:hover span,
+.resume .func .interest-chip:hover span {
+  color: var(--chip-hover-text);
+}
+
+.resume .func .lead-chip.active,
+.resume .func .highlight-chip.active {
+  background: var(--chip-active-bg);
+  box-shadow: var(--chip-active-ring);
+}
+
+/* =========================================================
+   LEADERSHIP BLOCKS + HOVER (FIX)
+========================================================= */
+.resume .func .lead-list { margin-top: 10px; }
+
+.resume .func .lead-block {
+  background: var(--panel-2);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin: 0 0 12px 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.resume .func .lead-block h4 {
+  margin: 0 0 8px 0;
+  color: var(--accent);
+  font-size: 1.05em;
+}
+
+/* Subtle hover highlight same as other cards */
+.resume .func .lead-block:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.resume .func .lead-block p {
+  margin: 10px 0 0 0;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.resume .func .lead-block.focus {
+  box-shadow: var(--focus-ring);
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   TECH SKILLS (radial)
+========================================================= */
+.resume .func .skills-soft ul {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.resume .func .skills-soft ul li {
+  position: relative;
+  width: 150px;
+  min-width: 150px;
+  height: 150px;
+}
+
+.resume .func .skills-soft ul li svg {
+  width: 150px;
+  height: 150px;
+  fill: transparent;
+  transform: rotate(-90deg);
+}
+
+.resume .func .skills-soft ul li svg circle {
+  stroke-width: 1px;
+  stroke: color-mix(in srgb, var(--text) 35%, transparent);
+}
+
+.resume .func .skills-soft ul li svg .cbar {
+  stroke-width: 5px;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s linear;
+}
+
+.resume .func .skills-soft ul li:hover svg .cbar {
+  stroke: var(--accent-2);
+  stroke-width: 6px;
+}
+
+.resume .func .skills-soft ul li span {
+  position: absolute;
+  left: 50%;
+  top: 43%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  text-align: center;
+  font-size: 1.02em;
+  line-height: 1.15;
+  white-space: normal;
+  word-break: break-word;
+  overflow: hidden;
+  max-height: 2.6em;
+  color: var(--text);
+}
+
+.resume .func .skills-soft ul li small {
+  position: absolute;
+  left: 50%;
+  top: 63%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  text-align: center;
+  font-size: 1em;
+  line-height: 1;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* =========================================================
+   PROJECTS
+========================================================= */
+.resume .func .projects-list { margin-top: 10px; }
+
+.resume .func .project-block {
+  background: var(--panel-2);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin: 0 0 12px 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.resume .func .project-block:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.resume .func .project-block h4 {
+  margin: 0 0 8px 0;
+  color: var(--accent);
+  font-size: 1.05em;
+  text-transform: none;
+}
+
+.resume .func .project-item h5 {
+  margin: 8px 0 6px 0;
+  font-size: 1em;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.resume .func .project-item p {
+  margin: 10px 0;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.resume .func .key-outcomes {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.resume .func .key-outcomes strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.9em;
+}
+
+.resume .func .key-outcomes ul {
+  margin-left: 15px;
+  padding-left: 10px;
+  list-style: disc;
+}
+
+.resume .func .key-outcomes ul li {
+  margin: 6px 0;
+  color: var(--text-muted);
+}
+
+.resume .func .project-block.focus {
+  box-shadow: var(--focus-ring);
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   INTEREST MODAL (opaque + readable)
+========================================================= */
+.interest-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.interest-modal.is-open { display: block; }
+
+.interest-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+}
+
+.interest-modal__card {
+  position: relative;
+  width: min(680px, calc(100% - 32px));
+  margin: 12vh auto 0 auto;
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 18px 18px 16px 18px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  isolation: isolate;
+}
+
+.interest-modal__title {
+  margin: 0 34px 10px 0;
+  color: var(--accent);
+  font-size: 1.15em;
+  font-weight: 800;
+}
+
+.interest-modal__text {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.interest-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 22px;
+  line-height: 32px;
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+.interest-modal__close:hover { transform: scale(1.03); }
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+.feedback-text {
+  margin: 10px 0 18px 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.feedback-form { display: flex; flex-direction: column; gap: 14px; }
+
+.feedback-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+.feedback-form input,
+.feedback-form textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95em;
+}
+
+.feedback-form input::placeholder,
+.feedback-form textarea::placeholder {
+  color: var(--input-placeholder);
+}
+
+.feedback-form button {
+  align-self: flex-start;
+  background: var(--accent);
+  color: var(--icon-pill-fg);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.feedback-form button:hover { transform: translateY(-1px); background: var(--accent-2); }
+
+.feedback-status {
+  margin-top: 6px;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+.site-footer {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border-top: 1px solid var(--border);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media (max-width: 980px) {
+  .resume { display: block; }
+  .resume .base {
+    width: 100%;
+    max-width: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
+  .resume .func { display: block !important; padding: 18px; }
+  .resume .func .skills-soft ul { justify-content: center; }
+}
 
-  /* =========================================================
-     FEEDBACK FORM (FORMSPREE)
-  ========================================================= */
-  const form = document.querySelector(".feedback-form");
-  const status = document.getElementById("feedbackStatus");
+@media (max-width: 680px) {
+  .feedback-row { grid-template-columns: 1fr; }
+}
 
-  if (form && status) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      status.textContent = "Sending…";
-      status.style.opacity = "0.9";
-
-      try {
-        const res = await fetch(form.action, {
-          method: "POST",
-          body: new FormData(form),
-          headers: { Accept: "application/json" },
-        });
-
-        if (res.ok) {
-          status.textContent = "Thank you for your feedback. Your message has been sent.";
-          form.reset();
-        } else {
-          status.textContent = "Something went wrong. Please try again.";
-        }
-      } catch {
-        status.textContent = "Network error. Please try again later.";
-      }
-    });
+/* =========================================================
+   PRINT
+========================================================= */
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .resume, .base, .func,
+  .resume .func .work,
+  .resume .func .edu,
+  .resume .func .lead,
+  .resume .func .skills-soft,
+  .resume .func .highlights,
+  .resume .func .interests,
+  .resume .func .feedback {
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #ddd !important;
   }
+  a { color: #000 !important; text-decoration: underline !important; }
+}
+/* =========================================================
+   PROFILE HEADER — CENTER ROCKET AT TOP
+========================================================= */
 
-  /* =========================================================
-     GREETING + TYPING (ONE SINGLE CONTROLLER)
-     - Types normal greeting on load
-     - If scroll >= 90%: types thank-you message
-     - If scroll < 90%: types time greeting again
-  ========================================================= */
-  const greetingEl = document.getElementById("time-greeting");
+/* Make profile header a vertical flex container */
+.resume .base .profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* horizontal center */
+  justify-content: flex-start;
+  padding-top: 28px;        /* space from top */
+}
 
-  const getTimeGreeting = () => {
-    const h = new Date().getHours();
-    if (h >= 5 && h < 12) return "Good morning";
-    if (h >= 12 && h < 17) return "Good afternoon";
-    return "Good evening";
-  };
+/* Rocket centered at top */
+.resume .base .profile .photo {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
-  // Prevent “retyping” if same message requested repeatedly
-  let lastGreetingText = "";
-  let typingTimer = null;
+/* Rocket icon itself */
+.resume .base .profile .fa-rocket {
+  font-size: 96px;
+  line-height: 1;
+  margin: 0;
+}
 
-  const typeText = (el, text, speed = 35) => {
-    if (!el) return;
-    if (text === lastGreetingText) return;
+/* Text stays centered below */
+.resume .base .profile .info {
+  text-align: center;
+  margin-top: 6px;
+}
+/* Feedback button visibility fix */
+.feedback-form button {
+  background-color: #1a237e;  /* deep blue */
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+}
 
-    lastGreetingText = text;
-
-    // stop any existing typing
-    if (typingTimer) clearTimeout(typingTimer);
-
-    el.textContent = "";
-    el.classList.add("typing");
-
-    let i = 0;
-    const step = () => {
-      if (i < text.length) {
-        el.textContent += text.charAt(i++);
-        typingTimer = setTimeout(step, speed);
-      } else {
-        el.classList.remove("typing");
-        typingTimer = null;
-      }
-    };
-    step();
-  };
-
-  const normalGreeting = () => `${getTimeGreeting()}, welcome to my portfolio!`;
-  const endGreeting = () => `Thank you for visiting my page!`;
-
-  if (greetingEl) {
-    typeText(greetingEl, normalGreeting(), 35);
-  }
-
-  /* =========================================================
-     THEME: AUTO + TOGGLE (3 modes)
-     - Auto: light (morning), graphite (afternoon), dark (evening/night)
-     - Toggle cycles light -> graphite -> dark
-     - Saves override; right-click / long-press resets to auto
-  ========================================================= */
-  const themeBtn = document.getElementById("theme-toggle");
-  const STORAGE_KEY = "theme-override"; // "light" | "graphite" | "dark" | null
-
-  const getAutoTheme = () => {
-    const h = new Date().getHours();
-    if (h >= 5 && h < 12) return "light";
-    if (h >= 12 && h < 17) return "graphite";
-    return "dark";
-  };
-
-  const resolvedTheme = () => root.getAttribute("data-theme") || "graphite";
-
-  const applyTheme = (theme) => {
-    if (theme === "graphite") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", theme);
-
-    if (themeBtn) {
-      const label = theme === "graphite" ? "GRAPHITE" : theme.toUpperCase();
-      themeBtn.title = `Theme: ${label} (click to change)`;
-      themeBtn.setAttribute("aria-label", `Theme: ${label}. Click to change.`);
-    }
-  };
-
-  const saveOverride = (theme) => localStorage.setItem(STORAGE_KEY, theme);
-
-  const clearOverride = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    applyTheme(getAutoTheme());
-  };
-
-  // Init theme
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved === "light" || saved === "dark" || saved === "graphite") {
-    applyTheme(saved);
-  } else {
-    applyTheme(getAutoTheme());
-  }
-
-  // Auto updates only when no override
-  setInterval(() => {
-    const hasOverride = !!localStorage.getItem(STORAGE_KEY);
-    if (hasOverride) return;
-
-    const next = getAutoTheme();
-    const cur = resolvedTheme();
-    if (cur !== next) applyTheme(next);
-  }, 60_000);
-
-  // Toggle click
-  if (themeBtn) {
-    themeBtn.addEventListener("click", () => {
-      const cur = resolvedTheme();
-      const next = cur === "light" ? "graphite" : cur === "graphite" ? "dark" : "light";
-      applyTheme(next);
-      saveOverride(next);
-    });
-
-    // Reset to auto: right click
-    themeBtn.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      clearOverride();
-    });
-
-    // Reset to auto: long press
-    let pressTimer = null;
-    themeBtn.addEventListener(
-      "touchstart",
-      () => {
-        pressTimer = setTimeout(() => clearOverride(), 550);
-      },
-      { passive: true }
-    );
-    themeBtn.addEventListener("touchend", () => {
-      if (pressTimer) clearTimeout(pressTimer);
-    });
-  }
-
-  /* =========================================================
-     SCROLL PROGRESS BAR + GREETING SYNC
-     - Green -> Yellow -> Red
-     - At >=90% scroll: switch greeting to thank-you
-  ========================================================= */
-  const bar = document.getElementById("scroll-progress");
-  let endShown = false;
-
-  const updateScroll = () => {
-    if (!bar) return;
-
-    const scrollTop = window.scrollY || 0;
-    const height = document.documentElement.scrollHeight - window.innerHeight;
-
-    // Avoid divide-by-zero
-    const progress = height > 0 ? clamp((scrollTop / height) * 100, 0, 100) : 0;
-
-    bar.style.width = `${progress}%`;
-
-    if (progress < 50) {
-      bar.style.background = "#2ecc71";
-      bar.style.boxShadow = "none";
-    } else if (progress < 90) {
-      bar.style.background = "#fdd835";
-      bar.style.boxShadow = "none";
-    } else {
-      bar.style.background = "#e53935";
-      bar.style.boxShadow = "0 0 10px rgba(229,57,53,.6)";
-    }
-
-    // Greeting sync
-    if (greetingEl) {
-      if (progress >= 90 && !endShown) {
-        typeText(greetingEl, endGreeting(), 28);
-        endShown = true;
-      } else if (progress < 90 && endShown) {
-        typeText(greetingEl, normalGreeting(), 35);
-        endShown = false;
-      }
-    }
-  };
-
-  const onScroll = rafThrottle(updateScroll);
-
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", updateScroll);
-  updateScroll();
-});
+/* Hover state */
+.feedback-form button:hover {
+  background-color: #283593;
+}
 /* =========================================
-   SCROLL: progress bar + traffic lights
+   FIX: Job title visibility (force white)
 ========================================= */
-(function () {
-  const fill = document.getElementById("scroll-progress");
-  const traffic = document.getElementById("scroll-traffic");
-  if (!fill || !traffic) return;
+.resume .base .profile .info .job {
+  opacity: 1;
+  color: #ffffff !important; /* always white */
+}
 
-  const green = traffic.querySelector('.bulb[data-color="green"]');
-  const yellow = traffic.querySelector('.bulb[data-color="yellow"]');
-  const red = traffic.querySelector('.bulb[data-color="red"]');
+/* Keep white in light theme explicitly */
+html[data-theme="light"] .resume .base .profile .info .job {
+  color: #ffffff !important;
+}
 
-  function setLights(stage){
-    // clear all
-    [green, yellow, red].forEach(b => b && b.classList.remove("is-on"));
-    // stage on
-    if (stage === "green" && green) green.classList.add("is-on");
-    if (stage === "yellow" && yellow) yellow.classList.add("is-on");
-    if (stage === "red" && red) red.classList.add("is-on");
+
+
+
+/* =========================================
+   FIX: Profile header text contrast in DARK theme
+   (yellow background + readable text)
+========================================= */
+
+/* Name text */
+html[data-theme="dark"] .resume .base .profile .info .name {
+  color: #0c1026 !important; /* deep navy */
+}
+
+/* Job title text */
+html[data-theme="dark"] .resume .base .profile .info .job {
+  color: #0c1026 !important; /* deep navy */
+  opacity: 1 !important;
+}
+
+/* =========================================
+   TOP GREETING BAR (traffic + text + toggle + progress)
+========================================= */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  width: 100%;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+
+  display: grid;
+  grid-template-columns: 140px 1fr 70px;
+  align-items: center;
+
+  padding: 10px 12px 14px;
+  min-height: 56px;
+}
+
+/* Centered greeting text */
+.time-greeting{
+  text-align: center;
+  color: var(--text);
+  font-size: 1.05em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* caret only for the greeting text */
+.time-greeting::after{
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 1em;
+  margin-left: 6px;
+  border-right: 2px solid currentColor;
+  transform: translateY(2px);
+  opacity: 0;
+}
+.time-greeting.typing::after{
+  opacity: 1;
+  animation: caretBlink 0.8s steps(1, end) infinite;
+}
+@keyframes caretBlink{ 50% { opacity: 0; } }
+
+/* Theme toggle stays on right (topbar only) */
+.topbar .theme-toggle{
+  justify-self: end;
+  width: 52px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.topbar .theme-toggle i{
+  font-size: 18px;
+  color: var(--accent);
+}
+.topbar .theme-toggle:hover{
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+.topbar .theme-toggle:focus-visible{
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* =========================================
+   HORIZONTAL TRAFFIC LIGHT (inside topbar)
+========================================= */
+.traffic-inline{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 120px;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  background: color-mix(in srgb, var(--panel) 65%, #000 35%);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, rgba(0,0,0,0.25));
+  box-shadow: 0 10px 20px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.traffic-inline::after{
+  content:"";
+  position:absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: linear-gradient(110deg,
+    rgba(255,255,255,0.14),
+    rgba(255,255,255,0.02) 45%,
+    rgba(0,0,0,0.06)
+  );
+  pointer-events:none;
+}
+
+.traffic-inline .bulb{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  opacity: 0.35;
+
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.18),
+    rgba(0,0,0,0.22) 70%
+  );
+
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22);
+  transform: scale(0.98);
+  transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.traffic-inline .bulb.is-on{
+  opacity: 1;
+  transform: scale(1.12);
+}
+
+/* ON states */
+.traffic-inline .bulb[data-color="green"].is-on{
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.92),
+    #2ecc71 35%,
+    #0b7a3b 80%
+  );
+  box-shadow: 0 0 10px rgba(46,204,113,0.70), 0 0 20px rgba(46,204,113,0.30);
+}
+
+.traffic-inline .bulb[data-color="yellow"].is-on{
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.92),
+    #fdd835 35%,
+    #b88f00 80%
+  );
+  box-shadow: 0 0 10px rgba(253,216,53,0.70), 0 0 20px rgba(253,216,53,0.28);
+}
+
+.traffic-inline .bulb[data-color="red"].is-on{
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.92),
+    #e53935 35%,
+    #7a0b0b 80%
+  );
+  box-shadow: 0 0 10px rgba(229,57,53,0.75), 0 0 22px rgba(229,57,53,0.32);
+}
+
+/* =========================================
+   PROGRESS BAR INSIDE TOPBAR
+========================================= */
+.topbar-progress{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+}
+
+.topbar-progress__fill{
+  height: 100%;
+  width: 0%;
+  background: #2ecc71;
+  transition: width 0.12s ease-out, background-color 0.20s ease;
+}
+
+/* Optional glow in dark */
+html[data-theme="dark"] .topbar-progress__fill{
+  box-shadow: 0 0 10px rgba(0,0,0,0.55);
+}
+
+
+/* =========================================
+   PROGRESS BAR INSIDE TOPBAR
+========================================= */
+.topbar-progress{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+}
+
+.topbar-progress__fill{
+  height: 100%;
+  width: 0%;
+  background: #2ecc71;
+  transition:
+    width 0.12s ease-out,
+    background-color 0.20s ease;
+}
+/* =========================================
+   TOPBAR (traffic + greeting + toggle + progress)
+========================================= */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  width: 100%;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+
+  display: grid;
+  grid-template-columns: 160px 1fr 60px;
+  align-items: center;
+
+  padding: 10px 12px 14px;
+}
+
+/* greeting text */
+.time-greeting{
+  text-align: center;
+  color: var(--text);
+  font-size: 1.05em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* caret ONLY when typing class exists */
+.time-greeting::after{
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 1em;
+  margin-left: 6px;
+  border-right: 2px solid currentColor;
+  transform: translateY(2px);
+  opacity: 0;
+}
+.time-greeting.typing::after{
+  opacity: 1;
+  animation: caretBlink 0.8s steps(1, end) infinite;
+}
+@keyframes caretBlink{ 50% { opacity: 0; } }
+
+/* theme toggle on right */
+.theme-toggle{
+  justify-self: end;
+  width: 44px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  color: var(--text);
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.theme-toggle i{ color: var(--accent); }
+.theme-toggle:hover{ transform: translateY(-1px); }
+.theme-toggle:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+
+/* =========================================
+   TRAFFIC LIGHT (LEFT)
+========================================= */
+.traffic-inline{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 132px;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  background: color-mix(in srgb, var(--panel) 65%, #000 35%);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, rgba(0,0,0,0.25));
+  box-shadow:
+    0 10px 20px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* gloss overlay */
+.traffic-inline::after{
+  content:"";
+  position:absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: linear-gradient(110deg,
+    rgba(255,255,255,0.14),
+    rgba(255,255,255,0.02) 45%,
+    rgba(0,0,0,0.06)
+  );
+  pointer-events:none;
+}
+
+.traffic-inline .bulb{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  opacity: 0.25;
+
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.18),
+    rgba(0,0,0,0.22) 70%
+  );
+
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22);
+  transform: scale(0.98);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.traffic-inline .bulb.is-on{
+  opacity: 1;
+  transform: scale(1.12);
+}
+
+/* ON states */
+.traffic-inline .bulb[data-color="green"].is-on{
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.92),
+    #2ecc71 35%,
+    #0b7a3b 80%
+  );
+  box-shadow:
+    0 0 10px rgba(46,204,113,0.70),
+    0 0 20px rgba(46,204,113,0.30);
+}
+
+.traffic-inline .bulb[data-color="yellow"].is-on{
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.92),
+    #fdd835 35%,
+    #b88f00 80%
+  );
+  box-shadow:
+    0 0 10px rgba(253,216,53,0.70),
+    0 0 20px rgba(253,216,53,0.28);
+}
+
+.traffic-inline .bulb[data-color="red"].is-on{
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.92),
+    #e53935 35%,
+    #7a0b0b 80%
+  );
+  box-shadow:
+    0 0 10px rgba(229,57,53,0.75),
+    0 0 22px rgba(229,57,53,0.32);
+}
+
+/* =========================================
+   TOPBAR PROGRESS (bottom line)
+========================================= */
+.topbar-progress{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+}
+
+.topbar-progress__fill{
+  height: 100%;
+  width: 0%;
+  background: #2ecc71;
+  transition: width 0.12s ease-out, background-color 0.20s ease;
+}
+
+/* mobile */
+@media (max-width: 680px){
+  .topbar{
+    grid-template-columns: 140px 1fr 56px;
   }
-
-  function update(){
-    const scrollTop = window.scrollY;
-    const height = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = height > 0 ? Math.min((scrollTop / height) * 100, 100) : 0;
-
-    fill.style.width = `${progress}%`;
-
-    // stage thresholds
-    if (progress < 50) {
-      fill.style.background = "#2ecc71";
-      setLights("green");
-    } else if (progress < 90) {
-      fill.style.background = "#fdd835";
-      setLights("yellow");
-    } else {
-      fill.style.background = "#e53935";
-      setLights("red");
-    }
-  }
-
-  let ticking = false;
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        update();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }, { passive: true });
-
-  window.addEventListener("resize", update);
-  update();
-})();
+}
