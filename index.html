@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rutej Tejas Talati | Portfolio</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,18 +12,64 @@
       rel="stylesheet"
     />
 
-    <!-- Font Awesome (icons) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       referrerpolicy="no-referrer"
     />
 
-    <!-- Your CSS -->
+    <!-- EARLY THEME APPLY (prevents flash) -->
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const STORAGE_KEY = "theme-override";
+
+        function getAutoTheme() {
+          const h = new Date().getHours();
+          if (h >= 5 && h < 12) return "light";
+          if (h >= 12 && h < 17) return "graphite";
+          return "dark";
+        }
+        function applyTheme(theme) {
+          if (theme === "graphite") root.removeAttribute("data-theme");
+          else root.setAttribute("data-theme", theme);
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === "light" || saved === "dark" || saved === "graphite") applyTheme(saved);
+        else applyTheme(getAutoTheme());
+      })();
+    </script>
+
     <link rel="stylesheet" href="style.css" />
   </head>
- 
- <body id="top">
+
+  <body id="top">
+    <div class="topbar" id="topbar">
+      <div class="traffic-inline" id="scroll-traffic" aria-label="Scroll progress indicator">
+        <span class="bulb" data-color="green" aria-hidden="true"></span>
+        <span class="bulb" data-color="yellow" aria-hidden="true"></span>
+        <span class="bulb" data-color="red" aria-hidden="true"></span>
+      </div>
+
+      <div id="time-greeting" class="time-greeting" aria-live="polite"></div>
+
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-label="Change theme"
+        title="Theme: GRAPHITE (click to change)"
+      >
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      </button>
+
+      <div class="topbar-progress">
+        <div class="topbar-progress__fill" id="scroll-progress"></div>
+      </div>
+    </div>
+    
+
   <div class="resume">
     <!-- LEFT / BASE -->
     <div class="base">
