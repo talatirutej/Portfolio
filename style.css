@@ -219,88 +219,46 @@ small, .meta small {
 }
 
 /* =========================================
-   HORIZONTAL TRAFFIC LIGHT (inside topbar)
+   COMPACT BOX-STYLE TRAFFIC LIGHT
 ========================================= */
 .traffic-inline{
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  justify-content: flex-start;
 
-  width: 132px;
-  height: 34px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  width: 92px;
+  height: 28px;
+  padding: 4px 8px;
 
-  background: color-mix(in srgb, var(--panel) 65%, #000 35%);
-  border: 1px solid color-mix(in srgb, var(--border) 70%, rgba(0,0,0,0.25));
-  box-shadow: 0 10px 20px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
-
+  border-radius: 8px; /* boxy, not pill */
+  background: color-mix(in srgb, var(--panel) 75%, #000 25%);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
   position: relative;
   overflow: hidden;
 }
 
-.traffic-inline::after{
-  content:"";
-  position:absolute;
-  inset: 2px;
-  border-radius: 999px;
-  background: linear-gradient(110deg,
-    rgba(255,255,255,0.14),
-    rgba(255,255,255,0.02) 45%,
-    rgba(0,0,0,0.06)
-  );
-  pointer-events:none;
-}
+.traffic-inline::after{ content:none; } /* remove glossy overlay */
 
 .traffic-inline .bulb{
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px; /* square lights */
   opacity: 0.25;
 
-  background: radial-gradient(circle at 35% 30%,
-    rgba(255,255,255,0.18),
-    rgba(0,0,0,0.22) 70%
-  );
-
-  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22);
-  transform: scale(0.98);
-  transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  background: #222;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
 }
 
 .traffic-inline .bulb.is-on{
   opacity: 1;
-  transform: scale(1.12);
+  transform: scale(1.1);
 }
 
-/* ON states */
-.traffic-inline .bulb[data-color="green"].is-on{
-  background: radial-gradient(circle at 35% 30%,
-    rgba(255,255,255,0.92),
-    #2ecc71 35%,
-    #0b7a3b 80%
-  );
-  box-shadow: 0 0 10px rgba(46,204,113,0.70), 0 0 20px rgba(46,204,113,0.30);
-}
-
-.traffic-inline .bulb[data-color="yellow"].is-on{
-  background: radial-gradient(circle at 35% 30%,
-    rgba(255,255,255,0.92),
-    #fdd835 35%,
-    #b88f00 80%
-  );
-  box-shadow: 0 0 10px rgba(253,216,53,0.70), 0 0 20px rgba(253,216,53,0.28);
-}
-
-.traffic-inline .bulb[data-color="red"].is-on{
-  background: radial-gradient(circle at 35% 30%,
-    rgba(255,255,255,0.92),
-    #e53935 35%,
-    #7a0b0b 80%
-  );
-  box-shadow: 0 0 10px rgba(229,57,53,0.75), 0 0 22px rgba(229,57,53,0.32);
-}
+.traffic-inline .bulb[data-color="green"].is-on{ background:#2ecc71; }
+.traffic-inline .bulb[data-color="yellow"].is-on{ background:#fdd835; }
+.traffic-inline .bulb[data-color="red"].is-on{ background:#e53935; }
 
 /* =========================================
    PROGRESS BAR INSIDE TOPBAR
