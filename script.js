@@ -85,6 +85,84 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => target.classList.remove("focus"), 1200);
     });
   });
+/* =========================================================
+   INTEREST MODAL
+========================================================= */
+const modal = document.getElementById("interestModal");
+if (modal) {
+  const title = modal.querySelector(".interest-modal__title");
+  const text = modal.querySelector(".interest-modal__text");
+  const closeBtn = modal.querySelector(".interest-modal__close");
+  const backdrop = modal.querySelector(".interest-modal__backdrop");
+
+  const close = () => {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  };
+
+  document.querySelectorAll(".interest-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      title.textContent = btn.dataset.title || "";
+      text.textContent = btn.dataset.text || "";
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    });
+  });
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", close);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("is-open")) close();
+  });
+}
+/* =========================================================
+   THEME: AUTO + TOGGLE
+========================================================= */
+const themeBtn = document.getElementById("theme-toggle");
+const STORAGE_KEY = "theme-override";
+
+const getAutoTheme = () => {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "light";
+  if (h >= 12 && h < 17) return "graphite";
+  return "dark";
+};
+
+const applyTheme = (theme) => {
+  if (theme === "graphite") {
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+};
+
+const saved = localStorage.getItem(STORAGE_KEY);
+applyTheme(saved || getAutoTheme());
+
+// auto-update every minute if no override
+setInterval(() => {
+  if (!localStorage.getItem(STORAGE_KEY)) applyTheme(getAutoTheme());
+}, 60000);
+
+// toggle click
+if (themeBtn) {
+  themeBtn.addEventListener("click", () => {
+    const cur = document.documentElement.getAttribute("data-theme") || "graphite";
+    const next = cur === "light" ? "graphite" : cur === "graphite" ? "dark" : "light";
+    applyTheme(next);
+    localStorage.setItem(STORAGE_KEY, next);
+  });
+
+  // right-click reset to auto
+  themeBtn.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    localStorage.removeItem(STORAGE_KEY);
+    applyTheme(getAutoTheme());
+  });
+}
 
   /* =========================================================
      GREETING + TYPING
