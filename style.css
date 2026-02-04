@@ -927,3 +927,27 @@ html[data-theme="dark"] .resume .base .profile .fa-rocket { color: #0c1026; }
   }
   a { color: #000 !important; text-decoration: underline !important; }
 }
+/* LIGHT THEME – feedback button text color fix */
+html[data-theme="light"] .feedback-form button {
+  color: #ffffff;              /* white text */
+}
+/* LIGHT THEME – profile text contrast */
+html[data-theme="light"] .resume .base .profile .info .name,
+html[data-theme="light"] .resume .base .profile .info .job {
+  color: #ffffff;
+}
+/* LIGHT THEME – keep icons perfectly centered in circles */
+html[data-theme="light"] .lead-chip i,
+html[data-theme="light"] .highlight-chip i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+
+  border-radius: 50%;
+  overflow: hidden;   /* prevents icon bleed */
+}
+
