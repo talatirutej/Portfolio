@@ -1,3 +1,5 @@
+console.log("script.js loaded ✅");
+
 \document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
      HELPERS
@@ -389,3 +391,4 @@
   window.addEventListener("resize", update);
   update();
 })();
+
