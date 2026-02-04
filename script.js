@@ -1,24 +1,10 @@
 console.log("script.js loaded ✅");
 
-\document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
      HELPERS
   ========================================================= */
   const root = document.documentElement;
-
-  const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
-
-  const rafThrottle = (fn) => {
-    let ticking = false;
-    return (...args) => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        fn(...args);
-        ticking = false;
-      });
-    };
-  };
 
   /* =========================================================
      RADIAL TECHNICAL SKILLS
@@ -55,16 +41,17 @@ console.log("script.js loaded ✅");
         }
         if (p < 1) requestAnimationFrame(tick);
       };
-
       requestAnimationFrame(tick);
     }
   });
 
   /* =========================================================
-     PROJECT HIGHLIGHT CHIPS
+     CHIP NAVIGATION
   ========================================================= */
   const clearClasses = (selector, ...classes) => {
-    document.querySelectorAll(selector).forEach((el) => el.classList.remove(...classes));
+    document.querySelectorAll(selector).forEach((el) =>
+      el.classList.remove(...classes)
+    );
   };
 
   document.querySelectorAll(".highlight-chip").forEach((btn) => {
@@ -77,20 +64,16 @@ console.log("script.js loaded ✅");
       btn.classList.add("active");
 
       target.scrollIntoView({ behavior: "smooth", block: "start" });
-      target.classList.remove("focus");
-      void target.offsetWidth;
       target.classList.add("focus");
-
       setTimeout(() => target.classList.remove("focus"), 1200);
     });
   });
 
-  /* =========================================================
-     LEADERSHIP CHIPS
-  ========================================================= */
   document.querySelectorAll(".lead-chip").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const target = document.querySelector(`.lead-block[data-lead="${btn.dataset.lead}"]`);
+      const target = document.querySelector(
+        `.lead-block[data-lead="${btn.dataset.lead}"]`
+      );
       if (!target) return;
 
       clearClasses(".lead-block", "focus");
@@ -98,84 +81,13 @@ console.log("script.js loaded ✅");
       btn.classList.add("active");
 
       target.scrollIntoView({ behavior: "smooth", block: "start" });
-      target.classList.remove("focus");
-      void target.offsetWidth;
       target.classList.add("focus");
-
       setTimeout(() => target.classList.remove("focus"), 1200);
     });
   });
 
   /* =========================================================
-     INTEREST MODAL
-  ========================================================= */
-  const modal = document.getElementById("interestModal");
-  if (modal) {
-    const title = modal.querySelector(".interest-modal__title");
-    const text = modal.querySelector(".interest-modal__text");
-    const closeBtn = modal.querySelector(".interest-modal__close");
-    const backdrop = modal.querySelector(".interest-modal__backdrop");
-
-    const close = () => {
-      modal.classList.remove("is-open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    };
-
-    document.querySelectorAll(".interest-chip").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (title) title.textContent = btn.dataset.title || "";
-        if (text) text.textContent = btn.dataset.text || "";
-        modal.classList.add("is-open");
-        modal.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
-      });
-    });
-
-    closeBtn?.addEventListener("click", close);
-    backdrop?.addEventListener("click", close);
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modal.classList.contains("is-open")) close();
-    });
-  }
-
-  /* =========================================================
-     FEEDBACK FORM (FORMSPREE)
-  ========================================================= */
-  const form = document.querySelector(".feedback-form");
-  const status = document.getElementById("feedbackStatus");
-
-  if (form && status) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      status.textContent = "Sending…";
-      status.style.opacity = "0.9";
-
-      try {
-        const res = await fetch(form.action, {
-          method: "POST",
-          body: new FormData(form),
-          headers: { Accept: "application/json" },
-        });
-
-        if (res.ok) {
-          status.textContent = "Thank you for your feedback. Your message has been sent.";
-          form.reset();
-        } else {
-          status.textContent = "Something went wrong. Please try again.";
-        }
-      } catch {
-        status.textContent = "Network error. Please try again later.";
-      }
-    });
-  }
-
-  /* =========================================================
-     GREETING + TYPING (ONE SINGLE CONTROLLER)
-     - Types normal greeting on load
-     - If scroll >= 90%: types thank-you message
-     - If scroll < 90%: types time greeting again
+     GREETING + TYPING
   ========================================================= */
   const greetingEl = document.getElementById("time-greeting");
 
@@ -186,180 +98,48 @@ console.log("script.js loaded ✅");
     return "Good evening";
   };
 
-  // Prevent “retyping” if same message requested repeatedly
-  let lastGreetingText = "";
-  let typingTimer = null;
-
   const typeText = (el, text, speed = 35) => {
     if (!el) return;
-    if (text === lastGreetingText) return;
-
-    lastGreetingText = text;
-
-    // stop any existing typing
-    if (typingTimer) clearTimeout(typingTimer);
-
     el.textContent = "";
-    el.classList.add("typing");
-
     let i = 0;
     const step = () => {
       if (i < text.length) {
         el.textContent += text.charAt(i++);
-        typingTimer = setTimeout(step, speed);
-      } else {
-        el.classList.remove("typing");
-        typingTimer = null;
+        setTimeout(step, speed);
       }
     };
     step();
   };
 
-  const normalGreeting = () => `${getTimeGreeting()}, welcome to my portfolio!`;
-  const endGreeting = () => `Thank you for visiting my page!`;
-
-  if (greetingEl) {
-    typeText(greetingEl, normalGreeting(), 35);
-  }
+  typeText(greetingEl, `${getTimeGreeting()}, welcome to my portfolio!`);
 
   /* =========================================================
-     THEME: AUTO + TOGGLE (3 modes)
-     - Auto: light (morning), graphite (afternoon), dark (evening/night)
-     - Toggle cycles light -> graphite -> dark
-     - Saves override; right-click / long-press resets to auto
+     SCROLL: progress bar + traffic lights
   ========================================================= */
-  const themeBtn = document.getElementById("theme-toggle");
-  const STORAGE_KEY = "theme-override"; // "light" | "graphite" | "dark" | null
-
-  const getAutoTheme = () => {
-    const h = new Date().getHours();
-    if (h >= 5 && h < 12) return "light";
-    if (h >= 12 && h < 17) return "graphite";
-    return "dark";
-  };
-
-  const resolvedTheme = () => root.getAttribute("data-theme") || "graphite";
-
-  const applyTheme = (theme) => {
-    if (theme === "graphite") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", theme);
-
-    if (themeBtn) {
-      const label = theme === "graphite" ? "GRAPHITE" : theme.toUpperCase();
-      themeBtn.title = `Theme: ${label} (click to change)`;
-      themeBtn.setAttribute("aria-label", `Theme: ${label}. Click to change.`);
-    }
-  };
-
-  const saveOverride = (theme) => localStorage.setItem(STORAGE_KEY, theme);
-
-  const clearOverride = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    applyTheme(getAutoTheme());
-  };
-
-  // Init theme
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved === "light" || saved === "dark" || saved === "graphite") {
-    applyTheme(saved);
-  } else {
-    applyTheme(getAutoTheme());
-  }
-
-  // Auto updates only when no override
-  setInterval(() => {
-    const hasOverride = !!localStorage.getItem(STORAGE_KEY);
-    if (hasOverride) return;
-
-    const next = getAutoTheme();
-    const cur = resolvedTheme();
-    if (cur !== next) applyTheme(next);
-  }, 60_000);
-
-  // Toggle click
-  if (themeBtn) {
-    themeBtn.addEventListener("click", () => {
-      const cur = resolvedTheme();
-      const next = cur === "light" ? "graphite" : cur === "graphite" ? "dark" : "light";
-      applyTheme(next);
-      saveOverride(next);
-    });
-
-    // Reset to auto: right click
-    themeBtn.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      clearOverride();
-    });
-
-    // Reset to auto: long press
-    let pressTimer = null;
-    themeBtn.addEventListener(
-      "touchstart",
-      () => {
-        pressTimer = setTimeout(() => clearOverride(), 550);
-      },
-      { passive: true }
-    );
-    themeBtn.addEventListener("touchend", () => {
-      if (pressTimer) clearTimeout(pressTimer);
-    });
-  }
-
-  /* =========================================================
-     SCROLL GREETING SYNC (driven by single scroll controller below)
-     - listens to progress updates and switches greeting at >= 90%
-  ========================================================= */
-  let endShown = false;
-
-  window.addEventListener("portfolio:scrollProgress", (e) => {
-    if (!greetingEl) return;
-    const progress = Number(e?.detail?.progress ?? 0);
-
-    if (progress >= 90 && !endShown) {
-      typeText(greetingEl, endGreeting(), 28);
-      endShown = true;
-    } else if (progress < 90 && endShown) {
-      typeText(greetingEl, normalGreeting(), 35);
-      endShown = false;
-    }
-  });
-
-  /* =========================================================
-     NOTE:
-     Scroll progress bar + traffic lights are handled below
-     by the single IIFE controller, to avoid duplicates.
-  ========================================================= */
-});
-
-/* =========================================
-   SCROLL: progress bar + traffic lights
-========================================= */
-(function () {
   const fill = document.getElementById("scroll-progress");
   const traffic = document.getElementById("scroll-traffic");
+
   if (!fill || !traffic) return;
 
-  const green = traffic.querySelector('.bulb[data-color="green"]');
-  const yellow = traffic.querySelector('.bulb[data-color="yellow"]');
-  const red = traffic.querySelector('.bulb[data-color="red"]');
+  const green = traffic.querySelector('[data-color="green"]');
+  const yellow = traffic.querySelector('[data-color="yellow"]');
+  const red = traffic.querySelector('[data-color="red"]');
 
-  function setLights(stage){
-    // clear all
-    [green, yellow, red].forEach(b => b && b.classList.remove("is-on"));
-    // stage on
-    if (stage === "green" && green) green.classList.add("is-on");
-    if (stage === "yellow" && yellow) yellow.classList.add("is-on");
-    if (stage === "red" && red) red.classList.add("is-on");
+  function setLights(stage) {
+    [green, yellow, red].forEach((b) => b.classList.remove("is-on"));
+    if (stage === "green") green.classList.add("is-on");
+    if (stage === "yellow") yellow.classList.add("is-on");
+    if (stage === "red") red.classList.add("is-on");
   }
 
-  function update(){
+  function updateScroll() {
     const scrollTop = window.scrollY;
-    const height = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = height > 0 ? Math.min((scrollTop / height) * 100, 100) : 0;
+    const height =
+      document.documentElement.scrollHeight - window.innerHeight;
+    const progress = height > 0 ? (scrollTop / height) * 100 : 0;
 
     fill.style.width = `${progress}%`;
 
-    // stage thresholds
     if (progress < 50) {
       fill.style.background = "#2ecc71";
       setLights("green");
@@ -370,25 +150,11 @@ console.log("script.js loaded ✅");
       fill.style.background = "#e53935";
       setLights("red");
     }
-
-    // Greeting sync (single source of truth)
-    window.dispatchEvent(
-      new CustomEvent("portfolio:scrollProgress", { detail: { progress } })
-    );
   }
 
-  let ticking = false;
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        update();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }, { passive: true });
-
-  window.addEventListener("resize", update);
-  update();
-})();
-
+  window.addEventListener("scroll", () =>
+    requestAnimationFrame(updateScroll)
+  );
+  window.addEventListener("resize", updateScroll);
+  updateScroll();
+});
