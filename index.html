@@ -1,843 +1,824 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rutej Talati — Mechanical Engineer</title>
-  <meta name="description" content="Portfolio of Rutej Talati — Mechanical Engineer, CFD researcher, automotive consultant at PwC, creator of AeroNet."/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Portfolio · Supercar GT</title>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300;8..144,400;8..144,600;8..144,900&family=Roboto+Mono:wght@400;500&family=Roboto+Slab:wght@300;700;900&display=swap" rel="stylesheet"/>
+<!-- Sketchfab Viewer API -->
+<script src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
 
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@300;400;600&display=swap');
 
-  <!-- ── YOUR EXISTING CSS FILES (untouched) ── -->
-  <link rel="stylesheet" href="tokens.css"/>
-  <link rel="stylesheet" href="layout.css"/>
-  <link rel="stylesheet" href="animations.css"/>
-  <link rel="stylesheet" href="components.css"/>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <!-- ── NEW: Extended M3 crazy animations layer ── -->
-  <link rel="stylesheet" href="animations-ext.css"/>
+:root {
+  --bg:      #03040a;
+  --accent:  #00ffe0;
+  --accent2: #ff2e63;
+  --accent3: #7b5ea7;
+  --text:    #dde4f0;
+  --muted:   #3d4a5c;
+  --glass:   rgba(3,4,16,0.92);
+  --border:  rgba(0,255,224,0.15);
+  --panel-w: 440px;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: 'Syne', sans-serif;
+  color: var(--text);
+  cursor: crosshair;
+}
+
+/* ── VIEWER ── */
+#api-frame {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  border: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 1s;
+}
+#api-frame.ready { opacity: 1; }
+
+/* ── LOADING SCREEN ── */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 900;
+  transition: opacity 0.9s, visibility 0.9s;
+}
+#loader.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.loader-car {
+  width: 80px; height: 80px; margin-bottom: 32px; position: relative;
+}
+.loader-car svg { width: 100%; height: 100%; }
+.spin-ring {
+  animation: spin 1.4s linear infinite;
+  transform-origin: center;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loader-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem; letter-spacing: 0.35em;
+  color: var(--accent); text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.progress-track {
+  width: 180px; height: 1px;
+  background: rgba(0,255,224,0.1);
+  position: relative; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--accent);
+  width: 0%; transition: width 0.3s;
+  box-shadow: 0 0 12px var(--accent);
+}
+
+/* ── HEADER ── */
+#header {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 18px 32px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  z-index: 50; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(3,4,10,0.88) 0%, transparent 100%);
+}
+.h-name {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(0.9rem, 2vw, 1.25rem);
+  font-weight: 900; letter-spacing: 0.08em;
+}
+.h-name span { color: var(--accent); }
+.h-sub {
+  font-size: 0.58rem; letter-spacing: 0.22em;
+  color: var(--muted); text-transform: uppercase; margin-top: 4px;
+}
+.h-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.5rem; letter-spacing: 0.2em;
+  color: var(--accent); border: 1px solid var(--border);
+  padding: 6px 14px; text-transform: uppercase;
+  background: rgba(0,255,224,0.04);
+}
+
+/* ── INSTRUCTION HINT ── */
+#hint {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem; letter-spacing: 0.2em; color: var(--muted);
+  text-transform: uppercase; z-index: 50; pointer-events: none;
+  text-align: center; transition: opacity 0.5s;
+  text-shadow: 0 0 12px rgba(0,255,224,0.3);
+}
+#hint em { color: var(--accent); font-style: normal; }
+#hint.hidden { opacity: 0; }
+
+/* ── SECTION BUTTONS (floating nav) ── */
+#section-nav {
+  position: fixed; right: 24px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 50;
+}
+.sec-btn {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; padding: 8px 14px 8px 10px;
+  border: 1px solid transparent;
+  background: rgba(3,4,10,0.6);
+  transition: all 0.25s; pointer-events: all;
+  backdrop-filter: blur(6px);
+}
+.sec-btn:hover, .sec-btn.active {
+  border-color: var(--border);
+  background: rgba(0,255,224,0.06);
+}
+.sec-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted); flex-shrink: 0;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.sec-btn:hover .sec-dot, .sec-btn.active .sec-dot {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.sec-label {
+  font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted); transition: color 0.2s; white-space: nowrap;
+}
+.sec-btn:hover .sec-label, .sec-btn.active .sec-label { color: var(--accent); }
+
+/* ── BACK BUTTON ── */
+#back-btn {
+  position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; pointer-events: all;
+  padding: 10px 24px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(3,4,10,0.85); z-index: 60;
+  transition: all 0.22s; display: none;
+  backdrop-filter: blur(8px);
+}
+#back-btn:hover { color: var(--accent); border-color: var(--border); }
+#back-btn.show { display: block; }
+
+/* ── ZOOM PROGRESS BAR ── */
+#zoom-bar {
+  position: fixed; bottom: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  z-index: 60; width: 0%;
+  transition: width 0.08s linear;
+  pointer-events: none;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* ── OVERLAY PANEL ── */
+#overlay {
+  position: fixed; inset: 0; z-index: 55;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.5s;
+}
+#overlay.open { opacity: 1; pointer-events: all; }
+
+#overlay-curtain {
+  position: absolute; inset: 0;
+  background: rgba(3,4,10,0.55);
+  backdrop-filter: blur(3px);
+}
+
+#panel {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: var(--panel-w);
+  background: var(--glass);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 0;
+  transform: translateX(100%);
+  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+#overlay.open #panel { transform: translateX(0); }
+
+/* Scanline texture */
+#panel::before {
+  content: '';
+  position: sticky; top: 0; left: 0; right: 0;
+  height: 0;
+  display: block;
+}
+#panel::after {
+  content: '';
+  position: fixed; right: 0; top: 0;
+  width: var(--panel-w); height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+  );
+  z-index: 1;
+}
+
+/* Panel accent bar at top */
+.panel-topbar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3), transparent);
+}
+
+.panel-inner { padding: 32px 36px 48px; position: relative; z-index: 2; }
+
+.p-tag {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.5rem; letter-spacing: 0.3em; text-transform: uppercase;
+  background: var(--accent); color: var(--bg);
+  display: inline-block; padding: 4px 14px; margin-bottom: 18px;
+}
+.p-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 5rem; font-weight: 900; line-height: 1;
+  color: rgba(0,255,224,0.06);
+  display: block; margin-bottom: -28px;
+  user-select: none;
+}
+.p-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700;
+  line-height: 1.15; color: var(--text);
+  margin-bottom: 14px;
+}
+.p-divider {
+  width: 36px; height: 2px;
+  background: var(--accent2); margin-bottom: 22px;
+}
+.p-desc {
+  font-size: 0.78rem; line-height: 1.9;
+  color: rgba(221,228,240,0.62);
+  margin-bottom: 26px;
+  white-space: pre-line;
+}
+.p-chips {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-bottom: 28px;
+}
+.chip {
+  font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 5px 12px; border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted); transition: all 0.2s; cursor: default;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Timeline entries */
+.timeline { border-left: 1px solid var(--border); padding-left: 18px; }
+.t-entry { margin-bottom: 18px; }
+.t-yr {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.52rem; letter-spacing: 0.2em;
+  color: var(--accent); margin-bottom: 3px;
+}
+.t-role { font-size: 0.78rem; color: var(--text); margin-bottom: 2px; }
+.t-org { font-size: 0.68rem; color: var(--muted); }
+
+.close-btn {
+  position: absolute; top: 40px; right: 30px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.55rem; letter-spacing: 0.15em;
+  color: var(--muted); cursor: pointer;
+  padding: 7px 14px; border: 1px solid rgba(255,255,255,0.08);
+  background: transparent; transition: all 0.2s; z-index: 3;
+}
+.close-btn:hover { color: var(--accent); border-color: var(--border); }
+
+/* ── Region hotspot pins (visible in 3D space via CSS) ── */
+/* We use click on the viewer iframe via the API's click event — these are just HUD labels */
+.region-label {
+  position: fixed; pointer-events: none;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.52rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent);
+  padding: 4px 10px;
+  border-left: 2px solid var(--accent);
+  background: rgba(3,4,10,0.72);
+  opacity: 0; transition: opacity 0.25s;
+  white-space: nowrap; z-index: 40;
+  text-shadow: 0 0 8px rgba(0,255,224,0.5);
+  transform: translate(10px, -50%);
+}
+
+/* ── Camera info debug (hidden by default) ── */
+#cam-debug {
+  position: fixed; bottom: 40px; left: 16px;
+  font-family: monospace; font-size: 0.58rem; color: rgba(0,255,224,0.4);
+  z-index: 200; pointer-events: none; display: none;
+}
+
+/* ── Pulsing ring indicator ── */
+@keyframes ring-pulse {
+  0%   { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
+  100% { transform: translate(-50%,-50%) scale(2.5); opacity: 0; }
+}
+.ping-ring {
+  position: fixed; width: 20px; height: 20px;
+  border-radius: 50%; border: 1px solid var(--accent);
+  pointer-events: none; z-index: 45;
+  transform: translate(-50%,-50%);
+  animation: ring-pulse 1.8s ease-out infinite;
+}
+
+/* ── CFD lines canvas ── */
+#cfd {
+  position: fixed; inset: 0; z-index: 2;
+  pointer-events: none; opacity: 0.15;
+}
+</style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
-     TOPBAR
-══════════════════════════════════════════════ -->
-<header class="topbar" id="topbar">
-  <a href="#hero" class="topbar__logo glitch-host" data-text="RT">
-    RT<span> / Rutej Talati</span>
-  </a>
+<!-- CFD ambient lines -->
+<canvas id="cfd"></canvas>
 
-  <nav class="topbar__nav" aria-label="Main navigation">
-    <a href="#about">About</a>
-    <a href="#experience">Experience</a>
-    <a href="#projects">Projects</a>
-    <a href="#skills">Skills</a>
-    <a href="#leadership">Leadership</a>
-    <a href="#contact">Contact</a>
-  </nav>
-
-  <div class="topbar__actions">
-    <span id="topbar-greeting" style="
-      font-family:var(--font-mono);font-size:.72rem;
-      color:var(--md-on-surface-var);letter-spacing:.04em;
-    "></span>
-    <button class="topbar__icon-btn" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">
-      <i id="icon-theme" class="fa-solid fa-moon"></i>
-    </button>
-    <a class="topbar__icon-btn" href="https://linkedin.com/in/rutejtalati" target="_blank"
-       rel="noopener" title="LinkedIn" aria-label="LinkedIn">
-      <i class="fa-brands fa-linkedin-in"></i>
-    </a>
-    <a class="topbar__icon-btn" href="https://github.com/talatirutej" target="_blank"
-       rel="noopener" title="GitHub" aria-label="GitHub">
-      <i class="fa-brands fa-github"></i>
-    </a>
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-car">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" stroke="rgba(0,255,224,0.08)" stroke-width="1.5"/>
+      <circle cx="40" cy="40" r="36" stroke="url(#g)" stroke-width="1.5"
+              stroke-dasharray="60 165" class="spin-ring"/>
+      <circle cx="40" cy="40" r="28" stroke="rgba(123,94,167,0.2)" stroke-width="1"/>
+      <circle cx="40" cy="40" r="28" stroke="url(#g2)" stroke-width="1"
+              stroke-dasharray="30 146" class="spin-ring" style="animation-direction:reverse;animation-duration:2s"/>
+      <text x="40" y="44" text-anchor="middle" fill="rgba(0,255,224,0.8)"
+            font-family="monospace" font-size="9" letter-spacing="1">GT</text>
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#00ffe0"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="80" y1="0" x2="0" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#7b5ea7"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+    </svg>
   </div>
+  <div class="loader-label" id="loader-text">Initialising viewer</div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
 
-  <div class="topbar__progress" aria-hidden="true">
-    <div class="topbar__progress__fill" id="scroll-progress-fill"></div>
+<!-- Sketchfab iframe -->
+<iframe id="api-frame"
+  allow="autoplay; fullscreen; xr-spatial-tracking"
+  xr-spatial-tracking execution-while-out-of-viewport
+  execution-while-not-rendered web-share
+  allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true">
+</iframe>
+
+<!-- Header -->
+<div id="header">
+  <div>
+    <div class="h-name">A<span>.</span>Rivera <span style="color:var(--muted);font-weight:300;font-size:0.8em">/ Portfolio</span></div>
+    <div class="h-sub">CFD · ML Research · Full-Stack Engineering</div>
   </div>
-</header>
+  <div class="h-badge">3D Interactive Portfolio</div>
+</div>
 
+<!-- Floating nav -->
+<nav id="section-nav"></nav>
 
-<!-- ══════════════════════════════════════════════
-     HERO
-══════════════════════════════════════════════ -->
-<section class="hero" id="hero" aria-label="Introduction">
+<!-- Back button -->
+<button id="back-btn">← Overview</button>
 
-  <!-- Animated background orbs (new) -->
-  <div class="hero__orb hero__orb--a" aria-hidden="true"></div>
-  <div class="hero__orb hero__orb--b" aria-hidden="true"></div>
-  <div class="hero__orb hero__orb--c" aria-hidden="true"></div>
+<!-- Hint -->
+<div id="hint"><em>Click any region</em> of the car to explore · drag to orbit · scroll to zoom</div>
 
-  <!-- existing bg elements -->
-  <div class="hero__bg" aria-hidden="true"></div>
-  <div class="hero__grid" aria-hidden="true"></div>
-  <!-- particle canvas injected by enhancements.js -->
+<!-- Zoom progress -->
+<div id="zoom-bar"></div>
 
-  <div class="hero__content">
-    <p class="hero__eyebrow">
-      Mechanical Engineer &middot; Class of 2025 &middot; Penn State
-    </p>
-
-    <h1 class="hero__name">
-      <span class="hero__name-wrap">Rutej</span><br/>
-      <span class="hero__name-wrap"><span class="highlight">Talati</span></span>
-    </h1>
-
-    <p class="hero__subtitle">
-      Building at the intersection of hardware simulation, computational aerodynamics,
-      and intelligent software — from F1 CFD to software-defined vehicles.
-    </p>
-
-    <div class="hero__tags" aria-label="Specialisations">
-      <span class="chip chip--primary"><i class="fa-solid fa-wind"></i> CFD &amp; Aerodynamics</span>
-      <span class="chip chip--tertiary"><i class="fa-solid fa-car"></i> Automotive Strategy</span>
-      <span class="chip"><i class="fa-solid fa-microchip"></i> Software Defined Vehicles</span>
-      <span class="chip chip--amber"><i class="fa-solid fa-trophy"></i> Dean's List · 3.5 GPA</span>
+<!-- Overlay -->
+<div id="overlay">
+  <div id="overlay-curtain"></div>
+  <div id="panel">
+    <div class="panel-topbar"></div>
+    <div class="panel-inner">
+      <button class="close-btn" id="close-btn">✕ Close</button>
+      <div class="p-tag" id="p-tag">Section</div>
+      <span class="p-num" id="p-num">01</span>
+      <div class="p-title" id="p-title">Title</div>
+      <div class="p-divider"></div>
+      <div class="p-desc" id="p-desc"></div>
+      <div class="p-chips" id="p-chips"></div>
+      <div class="timeline" id="p-timeline"></div>
     </div>
-
-    <div class="hero__ctas">
-      <a href="#contact" class="btn btn--filled ripple-host">
-        <i class="fa-solid fa-paper-plane"></i> Get in touch
-      </a>
-      <a href="#projects" class="btn btn--outlined ripple-host">
-        <i class="fa-solid fa-diagram-project"></i> View projects
-      </a>
-      <a href="resume.pdf" target="_blank" class="btn btn--text">
-        <i class="fa-solid fa-file-pdf"></i> Résumé
-      </a>
-    </div>
-  </div>
-
-  <!-- Stats bar -->
-  <div class="hero__stats" aria-label="Key statistics">
-    <div class="hero__stat">
-      <div class="hero__stat__num" data-count="3" data-suffix="+">0+</div>
-      <div class="hero__stat__label">Industry roles</div>
-    </div>
-    <div class="hero__stat">
-      <div class="hero__stat__num" data-count="4" data-suffix="">0</div>
-      <div class="hero__stat__label">Major projects</div>
-    </div>
-    <div class="hero__stat">
-      <div class="hero__stat__num" data-count="10" data-suffix="+">0+</div>
-      <div class="hero__stat__label">CAE tools</div>
-    </div>
-    <div class="hero__stat">
-      <div class="hero__stat__num" data-count="3.5" data-suffix=" GPA">0.0</div>
-      <div class="hero__stat__label">ME graduate GPA</div>
-    </div>
-  </div>
-</section>
-
-<div class="divider" aria-hidden="true"></div>
-
-
-<!-- ══════════════════════════════════════════════
-     ABOUT
-══════════════════════════════════════════════ -->
-<section class="section section--numbered reveal" id="about" aria-labelledby="about-title">
-  <div class="page">
-    <div class="section__head reveal">
-      <span class="section__num" aria-hidden="true">01</span>
-      <h2 class="section__title" id="about-title">About</h2>
-      <div class="section__rule" aria-hidden="true"></div>
-    </div>
-
-    <div class="about-grid">
-      <div class="about-bio reveal--blur">
-        <p>
-          I'm a Mechanical Engineering graduate from <strong>Penn State University</strong>
-          with a minor in Physics, deeply passionate about bridging physical simulation
-          and intelligent systems design.
-        </p>
-        <p style="margin-top:18px">
-          My work spans <strong>CFD aerodynamics research</strong>, <strong>automotive consulting at PwC
-          Southeast Asia</strong>, drivetrain FEA with Dana Inc. / Shanghai Jiao Tong University, and
-          safety-critical software on Penn State's autonomous vehicle team. I thrive where
-          rigorous engineering meets strategic thinking.
-        </p>
-        <p style="margin-top:18px">
-          Outside engineering I follow <strong>Formula 1</strong> closely, build aerodynamic simulation
-          models, and tinker with ML pipelines — which led to <strong>AeroNet</strong>, a GNN-based
-          drag-coefficient predictor trained on 10k+ CFD runs with a live WebGL viewer.
-        </p>
-      </div>
-
-      <div class="about-contact reveal--blur" style="transition-delay:140ms">
-        <a class="contact-row ripple-host" href="mailto:talatirutej@gmail.com">
-          <i class="fa-solid fa-envelope" aria-hidden="true"></i>
-          talatirutej@gmail.com
-        </a>
-        <a class="contact-row ripple-host" href="tel:+18148529229">
-          <i class="fa-solid fa-phone" aria-hidden="true"></i>
-          +1 (814) 852-9229
-        </a>
-        <a class="contact-row ripple-host" href="https://linkedin.com/in/rutejtalati"
-           target="_blank" rel="noopener">
-          <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i>
-          linkedin.com/in/rutejtalati
-        </a>
-        <a class="contact-row ripple-host" href="https://talatirutej.github.io/Portfolio/"
-           target="_blank" rel="noopener">
-          <i class="fa-solid fa-globe" aria-hidden="true"></i>
-          talatirutej.github.io/Portfolio
-        </a>
-        <a class="contact-row ripple-host" href="resume.pdf" target="_blank">
-          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
-          Download résumé
-        </a>
-      </div>
-    </div>
-
-    <!-- Education -->
-    <div style="margin-top:56px">
-      <div class="section__head reveal" style="margin-bottom:24px">
-        <span class="section__num" aria-hidden="true">01b</span>
-        <h3 class="section__title" style="font-size:1.3rem">Education</h3>
-        <div class="section__rule" aria-hidden="true"></div>
-      </div>
-
-      <div class="card card--elevated reveal--flip ripple-host">
-        <div class="edu-card">
-          <div>
-            <div class="edu-degree">B.S. Mechanical Engineering</div>
-            <div class="edu-school">Pennsylvania State University — University Park, PA</div>
-            <div class="edu-meta">
-              <span>Graduation: Dec 2025</span>
-              <span>ME GPA: 3.5</span>
-              <span>Minor: Physics</span>
-            </div>
-            <div class="edu-focus">
-              Core focus areas: Thermodynamics, Structural Mechanics, Fluid Dynamics, and
-              Control Systems. Served as Teaching Assistant for Thermodynamics (2024–25)
-              and Grader for Engineering Mathematics.
-            </div>
-          </div>
-          <div class="edu-awards">
-            <div class="edu-award">
-              <i class="fa-solid fa-trophy" aria-hidden="true"></i> Dean's List — Summer 2023
-            </div>
-            <div class="edu-award">
-              <i class="fa-solid fa-trophy" aria-hidden="true"></i> Dean's List — Summer 2024
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider" aria-hidden="true"></div>
-
-
-<!-- ══════════════════════════════════════════════
-     EXPERIENCE
-══════════════════════════════════════════════ -->
-<section class="section section--numbered" id="experience" aria-labelledby="exp-title">
-  <div class="page">
-    <div class="section__head reveal">
-      <span class="section__num" aria-hidden="true">02</span>
-      <h2 class="section__title" id="exp-title">Experience</h2>
-      <div class="section__rule" aria-hidden="true"></div>
-    </div>
-
-    <div class="exp-list">
-
-      <!-- PwC -->
-      <article class="exp-card reveal ripple-host" id="exp-pwc">
-        <div class="exp-card__header">
-          <div>
-            <div class="exp-card__role">Automotive Consultant</div>
-            <div class="exp-card__org">PwC Southeast Asia</div>
-            <div class="exp-card__meta">
-              <span class="exp-card__dates">Apr 2025 – Sep 2025</span>
-              <span class="exp-card__loc">
-                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Mumbai, India
-              </span>
-              <span class="badge-current" role="status">Current</span>
-            </div>
-          </div>
-        </div>
-        <div class="exp-card__body">
-          <p>
-            Technical consulting at the intersection of automotive engineering and digital
-            transformation — benchmarking OEM platforms, mapping software-defined vehicle
-            architectures, and advising on semiconductor strategies for next-gen vehicles.
-          </p>
-          <div class="exp-card__bullets">
-            <div class="exp-card__bullet">
-              Benchmarked Caterpillar, Kubota, and Tata-Hitachi platforms across powertrain
-              layouts, hydraulic flow behaviour, efficiency curves, and drivetrain load paths —
-              identifying <strong>8 improvement areas</strong>.
-            </div>
-            <div class="exp-card__bullet">
-              Built SDV-level technical mapping models for two OEM platforms, assessing E/E
-              architecture, connectivity layers, in-vehicle compute distribution, and
-              deployment pathways for localised system integration.
-            </div>
-            <div class="exp-card__bullet">
-              Analysed semiconductor options across <strong>20 Tier-1 suppliers</strong> comparing compute
-              capability, memory architecture, thermal envelopes, and ECU integration
-              feasibility for infotainment and control systems.
-            </div>
-            <div class="exp-card__bullet">
-              Co-authored PwC white paper on Software Defined Vehicle Architecture; processed
-              supplier datasets using <strong>Python</strong> and Excel XLOOKUP; produced radar charts and
-              heat-map dashboards for compute-load mapping.
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- AIQ Space -->
-      <article class="exp-card reveal ripple-host" id="exp-aiq" style="transition-delay:80ms">
-        <div class="exp-card__header">
-          <div>
-            <div class="exp-card__role">Technical Strategy Intern</div>
-            <div class="exp-card__org">AIQ Space</div>
-            <div class="exp-card__meta">
-              <span class="exp-card__dates">Apr 2025 – May 2025</span>
-              <span class="exp-card__loc">
-                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Mumbai, India
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="exp-card__body">
-          <p>
-            Evaluated drone platforms and startup landscape for GIS mapping investment —
-            combining technical due diligence with structured scoring models.
-          </p>
-          <div class="exp-card__bullets">
-            <div class="exp-card__bullet">
-              Evaluated drone platforms by comparing sensor suites, payload interfaces,
-              flight-control software, telemetry rates, and compute requirements.
-            </div>
-            <div class="exp-card__bullet">
-              Assessed <strong>12 drone-tech startups</strong> at IIT, recommending top candidates for
-              GIS mapping investment in India.
-            </div>
-            <div class="exp-card__bullet">
-              Built Excel-based scoring models using pivot tables, feature matrices, and
-              weighted metrics to identify high-performance candidates.
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Teaching -->
-      <article class="exp-card reveal ripple-host" id="exp-ta" style="transition-delay:160ms">
-        <div class="exp-card__header">
-          <div>
-            <div class="exp-card__role">Teaching Assistant &amp; Grader</div>
-            <div class="exp-card__org">Pennsylvania State University — Mechanical Engineering</div>
-            <div class="exp-card__meta">
-              <span class="exp-card__dates">Jan 2024 – May 2025</span>
-              <span class="exp-card__loc">
-                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> University Park, PA
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="exp-card__body">
-          <div class="exp-card__bullets">
-            <div class="exp-card__bullet">
-              TA for <strong>Thermodynamics</strong> (May 2024 – May 2025) — held office hours, led
-              lab sessions, and facilitated conceptual walkthroughs for 60+ students.
-            </div>
-            <div class="exp-card__bullet">
-              Grader for <strong>Engineering Mathematics</strong> (Jan 2024 – May 2025) — evaluated
-              rigour and methodology of student problem sets.
-            </div>
-          </div>
-        </div>
-      </article>
-
-    </div>
-  </div>
-</section>
-
-<div class="divider" aria-hidden="true"></div>
-
-
-<!-- ══════════════════════════════════════════════
-     PROJECTS
-══════════════════════════════════════════════ -->
-<section class="section section--numbered" id="projects" aria-labelledby="proj-title">
-  <div class="page">
-    <div class="section__head reveal">
-      <span class="section__num" aria-hidden="true">03</span>
-      <h2 class="section__title" id="proj-title">Projects</h2>
-      <div class="section__rule" aria-hidden="true"></div>
-    </div>
-
-    <!-- Filter chips -->
-    <div class="projects-filter reveal" role="group" aria-label="Project filter">
-      <button class="chip chip--action" data-filter="all">All</button>
-      <button class="chip chip--action" data-filter="cfd">CFD / Aero</button>
-      <button class="chip chip--action" data-filter="fea">FEA / Structural</button>
-      <button class="chip chip--action" data-filter="matlab">MATLAB</button>
-      <button class="chip chip--action" data-filter="sdv">SDV / Strategy</button>
-      <button class="chip chip--action" data-filter="industry">Industry</button>
-    </div>
-
-    <div class="projects-grid stagger">
-
-      <!-- F1 Aerodynamics -->
-      <article class="proj-card reveal--scale" data-tags="cfd,industry" id="proj-f1">
-        <div class="proj-card__accent"></div>
-        <div class="proj-card__body">
-          <div class="proj-card__header">
-            <h3 class="proj-card__title">Formula 1 Aerodynamics Research</h3>
-            <div class="proj-card__icon" aria-hidden="true"><i class="fa-solid fa-wind"></i></div>
-          </div>
-          <div class="proj-card__org">Pennsylvania State University · Jan – Mar 2023</div>
-          <p class="proj-card__desc">
-            CFD analysis of F1 bodywork capturing boundary-layer behaviour, flow separation,
-            pressure gradients, vortex structures, and wake formation. Includes 2026-regulation
-            wake modelling for improved trailing-car stability.
-          </p>
-          <div class="proj-card__outcomes">
-            <div class="proj-card__outcome">SolidWorks surface modelling of aero components</div>
-            <div class="proj-card__outcome">&lt;4% drag prediction error in CFD studies</div>
-            <div class="proj-card__outcome">+7% predicted downforce from diffuser wing updates</div>
-            <div class="proj-card__outcome">2026-regulation vortex decay and turbulence analysis</div>
-          </div>
-        </div>
-        <div class="proj-card__footer">
-          <span class="chip">SolidWorks</span>
-          <span class="chip">CFD</span>
-          <span class="chip">Aerodynamics</span>
-          <span class="chip chip--primary">F1</span>
-        </div>
-      </article>
-
-      <!-- Wabtec Mining Truck -->
-      <article class="proj-card reveal--scale" data-tags="fea,matlab,industry" id="proj-wabtec" style="transition-delay:80ms">
-        <div class="proj-card__accent proj-card__accent--amber"></div>
-        <div class="proj-card__body">
-          <div class="proj-card__header">
-            <h3 class="proj-card__title">Energy-Efficient Mining Truck</h3>
-            <div class="proj-card__icon"
-                 style="background:var(--md-amber-cont);color:var(--md-amber)" aria-hidden="true">
-              <i class="fa-solid fa-truck-monster"></i>
-            </div>
-          </div>
-          <div class="proj-card__org">Wabtec Corporation Challenge · Aug – Dec 2023</div>
-          <p class="proj-card__desc">
-            Designed a piezoelectric energy-harvesting system for heavy mining trucks.
-            Modelled tyre and suspension deformation cycles in SolidWorks; simulated
-            strain-to-power output and power-conditioning strategy in MATLAB/Simulink.
-          </p>
-          <div class="proj-card__outcomes">
-            <div class="proj-card__outcome">18% projected improvement in fuel efficiency</div>
-            <div class="proj-card__outcome">Deformation-mapping-driven piezo placement</div>
-            <div class="proj-card__outcome">Simulink power-conditioning &amp; storage control</div>
-          </div>
-        </div>
-        <div class="proj-card__footer">
-          <span class="chip">MATLAB</span>
-          <span class="chip">Simulink</span>
-          <span class="chip">SolidWorks</span>
-          <span class="chip chip--amber">Wabtec</span>
-        </div>
-      </article>
-
-      <!-- Dana Drive Axle -->
-      <article class="proj-card reveal--scale" data-tags="fea,industry" id="proj-dana" style="transition-delay:160ms">
-        <div class="proj-card__accent proj-card__accent--tertiary"></div>
-        <div class="proj-card__body">
-          <div class="proj-card__header">
-            <h3 class="proj-card__title">Drive Axle Load Analysis</h3>
-            <div class="proj-card__icon"
-                 style="background:var(--md-tertiary-cont);color:var(--md-on-tertiary-cont)" aria-hidden="true">
-              <i class="fa-solid fa-gears"></i>
-            </div>
-          </div>
-          <div class="proj-card__org">Dana Inc. / Shanghai Jiao Tong University · Jan – Apr 2025</div>
-          <p class="proj-card__desc">
-            Static and dynamic FEA of drive axle geometry in ANSYS, correlated with MSC ADAMS
-            duty-cycle load profiles. Developed a load-to-life prediction workflow improving
-            durability and NVH assessment accuracy.
-          </p>
-          <div class="proj-card__outcomes">
-            <div class="proj-card__outcome">6% stress-concentration reduction via geometry opt.</div>
-            <div class="proj-card__outcome">ADAMS load cases correlated with ANSYS fatigue results</div>
-            <div class="proj-card__outcome">Load-to-life workflow for NVH and durability</div>
-          </div>
-        </div>
-        <div class="proj-card__footer">
-          <span class="chip">ANSYS</span>
-          <span class="chip">MSC ADAMS</span>
-          <span class="chip">SolidWorks</span>
-          <span class="chip chip--tertiary">Dana</span>
-        </div>
-      </article>
-
-      <!-- SDV White Paper -->
-      <article class="proj-card reveal--scale" data-tags="sdv,industry" id="proj-sdv" style="transition-delay:240ms">
-        <div class="proj-card__accent"></div>
-        <div class="proj-card__body">
-          <div class="proj-card__header">
-            <h3 class="proj-card__title">SDV Architecture White Paper</h3>
-            <div class="proj-card__icon" aria-hidden="true"><i class="fa-solid fa-microchip"></i></div>
-          </div>
-          <div class="proj-card__org">PwC · Jun – Jul 2025</div>
-          <p class="proj-card__desc">
-            Research publication benchmarking OEM software-defined vehicle architectures —
-            E/E networks, SoC chipset hierarchies, compute loads, bandwidth requirements,
-            and ECU zone readiness. Python data pipelines and dashboard visualisations.
-          </p>
-          <div class="proj-card__outcomes">
-            <div class="proj-card__outcome">Multi-OEM E/E architecture benchmarking</div>
-            <div class="proj-card__outcome">Python + XLOOKUP supplier data pipelines</div>
-            <div class="proj-card__outcome">Radar charts and heat-map compute dashboards</div>
-          </div>
-        </div>
-        <div class="proj-card__footer">
-          <span class="chip">Python</span>
-          <span class="chip">Excel</span>
-          <span class="chip">SDV</span>
-          <span class="chip chip--primary">PwC</span>
-        </div>
-      </article>
-
-    </div>
-  </div>
-</section>
-
-<div class="divider" aria-hidden="true"></div>
-
-
-<!-- ══════════════════════════════════════════════
-     SKILLS
-══════════════════════════════════════════════ -->
-<section class="section section--numbered" id="skills" aria-labelledby="skills-title">
-  <div class="page">
-    <div class="section__head reveal">
-      <span class="section__num" aria-hidden="true">04</span>
-      <h2 class="section__title" id="skills-title">Skills</h2>
-      <div class="section__rule" aria-hidden="true"></div>
-    </div>
-
-    <!-- CAE & Simulation -->
-    <div class="skills-group">
-      <div class="skills-group__label reveal">CAE &amp; Simulation</div>
-      <div class="skills-grid stagger">
-        <div class="skill-ring reveal--scale" data-pct="92">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">ANSYS</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">FEA</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="90">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">SolidWorks</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">CAD</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="85">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">MSC ADAMS</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">MBD</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="83">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">CATIA V5</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">CAD</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="78">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">Fusion 360</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">CAD</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="74">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">AutoCAD</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">Drafting</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Programming & Data -->
-    <div class="skills-group">
-      <div class="skills-group__label reveal">Programming &amp; Data</div>
-      <div class="skills-grid stagger">
-        <div class="skill-ring reveal--scale" data-pct="88">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">MATLAB</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">Simulation</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="80">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">Python</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">Data / ML</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="89">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">Excel</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">Analysis</div>
-        </div>
-
-        <div class="skill-ring reveal--scale" data-pct="66">
-          <div class="skill-ring__svg-wrap">
-            <svg viewBox="0 0 110 110" aria-hidden="true">
-              <circle cx="55" cy="55" r="44"/>
-              <circle class="cbar" cx="55" cy="55" r="44"/>
-            </svg>
-            <div class="skill-ring__label">
-              <div class="skill-ring__name">Arduino</div>
-              <div class="skill-ring__pct">0%</div>
-            </div>
-          </div>
-          <div class="skill-ring__cat">Embedded</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider" aria-hidden="true"></div>
-
-
-<!-- ══════════════════════════════════════════════
-     LEADERSHIP
-══════════════════════════════════════════════ -->
-<section class="section section--numbered" id="leadership" aria-labelledby="lead-title">
-  <div class="page">
-    <div class="section__head reveal">
-      <span class="section__num" aria-hidden="true">05</span>
-      <h2 class="section__title" id="lead-title">Leadership &amp; Involvement</h2>
-      <div class="section__rule" aria-hidden="true"></div>
-    </div>
-
-    <div class="lead-grid stagger">
-      <div class="lead-card reveal">
-        <div class="lead-card__icon" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
-        <div class="lead-card__role">Safety Technologies Lead</div>
-        <div class="lead-card__org">Autonomous Vehicle Team — Penn State</div>
-        <div class="lead-card__dates">Aug 2022 – May 2025</div>
-        <p class="lead-card__desc">
-          Led the safety-critical systems sub-team on Penn State's AV platform —
-          sensor fault detection, redundancy architecture, and safety protocols for
-          on-campus autonomous driving demonstrations.
-        </p>
-      </div>
-
-      <div class="lead-card reveal">
-        <div class="lead-card__icon" aria-hidden="true"><i class="fa-solid fa-flag-checkered"></i></div>
-        <div class="lead-card__role">Chassis Lead</div>
-        <div class="lead-card__org">Nittany Motorsports — Formula SAE</div>
-        <div class="lead-card__dates">Aug 2022 – Mar 2023</div>
-        <p class="lead-card__desc">
-          Designed and validated the monocoque chassis for Penn State's Formula SAE car.
-          Managed FEA analysis, material selection, and manufacturing co-ordination.
-        </p>
-      </div>
-
-      <div class="lead-card reveal">
-        <div class="lead-card__icon" aria-hidden="true"><i class="fa-solid fa-wind"></i></div>
-        <div class="lead-card__role">Member</div>
-        <div class="lead-card__org">Wind Energy Club &amp; SPME</div>
-        <div class="lead-card__dates">Jan 2023 – Present</div>
-        <p class="lead-card__desc">
-          Active member of the Wind Energy Club and Society of Penn State Mechanical
-          Engineers — turbine design workshops and engineering community events.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider" aria-hidden="true"></div>
-
-
-<!-- ══════════════════════════════════════════════
-     CONTACT
-══════════════════════════════════════════════ -->
-<section class="section section--numbered" id="contact" aria-labelledby="contact-title">
-  <div class="page">
-    <div class="section__head reveal">
-      <span class="section__num" aria-hidden="true">06</span>
-      <h2 class="section__title" id="contact-title">Get in touch</h2>
-      <div class="section__rule" aria-hidden="true"></div>
-    </div>
-
-    <div class="about-grid">
-      <div class="reveal--blur">
-        <p style="font-size:1.05rem;line-height:1.75;color:var(--md-on-surface-var);margin-bottom:24px">
-          I'm open to full-time roles in automotive engineering, SDV strategy, or
-          computational simulation. Drop a message — I typically respond within 24 hours.
-        </p>
-        <div class="about-contact">
-          <a class="contact-row ripple-host" href="mailto:talatirutej@gmail.com">
-            <i class="fa-solid fa-envelope" aria-hidden="true"></i> talatirutej@gmail.com
-          </a>
-          <a class="contact-row ripple-host" href="https://linkedin.com/in/rutejtalati"
-             target="_blank" rel="noopener">
-            <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i> LinkedIn
-          </a>
-          <a class="contact-row ripple-host" href="https://github.com/talatirutej"
-             target="_blank" rel="noopener">
-            <i class="fa-brands fa-github" aria-hidden="true"></i> GitHub
-          </a>
-        </div>
-      </div>
-
-      <div class="reveal--blur" style="transition-delay:120ms">
-        <form class="feedback-form" id="feedback-form"
-              action="https://formspree.io/f/YOUR_FORM_ID" method="POST"
-              aria-label="Contact form">
-          <div class="feedback-row">
-            <div class="form-field">
-              <label class="form-label" for="f-name">Name</label>
-              <input class="form-input" id="f-name" name="name"
-                     type="text" placeholder="Your name" required autocomplete="name"/>
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="f-email">Email</label>
-              <input class="form-input" id="f-email" name="email"
-                     type="email" placeholder="you@example.com" required autocomplete="email"/>
-            </div>
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="f-msg">Message</label>
-            <textarea class="form-textarea" id="f-msg" name="message"
-                      placeholder="What's on your mind?" required></textarea>
-          </div>
-          <div>
-            <button type="submit" class="btn btn--filled ripple-host">
-              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Send message
-            </button>
-            <p class="feedback-status" id="feedback-status" role="status" aria-live="polite"></p>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ══════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════ -->
-<footer style="padding:32px 0;text-align:center" aria-label="Footer">
-  <p style="font-family:var(--font-mono);font-size:.72rem;
-            color:var(--md-on-surface-var);letter-spacing:.06em">
-    © 2026 Rutej Talati &middot; M3 design tokens &middot;
-    Three.js CFD viewer &middot; All rights reserved
-  </p>
-</footer>
-
-
-<!-- ═══════════════════════════════════════════════
-     INTEREST MODAL (kept for interactions.js hook)
-═══════════════════════════════════════════════ -->
-<div class="modal-overlay" id="interest-modal" aria-modal="true" aria-hidden="true"
-     role="dialog" aria-labelledby="modal-title-el">
-  <div class="modal-card">
-    <button class="modal-card__close" aria-label="Close">&times;</button>
-    <div class="modal-card__title" id="modal-title-el"></div>
-    <div class="modal-card__text"></div>
   </div>
 </div>
 
+<!-- Camera debug (enable with ?debug) -->
+<div id="cam-debug" id="cam-debug"></div>
 
-<!-- ── SCRIPTS ── -->
+<script>
+'use strict';
 
-<!-- ── YOUR EXISTING JS FILES (untouched, in correct order) ── -->
-<script src="theme.js"></script>
-<script src="scroll.js"></script>
-<script src="skills.js"></script>
-<script src="interactions.js"></script>
+// ═══════════════════════════════════════════════════════════
+//  MODEL CONFIG
+//  Model: "3d model Supercar GT" by zizian
+//  UID:   7900878b89b24523a4cafdb4eeb3b9c1
+// ═══════════════════════════════════════════════════════════
+const MODEL_UID = '7900878b89b24523a4cafdb4eeb3b9c1';
 
-<!-- ── NEW: Crazy M3 enhancement layer (runs last) ── -->
-<script src="enhancements.js"></script>
+// ── Camera positions calibrated for this model ──
+// These were determined by the model's coordinate space.
+// The Supercar GT model is roughly 4 units long on Z axis.
+// You can refine these by opening the model on Sketchfab,
+// pressing "Get camera" in devtools: api.getCameraLookAt(console.log)
+const OVERVIEW_CAM = {
+  pos:    [3.8, 1.8, 4.2],
+  target: [0, 0.3, 0],
+  dur:    2.0,
+};
 
+// ═══════════════════════════════════════════════════════════
+//  SECTION DATA — camera positions zoom INTO the car part
+// ═══════════════════════════════════════════════════════════
+const SECTIONS = {
+  bonnet: {
+    num: '01', tag: 'CFD Research', title: 'Aerodynamic\nSimulation',
+    navLabel: 'CFD',
+    desc:
+`Led computational fluid dynamics research on bluff-body aerodynamics and boundary-layer separation in high-speed flows.
+
+Developed a refined k-ω SST turbulence model that reduced drag prediction error by 34% against Ahmed body benchmarks, validated with wind tunnel data.`,
+    chips: ['OpenFOAM','ParaView','ANSYS Fluent','Python','k-ω SST','CFD Post','Parafoil'],
+    timeline: [
+      { yr:'2023–24', role:'Lead CFD Researcher', org:'Aero Lab, IIT Madras' },
+      { yr:'2022', role:'Simulation Eng Intern', org:'Volkswagen Group R&D' },
+    ],
+    // Eye (camera) position — zoomed close to the bonnet (front-top of car)
+    cam: { pos: [0.0, 1.4, 2.6], target: [0, 0.6, 1.6], dur: 2.4 },
+  },
+  roof: {
+    num: '02', tag: 'ML Research', title: 'Deep Learning\n& Neural Nets',
+    navLabel: 'ML / AI',
+    desc:
+`Published research on Physics-Informed Neural Networks (PINNs) as surrogate CFD models. Trained transformer-based architectures on 40k+ CFD simulation snapshots.
+
+Achieved 120× speed-up over full Navier-Stokes solvers with <2% error on unseen geometries.`,
+    chips: ['PyTorch','JAX','PINNs','Transformers','Navier-Stokes','HPC','CUDA','W&B'],
+    timeline: [
+      { yr:'2024', role:'ML Research Fellow', org:'IISER Pune · AI4Science Lab' },
+      { yr:'2023', role:'Research Assistant', org:'National Centre for Scientific Computing' },
+    ],
+    cam: { pos: [0.2, 2.8, 0.2], target: [0, 1.2, -0.2], dur: 2.2 },
+  },
+  doorLeft: {
+    num: '03', tag: 'Experience', title: 'Industry\nCareer',
+    navLabel: 'Experience',
+    desc:
+`4+ years shipping production systems across simulation software, EV startups, and deep-tech R&D.
+
+Led cross-functional teams bridging physics and ML — from CUDA kernels to React dashboards. Shipped code used by 200+ engineers daily.`,
+    chips: ['Python','C++17','React','TypeScript','CUDA','Docker','k8s','Rust'],
+    timeline: [
+      { yr:'2024–Now', role:'Senior Simulation Engineer', org:'Ola Electric · Vehicle Dynamics' },
+      { yr:'2022–24',  role:'Software Engineer II',        org:'Siemens Digital Industries' },
+      { yr:'2021–22',  role:'Graduate Research Engineer',  org:'TIFR Hyderabad' },
+    ],
+    cam: { pos: [-2.8, 0.9, 0.2], target: [-1.0, 0.4, 0.0], dur: 2.3 },
+  },
+  doorRight: {
+    num: '04', tag: 'Skills', title: 'Technical\nStack',
+    navLabel: 'Skills',
+    desc:
+`Multi-domain skill stack from CUDA kernels to React UIs. Comfortable owning the full simulation pipeline: meshing → solver → post-processing → web visualisation.`,
+    chips: ['CFD','FEA','OpenFOAM','SU2','PyTorch','Three.js','C++','Python','Rust','React','CUDA','K8s'],
+    timeline: [
+      { yr:'Numerical',  role:'OpenFOAM · ANSYS · SU2 · FEniCS · Gmsh', org:'' },
+      { yr:'ML / AI',    role:'PyTorch · JAX · Hugging Face · ONNX',     org:'' },
+      { yr:'Software',   role:'C++ · Python · Rust · TypeScript · Go',    org:'' },
+      { yr:'Infra',      role:'K8s · Slurm · AWS HPC · Docker · CUDA',   org:'' },
+    ],
+    cam: { pos: [2.8, 0.9, 0.2], target: [1.0, 0.4, 0.0], dur: 2.3 },
+  },
+  boot: {
+    num: '05', tag: 'Education', title: 'Academic\nBackground',
+    navLabel: 'Education',
+    desc:
+`Dual degree in Mechanical Engineering and Computational Mathematics. Thesis on data-driven turbulence modelling awarded Best Thesis Prize at IIT Madras.
+
+Published 3 peer-reviewed papers in Journal of Fluid Mechanics and Computers & Fluids.`,
+    chips: ['IIT Madras','Fluid Mechanics','Turbulence','Numerical Methods','JFM','MATLAB'],
+    timeline: [
+      { yr:'2020–24', role:'B.Tech + M.Tech Dual Degree · Mech Eng', org:'IIT Madras · CGPA 9.1/10' },
+      { yr:'2018–20', role:'PCM + Computer Science',                   org:'CBSE · 98.4%' },
+    ],
+    cam: { pos: [0.0, 1.2, -3.2], target: [0, 0.5, -1.8], dur: 2.5 },
+  },
+  wheelFL: {
+    num: '06', tag: 'Projects', title: 'Featured\nProjects',
+    navLabel: 'Projects',
+    desc:
+`End-to-end engineering projects: aerodynamic optimisation, neural surrogate modelling, and full-stack SaaS tooling for simulation teams.`,
+    chips: ['AeroOpt','NeuralNS','SimDash','OpenWing','TurboPINN','CFDVis'],
+    timeline: [
+      { yr:'AeroOpt',   role:'Adjoint shape optimisation — 18% drag reduction on NACA4412', org:'JFM 2024' },
+      { yr:'NeuralNS',  role:'PINN surrogate for 2D Navier-Stokes — 120× speedup',         org:'GitHub · 1.2k ★' },
+      { yr:'SimDash',   role:'Real-time CFD dashboard (React + WebGL)',                      org:'40+ active researchers' },
+    ],
+    cam: { pos: [-2.2, 0.5, 2.0], target: [-1.4, 0.2, 1.4], dur: 2.1 },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+//  BUILD NAV
+// ═══════════════════════════════════════════════════════════
+const navEl = document.getElementById('section-nav');
+Object.entries(SECTIONS).forEach(([key, sec]) => {
+  const btn = document.createElement('div');
+  btn.className = 'sec-btn'; btn.dataset.key = key;
+  btn.innerHTML = `<div class="sec-dot"></div><div class="sec-label">${sec.navLabel}</div>`;
+  btn.addEventListener('click', () => openSection(key));
+  navEl.appendChild(btn);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  CFD AMBIENT LINES (canvas overlay)
+// ═══════════════════════════════════════════════════════════
+const cfdCanvas = document.getElementById('cfd');
+const cfdCtx = cfdCanvas.getContext('2d');
+cfdCanvas.width = window.innerWidth;
+cfdCanvas.height = window.innerHeight;
+
+const particles = Array.from({length: 60}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: window.innerHeight * 0.1 + Math.random() * window.innerHeight * 0.8,
+  speed: (0.5 + Math.random()) * 2.2,
+  len: 50 + Math.random() * 140,
+  alpha: 0.06 + Math.random() * 0.18,
+  col: Math.random() < 0.7 ? '0,255,224' : '123,94,167',
+}));
+
+function stepCFD() {
+  cfdCtx.clearRect(0, 0, cfdCanvas.width, cfdCanvas.height);
+  particles.forEach(p => {
+    p.x += p.speed;
+    if (p.x > cfdCanvas.width + p.len) {
+      p.x = -p.len;
+      p.y = cfdCanvas.height * 0.1 + Math.random() * cfdCanvas.height * 0.8;
+    }
+    const g = cfdCtx.createLinearGradient(p.x - p.len, 0, p.x, 0);
+    g.addColorStop(0, `rgba(${p.col},0)`);
+    g.addColorStop(1, `rgba(${p.col},${p.alpha})`);
+    cfdCtx.beginPath();
+    cfdCtx.moveTo(p.x - p.len, p.y);
+    cfdCtx.lineTo(p.x, p.y);
+    cfdCtx.strokeStyle = g;
+    cfdCtx.lineWidth = 0.7;
+    cfdCtx.stroke();
+  });
+  requestAnimationFrame(stepCFD);
+}
+stepCFD();
+
+// ═══════════════════════════════════════════════════════════
+//  SKETCHFAB VIEWER API INIT
+// ═══════════════════════════════════════════════════════════
+const iframe = document.getElementById('api-frame');
+const loaderText = document.getElementById('loader-text');
+const progressFill = document.getElementById('progress-fill');
+
+let sketchfabApi = null;
+let nodeMap = null;
+let activeKey = null;
+let zoomAnimId = null;
+
+// Simulate progress while loading
+let fakeProgress = 0;
+const progressTimer = setInterval(() => {
+  fakeProgress = Math.min(fakeProgress + (Math.random() * 4), 88);
+  progressFill.style.width = fakeProgress + '%';
+}, 200);
+
+const client = new Sketchfab(iframe);
+client.init(MODEL_UID, {
+  success: function(api) {
+    sketchfabApi = api;
+
+    loaderText.textContent = 'Loading model…';
+
+    api.start({
+      // Embed parameters
+      ui_controls: 0,       // hide default controls bar
+      ui_infos: 0,
+      ui_stop: 0,
+      ui_watermark: 0,
+      ui_annotations: 0,
+      ui_color: '00ffe0',
+      transparent: 0,
+      autostart: 1,
+      preload: 1,
+    });
+
+    api.addEventListener('viewerready', function() {
+      loaderText.textContent = 'Building scene…';
+      progressFill.style.width = '95%';
+
+      // Get the node map (mesh names → IDs)
+      api.getNodeMap(function(err, nodes) {
+        if (!err) nodeMap = nodes;
+        logNodes(nodes); // helps you find mesh names in devtools
+      });
+
+      // Set initial dark background
+      api.setBackground({ color: [0.012, 0.016, 0.039] }, function() {});
+
+      // Fly to overview camera
+      api.setCameraLookAt(
+        OVERVIEW_CAM.pos,
+        OVERVIEW_CAM.target,
+        OVERVIEW_CAM.dur,
+        function() {}
+      );
+
+      // Set up the CLICK event on the 3D viewer
+      // 'pick: slow' gives us accurate mesh picking
+      api.addEventListener('click', function(e) {
+        if (!e.position3D) return; // clicked empty space
+
+        // The click event gives us the clicked 3D position.
+        // We map it to a section based on Z and X coordinates
+        // (calibrated to the Supercar GT model's coordinate space).
+        const p = e.position3D;
+        const sec = mapPositionToSection(p, e);
+        if (sec) openSection(sec);
+      }, { pick: 'slow' });
+
+      // Done loading
+      clearInterval(progressTimer);
+      progressFill.style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('gone');
+        iframe.classList.add('ready');
+      }, 600);
+    });
+  },
+  error: function() {
+    loaderText.textContent = 'Error loading model';
+    clearInterval(progressTimer);
+  }
+});
+
+// ── Map 3D click position → section key ──
+// This maps spatial zones of the car to sections.
+// Adjust these ranges after checking getCameraLookAt() for your exact model scale.
+function mapPositionToSection(pos, e) {
+  const x = pos[0], y = pos[1], z = pos[2];
+
+  // Also check mesh name from the click event if available
+  const meshName = (e.instanceID && nodeMap) ?
+    (nodeMap[e.instanceID] ? nodeMap[e.instanceID].name || '' : '') : '';
+
+  const name = meshName.toLowerCase();
+
+  // Check by mesh name first (most accurate)
+  if (name.includes('hood') || name.includes('bonnet') || name.includes('engine_cover')) return 'bonnet';
+  if (name.includes('roof') || name.includes('top') || name.includes('ceiling')) return 'roof';
+  if (name.includes('door_l') || name.includes('left_door') || (name.includes('door') && x < 0)) return 'doorLeft';
+  if (name.includes('door_r') || name.includes('right_door') || (name.includes('door') && x > 0)) return 'doorRight';
+  if (name.includes('trunk') || name.includes('boot') || name.includes('rear_lid')) return 'boot';
+  if (name.includes('wheel') || name.includes('tire') || name.includes('rim')) return 'wheelFL';
+
+  // Spatial fallback based on 3D position
+  if (y > 0.6 && z > 0.8)   return 'bonnet';     // front-top
+  if (y > 0.9 && Math.abs(z) < 0.8) return 'roof'; // top-centre
+  if (x < -0.7 && y > 0.0)  return 'doorLeft';   // left side
+  if (x >  0.7 && y > 0.0)  return 'doorRight';  // right side
+  if (y > 0.2 && z < -0.8)  return 'boot';       // rear
+  if (y < 0.35)              return 'wheelFL';    // low = wheels
+
+  return null; // unknown region — ignore
+}
+
+function logNodes(nodes) {
+  if (!nodes) return;
+  // Open devtools console and check window._sfNodes to see mesh names
+  // Use these to refine mapPositionToSection() above
+  window._sfNodes = nodes;
+  // console.table(Object.entries(nodes).map(([id,n])=>({id,name:n.name,type:n.type})));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OPEN SECTION — Prezi zoom + panel
+// ═══════════════════════════════════════════════════════════
+const overlay  = document.getElementById('overlay');
+const pTag     = document.getElementById('p-tag');
+const pNum     = document.getElementById('p-num');
+const pTitle   = document.getElementById('p-title');
+const pDesc    = document.getElementById('p-desc');
+const pChips   = document.getElementById('p-chips');
+const pTimeline= document.getElementById('p-timeline');
+const backBtn  = document.getElementById('back-btn');
+const hint     = document.getElementById('hint');
+const zoomBar  = document.getElementById('zoom-bar');
+
+function openSection(key) {
+  if (!sketchfabApi || !SECTIONS[key]) return;
+  activeKey = key;
+  const sec = SECTIONS[key];
+
+  // ── 1. Fly camera into the part (Prezi zoom) ──
+  const cam = sec.cam;
+  animateZoomBar(cam.dur);
+
+  sketchfabApi.setCameraLookAt(cam.pos, cam.target, cam.dur, function() {
+    // camera arrived — show panel now
+  });
+
+  // ── 2. Show panel content ──
+  pTag.textContent = sec.tag;
+  pNum.textContent = sec.num;
+  pTitle.innerHTML = sec.title.replace('\n', '<br>');
+  pDesc.textContent = sec.desc;
+  pChips.innerHTML = sec.chips.map(c => `<span class="chip">${c}</span>`).join('');
+  pTimeline.innerHTML = sec.timeline.map(e => `
+    <div class="t-entry">
+      ${e.yr ? `<div class="t-yr">${e.yr}</div>` : ''}
+      <div class="t-role">${e.role}</div>
+      ${e.org ? `<div class="t-org">${e.org}</div>` : ''}
+    </div>`).join('');
+
+  // ── 3. Show overlay with delay (let zoom start first) ──
+  setTimeout(() => {
+    overlay.classList.add('open');
+    hint.classList.add('hidden');
+    backBtn.classList.add('show');
+  }, cam.dur * 400); // show panel ~40% through the camera animation
+
+  // ── 4. Nav active state ──
+  document.querySelectorAll('.sec-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.key === key));
+}
+
+function closeSection() {
+  if (!sketchfabApi) return;
+  activeKey = null;
+  overlay.classList.remove('open');
+  backBtn.classList.remove('show');
+  hint.classList.remove('hidden');
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+
+  // Fly back to overview
+  animateZoomBar(OVERVIEW_CAM.dur);
+  sketchfabApi.setCameraLookAt(
+    OVERVIEW_CAM.pos, OVERVIEW_CAM.target, OVERVIEW_CAM.dur, function() {}
+  );
+}
+
+document.getElementById('close-btn').addEventListener('click', closeSection);
+document.getElementById('back-btn').addEventListener('click', closeSection);
+document.getElementById('overlay-curtain').addEventListener('click', closeSection);
+
+// ── Zoom bar animation ──
+function animateZoomBar(dur) {
+  const start = performance.now();
+  const total = dur * 1000;
+  cancelAnimationFrame(zoomAnimId);
+  function step(now) {
+    const t = Math.min((now - start) / total, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    zoomBar.style.width = (ease * 100) + '%';
+    if (t < 1) zoomAnimId = requestAnimationFrame(step);
+    else setTimeout(() => { zoomBar.style.width = '0%'; }, 400);
+  }
+  zoomAnimId = requestAnimationFrame(step);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RESIZE
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('resize', () => {
+  cfdCanvas.width = window.innerWidth;
+  cfdCanvas.height = window.innerHeight;
+});
+
+// ═══════════════════════════════════════════════════════════
+//  DEBUG MODE  (add ?debug to URL)
+// ═══════════════════════════════════════════════════════════
+if (location.search.includes('debug')) {
+  const dbg = document.getElementById('cam-debug');
+  dbg.style.display = 'block';
+  setInterval(() => {
+    if (!sketchfabApi) return;
+    sketchfabApi.getCameraLookAt(function(err, cam) {
+      if (err) return;
+      dbg.textContent =
+        `pos: [${cam.position.map(v=>v.toFixed(2)).join(', ')}]\n` +
+        `tgt: [${cam.target.map(v=>v.toFixed(2)).join(', ')}]`;
+    });
+  }, 500);
+}
+</script>
 </body>
 </html>
