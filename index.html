@@ -3,822 +3,1082 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Portfolio · Supercar GT</title>
+<title>Portfolio · RUF RT 35 S</title>
 
-<!-- Sketchfab Viewer API -->
-<script src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
+<!-- Three.js r134 — has GLTFLoader built into addons -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:      #03040a;
-  --accent:  #00ffe0;
-  --accent2: #ff2e63;
-  --accent3: #7b5ea7;
-  --text:    #dde4f0;
-  --muted:   #3d4a5c;
-  --glass:   rgba(3,4,16,0.92);
-  --border:  rgba(0,255,224,0.15);
-  --panel-w: 440px;
+  --bg:       #04050d;
+  --acc:      #e0ff4f;
+  --acc2:     #ff3f5b;
+  --acc3:     #38b6ff;
+  --txt:      #dde4f0;
+  --muted:    #3d4d60;
+  --glass:    rgba(4,5,18,0.95);
+  --border:   rgba(224,255,79,0.13);
+  --pw:       450px;
 }
 
 html, body {
-  width: 100%; height: 100%;
+  width:100%; height:100%;
   background: var(--bg);
   overflow: hidden;
-  font-family: 'Syne', sans-serif;
-  color: var(--text);
-  cursor: crosshair;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--txt);
+  cursor: none;
 }
 
-/* ── VIEWER ── */
-#api-frame {
-  position: fixed; inset: 0;
-  width: 100%; height: 100%;
-  border: none;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 1s;
+/* custom cursor */
+#cur {
+  position:fixed; width:10px; height:10px; border-radius:50%;
+  background:var(--acc); pointer-events:none; z-index:9999;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 14px var(--acc), 0 0 30px rgba(224,255,79,0.3);
+  transition: transform .08s, width .2s, height .2s, background .2s;
+  mix-blend-mode: screen;
 }
-#api-frame.ready { opacity: 1; }
+#cur.hover {
+  width:28px; height:28px; background:var(--acc2);
+  box-shadow:0 0 18px var(--acc2);
+}
+#cur-ring {
+  position:fixed; width:38px; height:38px; border-radius:50%;
+  border:1px solid rgba(224,255,79,0.35); pointer-events:none; z-index:9998;
+  transform:translate(-50%,-50%); transition:transform .16s ease-out;
+}
 
-/* ── LOADING SCREEN ── */
+/* canvas */
+canvas {
+  position:fixed; inset:0;
+  width:100%!important; height:100%!important;
+  z-index:1;
+}
+
+/* ── LOADER ── */
 #loader {
-  position: fixed; inset: 0;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  z-index: 900;
-  transition: opacity 0.9s, visibility 0.9s;
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:800; transition: opacity .9s, visibility .9s;
 }
-#loader.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+#loader.done { opacity:0; visibility:hidden; pointer-events:none; }
 
-.loader-car {
-  width: 80px; height: 80px; margin-bottom: 32px; position: relative;
-}
-.loader-car svg { width: 100%; height: 100%; }
-.spin-ring {
-  animation: spin 1.4s linear infinite;
-  transform-origin: center;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.ld-ring { width:70px; height:70px; margin-bottom:26px; }
+.ld-ring svg { width:100%; height:100%; }
+.r1 { animation:spin 1.5s linear infinite; transform-origin:35px 35px; }
+.r2 { animation:spin 2.2s linear infinite reverse; transform-origin:35px 35px; }
+@keyframes spin { to { transform:rotate(360deg); } }
 
-.loader-label {
-  font-family: 'Orbitron', monospace;
-  font-size: 0.6rem; letter-spacing: 0.35em;
-  color: var(--accent); text-transform: uppercase;
-  margin-bottom: 20px;
+.ld-label {
+  font-family:'Orbitron',monospace;
+  font-size:.58rem; letter-spacing:.32em; text-transform:uppercase;
+  color:var(--acc); margin-bottom:18px;
 }
-.progress-track {
-  width: 180px; height: 1px;
-  background: rgba(0,255,224,0.1);
-  position: relative; overflow: hidden;
+.ld-bar { width:200px; height:1px; background:rgba(224,255,79,.08); overflow:hidden; }
+.ld-fill {
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--acc),var(--acc3));
+  transition:width .2s;
+  box-shadow:0 0 10px var(--acc);
 }
-.progress-fill {
-  height: 100%; background: var(--accent);
-  width: 0%; transition: width 0.3s;
-  box-shadow: 0 0 12px var(--accent);
+
+/* ── VIGNETTE ── */
+#vig {
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  background: radial-gradient(ellipse 75% 75% at 50% 55%, transparent 35%, rgba(4,5,13,.72) 100%);
 }
 
 /* ── HEADER ── */
-#header {
-  position: fixed; top: 0; left: 0; right: 0;
-  padding: 18px 32px;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  z-index: 50; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(3,4,10,0.88) 0%, transparent 100%);
+#hdr {
+  position:fixed; top:0; left:0; right:0;
+  display:flex; justify-content:space-between; align-items:flex-start;
+  padding:20px 34px; z-index:30; pointer-events:none;
+  background:linear-gradient(to bottom,rgba(4,5,13,.9) 0%,transparent 100%);
 }
-.h-name {
-  font-family: 'Orbitron', monospace;
-  font-size: clamp(0.9rem, 2vw, 1.25rem);
-  font-weight: 900; letter-spacing: 0.08em;
+.hdr-name {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(.9rem,2vw,1.25rem); font-weight:900; letter-spacing:.06em;
 }
-.h-name span { color: var(--accent); }
-.h-sub {
-  font-size: 0.58rem; letter-spacing: 0.22em;
-  color: var(--muted); text-transform: uppercase; margin-top: 4px;
+.hdr-name s { text-decoration:none; color:var(--acc); }
+.hdr-sub {
+  font-size:.55rem; letter-spacing:.22em; color:var(--muted);
+  text-transform:uppercase; margin-top:5px;
 }
-.h-badge {
-  font-family: 'Orbitron', monospace;
-  font-size: 0.5rem; letter-spacing: 0.2em;
-  color: var(--accent); border: 1px solid var(--border);
-  padding: 6px 14px; text-transform: uppercase;
-  background: rgba(0,255,224,0.04);
+.hdr-badge {
+  font-family:'Orbitron',monospace;
+  font-size:.46rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--acc); border:1px solid var(--border);
+  padding:6px 14px; background:rgba(224,255,79,.025);
 }
 
-/* ── INSTRUCTION HINT ── */
+/* ── SIDEBAR ── */
+#sidenav {
+  position:fixed; right:22px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:5px; z-index:30;
+}
+.snav {
+  display:flex; align-items:center; gap:9px;
+  cursor:pointer; padding:7px 12px 7px 9px;
+  border:1px solid transparent; background:rgba(4,5,13,.55);
+  transition:all .22s; pointer-events:all; backdrop-filter:blur(8px);
+}
+.snav:hover,.snav.on { border-color:var(--border); background:rgba(224,255,79,.04); }
+.snav-dot {
+  width:5px; height:5px; border-radius:50%; background:var(--muted);
+  flex-shrink:0; transition:background .2s,box-shadow .2s;
+}
+.snav:hover .snav-dot,.snav.on .snav-dot {
+  background:var(--acc); box-shadow:0 0 8px var(--acc);
+}
+.snav-lbl {
+  font-family:'Orbitron',monospace;
+  font-size:.48rem; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--muted); transition:color .2s; white-space:nowrap;
+}
+.snav:hover .snav-lbl,.snav.on .snav-lbl { color:var(--acc); }
+
+/* ── HINT ── */
 #hint {
-  position: fixed; bottom: 28px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.6rem; letter-spacing: 0.2em; color: var(--muted);
-  text-transform: uppercase; z-index: 50; pointer-events: none;
-  text-align: center; transition: opacity 0.5s;
-  text-shadow: 0 0 12px rgba(0,255,224,0.3);
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  font-size:.56rem; letter-spacing:.18em; color:var(--muted);
+  text-transform:uppercase; z-index:30; pointer-events:none;
+  text-align:center; transition:opacity .5s;
 }
-#hint em { color: var(--accent); font-style: normal; }
-#hint.hidden { opacity: 0; }
+#hint em { color:var(--acc); font-style:normal; }
+#hint.off { opacity:0; }
 
-/* ── SECTION BUTTONS (floating nav) ── */
-#section-nav {
-  position: fixed; right: 24px; top: 50%;
-  transform: translateY(-50%);
-  display: flex; flex-direction: column; gap: 8px;
-  z-index: 50;
+/* ── HOVER LABEL ── */
+#hlabel {
+  position:fixed; pointer-events:none; z-index:35;
+  font-family:'Orbitron',monospace;
+  font-size:.5rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--acc); padding:5px 12px;
+  border-left:2px solid var(--acc);
+  background:rgba(4,5,13,.8);
+  text-shadow:0 0 10px rgba(224,255,79,.5);
+  opacity:0; transition:opacity .18s;
+  transform:translate(14px,-50%); white-space:nowrap;
 }
-.sec-btn {
-  display: flex; align-items: center; gap: 10px;
-  cursor: pointer; padding: 8px 14px 8px 10px;
-  border: 1px solid transparent;
-  background: rgba(3,4,10,0.6);
-  transition: all 0.25s; pointer-events: all;
-  backdrop-filter: blur(6px);
-}
-.sec-btn:hover, .sec-btn.active {
-  border-color: var(--border);
-  background: rgba(0,255,224,0.06);
-}
-.sec-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--muted); flex-shrink: 0;
-  transition: background 0.2s, box-shadow 0.2s;
-}
-.sec-btn:hover .sec-dot, .sec-btn.active .sec-dot {
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-}
-.sec-label {
-  font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--muted); transition: color 0.2s; white-space: nowrap;
-}
-.sec-btn:hover .sec-label, .sec-btn.active .sec-label { color: var(--accent); }
+#hlabel.show { opacity:1; }
 
-/* ── BACK BUTTON ── */
-#back-btn {
-  position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
-  font-family: 'Orbitron', monospace;
-  font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); cursor: pointer; pointer-events: all;
-  padding: 10px 24px; border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(3,4,10,0.85); z-index: 60;
-  transition: all 0.22s; display: none;
-  backdrop-filter: blur(8px);
+/* ── BACK ── */
+#back {
+  position:fixed; top:22px; left:50%; transform:translateX(-50%);
+  font-family:'Orbitron',monospace;
+  font-size:.54rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--muted); cursor:pointer; pointer-events:all;
+  padding:10px 26px; border:1px solid rgba(255,255,255,.08);
+  background:rgba(4,5,13,.9); z-index:60;
+  transition:all .2s; display:none; backdrop-filter:blur(10px);
 }
-#back-btn:hover { color: var(--accent); border-color: var(--border); }
-#back-btn.show { display: block; }
+#back:hover { color:var(--acc); border-color:var(--border); }
+#back.show { display:block; }
 
-/* ── ZOOM PROGRESS BAR ── */
-#zoom-bar {
-  position: fixed; bottom: 0; left: 0; height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent3));
-  z-index: 60; width: 0%;
-  transition: width 0.08s linear;
-  pointer-events: none;
-  box-shadow: 0 0 8px var(--accent);
+/* ── ZOOM BAR ── */
+#zbar {
+  position:fixed; bottom:0; left:0; height:2px;
+  background:linear-gradient(90deg,var(--acc),var(--acc3));
+  z-index:70; width:0%; pointer-events:none;
+  box-shadow:0 0 8px var(--acc);
 }
 
 /* ── OVERLAY PANEL ── */
 #overlay {
-  position: fixed; inset: 0; z-index: 55;
-  pointer-events: none; opacity: 0;
-  transition: opacity 0.5s;
+  position:fixed; inset:0; z-index:50;
+  pointer-events:none; opacity:0; transition:opacity .45s;
 }
-#overlay.open { opacity: 1; pointer-events: all; }
+#overlay.open { opacity:1; pointer-events:all; }
 
-#overlay-curtain {
-  position: absolute; inset: 0;
-  background: rgba(3,4,10,0.55);
-  backdrop-filter: blur(3px);
+#ov-bg {
+  position:absolute; inset:0;
+  background:rgba(4,5,13,.55); backdrop-filter:blur(4px);
 }
 
 #panel {
-  position: absolute; right: 0; top: 0; bottom: 0;
-  width: var(--panel-w);
-  background: var(--glass);
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 0;
-  transform: translateX(100%);
-  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  position:absolute; right:0; top:0; bottom:0;
+  width:var(--pw); max-width:100vw;
+  background:var(--glass); border-left:1px solid var(--border);
+  overflow-y:auto;
+  transform:translateX(calc(var(--pw) + 10px));
+  transition:transform .55s cubic-bezier(.16,1,.3,1);
+  scrollbar-width:thin; scrollbar-color:var(--muted) transparent;
 }
-#overlay.open #panel { transform: translateX(0); }
+#overlay.open #panel { transform:translateX(0); }
 
-/* Scanline texture */
-#panel::before {
-  content: '';
-  position: sticky; top: 0; left: 0; right: 0;
-  height: 0;
-  display: block;
+.p-stripe {
+  height:2px;
+  background:linear-gradient(90deg,var(--acc) 0%,var(--acc3) 55%,transparent 100%);
 }
+
+/* scanlines */
 #panel::after {
-  content: '';
-  position: fixed; right: 0; top: 0;
-  width: var(--panel-w); height: 100%;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 3px,
-    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
-  );
-  z-index: 1;
+  content:''; position:fixed; right:0; top:0;
+  width:var(--pw); height:100%; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);
+  z-index:1; opacity:.5;
 }
 
-/* Panel accent bar at top */
-.panel-topbar {
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--accent3), transparent);
-}
+.p-body { padding:30px 36px 52px; position:relative; z-index:2; }
 
-.panel-inner { padding: 32px 36px 48px; position: relative; z-index: 2; }
+.p-close {
+  position:absolute; top:26px; right:26px;
+  font-family:'Orbitron',monospace;
+  font-size:.5rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); cursor:pointer; z-index:3;
+  padding:6px 13px; border:1px solid rgba(255,255,255,.08);
+  transition:all .2s;
+}
+.p-close:hover { color:var(--acc); border-color:var(--border); }
 
 .p-tag {
-  font-family: 'Orbitron', monospace;
-  font-size: 0.5rem; letter-spacing: 0.3em; text-transform: uppercase;
-  background: var(--accent); color: var(--bg);
-  display: inline-block; padding: 4px 14px; margin-bottom: 18px;
+  font-family:'Orbitron',monospace;
+  font-size:.46rem; letter-spacing:.26em; text-transform:uppercase;
+  background:var(--acc); color:var(--bg); font-weight:700;
+  display:inline-block; padding:4px 13px; margin-bottom:14px;
 }
 .p-num {
-  font-family: 'Orbitron', monospace;
-  font-size: 5rem; font-weight: 900; line-height: 1;
-  color: rgba(0,255,224,0.06);
-  display: block; margin-bottom: -28px;
-  user-select: none;
+  display:block; font-family:'Orbitron',monospace;
+  font-size:5.5rem; font-weight:900; line-height:1;
+  color:rgba(224,255,79,.05); margin-bottom:-30px; user-select:none;
 }
 .p-title {
-  font-family: 'Orbitron', monospace;
-  font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700;
-  line-height: 1.15; color: var(--text);
-  margin-bottom: 14px;
+  font-family:'Orbitron',monospace;
+  font-size:clamp(1.2rem,2.2vw,1.7rem); font-weight:700;
+  line-height:1.2; color:var(--txt); margin-bottom:12px;
 }
-.p-divider {
-  width: 36px; height: 2px;
-  background: var(--accent2); margin-bottom: 22px;
-}
+.p-bar { width:30px; height:2px; background:var(--acc2); margin-bottom:18px; }
 .p-desc {
-  font-size: 0.78rem; line-height: 1.9;
-  color: rgba(221,228,240,0.62);
-  margin-bottom: 26px;
-  white-space: pre-line;
+  font-size:.77rem; line-height:1.9; color:rgba(221,228,240,.58);
+  margin-bottom:22px; white-space:pre-line;
 }
-.p-chips {
-  display: flex; flex-wrap: wrap; gap: 7px;
-  margin-bottom: 28px;
-}
+.p-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
 .chip {
-  font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 5px 12px; border: 1px solid rgba(255,255,255,0.1);
-  color: var(--muted); transition: all 0.2s; cursor: default;
+  font-size:.53rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:4px 11px; border:1px solid rgba(255,255,255,.09);
+  color:var(--muted); transition:all .18s; cursor:default;
 }
-.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip:hover { border-color:var(--acc); color:var(--acc); }
+.timeline { border-left:1px solid var(--border); padding-left:15px; }
+.te { margin-bottom:15px; }
+.te-yr {
+  font-family:'Orbitron',monospace;
+  font-size:.48rem; letter-spacing:.17em; color:var(--acc); margin-bottom:2px;
+}
+.te-role { font-size:.75rem; color:var(--txt); margin-bottom:1px; }
+.te-org  { font-size:.64rem; color:var(--muted); }
 
-/* Timeline entries */
-.timeline { border-left: 1px solid var(--border); padding-left: 18px; }
-.t-entry { margin-bottom: 18px; }
-.t-yr {
-  font-family: 'Orbitron', monospace;
-  font-size: 0.52rem; letter-spacing: 0.2em;
-  color: var(--accent); margin-bottom: 3px;
+/* ── DEBUG PANEL ── */
+#dbg {
+  position:fixed; bottom:14px; left:14px; z-index:200;
+  background:rgba(4,5,13,.94); border:1px solid rgba(224,255,79,.2);
+  padding:12px 16px; font-family:monospace;
+  font-size:.6rem; color:rgba(224,255,79,.75);
+  line-height:1.7; display:none; min-width:300px;
+  pointer-events:all;
 }
-.t-role { font-size: 0.78rem; color: var(--text); margin-bottom: 2px; }
-.t-org { font-size: 0.68rem; color: var(--muted); }
+#dbg b { color:var(--acc); letter-spacing:.1em; }
+#dbg .tip { margin-top:6px; font-size:.52rem; color:rgba(224,255,79,.3); font-style:italic; }
+#dbg-meshlist { max-height:140px; overflow-y:auto; margin-top:6px; font-size:.54rem; color:rgba(224,255,79,.5); }
+#dbg-meshlist div { cursor:pointer; }
+#dbg-meshlist div:hover { color:var(--acc); }
 
-.close-btn {
-  position: absolute; top: 40px; right: 30px;
-  font-family: 'Orbitron', monospace;
-  font-size: 0.55rem; letter-spacing: 0.15em;
-  color: var(--muted); cursor: pointer;
-  padding: 7px 14px; border: 1px solid rgba(255,255,255,0.08);
-  background: transparent; transition: all 0.2s; z-index: 3;
-}
-.close-btn:hover { color: var(--accent); border-color: var(--border); }
+/* ── CFD LINES ── */
+#cfd { position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.13; }
 
-/* ── Region hotspot pins (visible in 3D space via CSS) ── */
-/* We use click on the viewer iframe via the API's click event — these are just HUD labels */
-.region-label {
-  position: fixed; pointer-events: none;
-  font-family: 'Orbitron', monospace;
-  font-size: 0.52rem; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--accent);
-  padding: 4px 10px;
-  border-left: 2px solid var(--accent);
-  background: rgba(3,4,10,0.72);
-  opacity: 0; transition: opacity 0.25s;
-  white-space: nowrap; z-index: 40;
-  text-shadow: 0 0 8px rgba(0,255,224,0.5);
-  transform: translate(10px, -50%);
-}
-
-/* ── Camera info debug (hidden by default) ── */
-#cam-debug {
-  position: fixed; bottom: 40px; left: 16px;
-  font-family: monospace; font-size: 0.58rem; color: rgba(0,255,224,0.4);
-  z-index: 200; pointer-events: none; display: none;
-}
-
-/* ── Pulsing ring indicator ── */
-@keyframes ring-pulse {
-  0%   { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
-  100% { transform: translate(-50%,-50%) scale(2.5); opacity: 0; }
-}
-.ping-ring {
-  position: fixed; width: 20px; height: 20px;
-  border-radius: 50%; border: 1px solid var(--accent);
-  pointer-events: none; z-index: 45;
-  transform: translate(-50%,-50%);
-  animation: ring-pulse 1.8s ease-out infinite;
-}
-
-/* ── CFD lines canvas ── */
-#cfd {
-  position: fixed; inset: 0; z-index: 2;
-  pointer-events: none; opacity: 0.15;
+/* ── CREDIT ── */
+#credit {
+  position:fixed; bottom:12px; right:14px; z-index:30;
+  font-size:.46rem; letter-spacing:.12em; color:var(--muted);
+  text-transform:uppercase; pointer-events:none;
 }
 </style>
 </head>
 <body>
 
-<!-- CFD ambient lines -->
+<div id="cur"></div>
+<div id="cur-ring"></div>
 <canvas id="cfd"></canvas>
+<div id="vig"></div>
 
-<!-- Loader -->
+<!-- LOADER -->
 <div id="loader">
-  <div class="loader-car">
-    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="40" cy="40" r="36" stroke="rgba(0,255,224,0.08)" stroke-width="1.5"/>
-      <circle cx="40" cy="40" r="36" stroke="url(#g)" stroke-width="1.5"
-              stroke-dasharray="60 165" class="spin-ring"/>
-      <circle cx="40" cy="40" r="28" stroke="rgba(123,94,167,0.2)" stroke-width="1"/>
-      <circle cx="40" cy="40" r="28" stroke="url(#g2)" stroke-width="1"
-              stroke-dasharray="30 146" class="spin-ring" style="animation-direction:reverse;animation-duration:2s"/>
-      <text x="40" y="44" text-anchor="middle" fill="rgba(0,255,224,0.8)"
-            font-family="monospace" font-size="9" letter-spacing="1">GT</text>
+  <div class="ld-ring">
+    <svg viewBox="0 0 70 70" fill="none">
+      <circle cx="35" cy="35" r="32" stroke="rgba(224,255,79,.06)" stroke-width="1.5"/>
+      <circle cx="35" cy="35" r="32" stroke="url(#g1)" stroke-width="1.5"
+        stroke-dasharray="52 149" class="r1"/>
+      <circle cx="35" cy="35" r="23" stroke="rgba(56,182,255,.1)" stroke-width="1"/>
+      <circle cx="35" cy="35" r="23" stroke="url(#g2)" stroke-width="1"
+        stroke-dasharray="26 118" class="r2"/>
+      <text x="35" y="39" text-anchor="middle" fill="rgba(224,255,79,.8)"
+        font-family="monospace" font-size="7.5" letter-spacing="1">RUF</text>
       <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#00ffe0"/>
-          <stop offset="100%" stop-color="transparent"/>
+        <linearGradient id="g1" x1="0" y1="0" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#e0ff4f"/><stop offset="100%" stop-color="transparent"/>
         </linearGradient>
-        <linearGradient id="g2" x1="80" y1="0" x2="0" y2="80" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#7b5ea7"/>
-          <stop offset="100%" stop-color="transparent"/>
+        <linearGradient id="g2" x1="70" y1="0" x2="0" y2="70" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#38b6ff"/><stop offset="100%" stop-color="transparent"/>
         </linearGradient>
       </defs>
     </svg>
   </div>
-  <div class="loader-label" id="loader-text">Initialising viewer</div>
-  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="ld-label" id="ltxt">Loading model…</div>
+  <div class="ld-bar"><div class="ld-fill" id="lfill"></div></div>
 </div>
 
-<!-- Sketchfab iframe -->
-<iframe id="api-frame"
-  allow="autoplay; fullscreen; xr-spatial-tracking"
-  xr-spatial-tracking execution-while-out-of-viewport
-  execution-while-not-rendered web-share
-  allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true">
-</iframe>
-
-<!-- Header -->
-<div id="header">
+<!-- HEADER -->
+<div id="hdr">
   <div>
-    <div class="h-name">A<span>.</span>Rivera <span style="color:var(--muted);font-weight:300;font-size:0.8em">/ Portfolio</span></div>
-    <div class="h-sub">CFD · ML Research · Full-Stack Engineering</div>
+    <div class="hdr-name">A<s>.</s>Rivera <span style="color:var(--muted);font-family:'DM Sans';font-weight:300;font-size:.82em">/ Portfolio</span></div>
+    <div class="hdr-sub">CFD · ML Research · Full-Stack Engineering</div>
   </div>
-  <div class="h-badge">3D Interactive Portfolio</div>
+  <div class="hdr-badge">Interactive 3D Portfolio</div>
 </div>
 
-<!-- Floating nav -->
-<nav id="section-nav"></nav>
+<!-- SIDEBAR -->
+<nav id="sidenav"></nav>
 
-<!-- Back button -->
-<button id="back-btn">← Overview</button>
+<!-- BACK -->
+<button id="back">← Overview</button>
 
-<!-- Hint -->
-<div id="hint"><em>Click any region</em> of the car to explore · drag to orbit · scroll to zoom</div>
+<!-- HINT -->
+<div id="hint"><em>Click any region</em> of the car &nbsp;·&nbsp; drag to orbit &nbsp;·&nbsp; scroll to zoom</div>
 
-<!-- Zoom progress -->
-<div id="zoom-bar"></div>
+<!-- HOVER LABEL -->
+<div id="hlabel"></div>
 
-<!-- Overlay -->
+<!-- ZOOM BAR -->
+<div id="zbar"></div>
+
+<!-- OVERLAY PANEL -->
 <div id="overlay">
-  <div id="overlay-curtain"></div>
+  <div id="ov-bg"></div>
   <div id="panel">
-    <div class="panel-topbar"></div>
-    <div class="panel-inner">
-      <button class="close-btn" id="close-btn">✕ Close</button>
-      <div class="p-tag" id="p-tag">Section</div>
-      <span class="p-num" id="p-num">01</span>
-      <div class="p-title" id="p-title">Title</div>
-      <div class="p-divider"></div>
-      <div class="p-desc" id="p-desc"></div>
-      <div class="p-chips" id="p-chips"></div>
-      <div class="timeline" id="p-timeline"></div>
+    <div class="p-stripe"></div>
+    <div class="p-body">
+      <div class="p-close" id="pclose">✕ Close</div>
+      <div class="p-tag"   id="ptag">—</div>
+      <span class="p-num"  id="pnum">01</span>
+      <div class="p-title" id="ptitle">—</div>
+      <div class="p-bar"></div>
+      <div class="p-desc"  id="pdesc"></div>
+      <div class="p-chips" id="pchips"></div>
+      <div class="timeline" id="ptl"></div>
     </div>
   </div>
 </div>
 
-<!-- Camera debug (enable with ?debug) -->
-<div id="cam-debug" id="cam-debug"></div>
+<!-- DEBUG PANEL -->
+<div id="dbg">
+  <b>⚙ DEBUG MODE</b><br>
+  <span id="d-cam">cam pos: —</span><br>
+  <span id="d-tgt">cam tgt: —</span><br>
+  <span id="d-hit">hit pos: —</span><br>
+  <span id="d-mesh">mesh: —</span><br>
+  <span id="d-sec">→ section: —</span>
+  <div id="dbg-meshlist"></div>
+  <div class="tip">Add ?debug to URL · orbit to part → copy coords into SECTIONS.cam</div>
+</div>
+
+<!-- CREDIT -->
+<div id="credit">RUF RT 35 S · Mona x Supercars · Sketchfab</div>
 
 <script>
 'use strict';
 
 // ═══════════════════════════════════════════════════════════
-//  MODEL CONFIG
-//  Model: "3d model Supercar GT" by zizian
-//  UID:   7900878b89b24523a4cafdb4eeb3b9c1
+//  ██████╗  ██████╗ ██████╗ ████████╗███████╗ ██████╗ ██╗     ██╗ ██████╗
+//  ██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝██╔═══██╗██║     ██║██╔═══██╗
+//  ██████╔╝██║   ██║██████╔╝   ██║   █████╗  ██║   ██║██║     ██║██║   ██║
+//  ██╔═══╝ ██║   ██║██╔══██╗   ██║   ██╔══╝  ██║   ██║██║     ██║██║   ██║
+//  ██║     ╚██████╔╝██║  ██║   ██║   ██║     ╚██████╔╝███████╗██║╚██████╔╝
 // ═══════════════════════════════════════════════════════════
-const MODEL_UID = '7900878b89b24523a4cafdb4eeb3b9c1';
 
-// ── Camera positions calibrated for this model ──
-// These were determined by the model's coordinate space.
-// The Supercar GT model is roughly 4 units long on Z axis.
-// You can refine these by opening the model on Sketchfab,
-// pressing "Get camera" in devtools: api.getCameraLookAt(console.log)
-const OVERVIEW_CAM = {
-  pos:    [3.8, 1.8, 4.2],
-  target: [0, 0.3, 0],
-  dur:    2.0,
-};
-
-// ═══════════════════════════════════════════════════════════
-//  SECTION DATA — camera positions zoom INTO the car part
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+//  SECTION DATA
+//  cam.pos    = camera eye position for the Prezi zoom
+//  cam.target = what the camera looks at (part centroid)
+//  cam.dur    = zoom duration (seconds)
+//  zoneTest   = spatial fallback (x,y,z in model space)
+//
+//  HOW TO CALIBRATE cam.pos / cam.target:
+//  1. Open index.html?debug in your browser
+//  2. Orbit the camera until the car part fills the screen nicely
+//  3. Read "cam pos" and "cam tgt" from the debug box (bottom-left)
+//  4. Paste those numbers into the matching section below
+// ─────────────────────────────────────────────────────────────
 const SECTIONS = {
+
   bonnet: {
-    num: '01', tag: 'CFD Research', title: 'Aerodynamic\nSimulation',
-    navLabel: 'CFD',
+    num:'01', tag:'CFD Research', title:'Aerodynamic\nSimulation',
+    nav:'CFD',
     desc:
-`Led computational fluid dynamics research on bluff-body aerodynamics and boundary-layer separation in high-speed flows.
+`Led CFD research on bluff-body aerodynamics and boundary-layer separation in high-speed flows.
 
-Developed a refined k-ω SST turbulence model that reduced drag prediction error by 34% against Ahmed body benchmarks, validated with wind tunnel data.`,
-    chips: ['OpenFOAM','ParaView','ANSYS Fluent','Python','k-ω SST','CFD Post','Parafoil'],
-    timeline: [
-      { yr:'2023–24', role:'Lead CFD Researcher', org:'Aero Lab, IIT Madras' },
-      { yr:'2022', role:'Simulation Eng Intern', org:'Volkswagen Group R&D' },
+Developed a refined k-ω SST turbulence model cutting drag-prediction error by 34% versus Ahmed body benchmarks, validated with wind-tunnel data.`,
+    chips:['OpenFOAM','ParaView','ANSYS Fluent','Python','k-ω SST','CFD Post'],
+    tl:[
+      {yr:'2023–24',role:'Lead CFD Researcher',org:'Aero Lab, IIT Madras'},
+      {yr:'2022',role:'Simulation Eng Intern',org:'Volkswagen Group R&D'},
     ],
-    // Eye (camera) position — zoomed close to the bonnet (front-top of car)
-    cam: { pos: [0.0, 1.4, 2.6], target: [0, 0.6, 1.6], dur: 2.4 },
+    // ← CALIBRATE THESE with ?debug
+    cam:{ pos:[0, 1.2, 2.6], target:[0, 0.5, 1.4], dur:2.3 },
+    // Spatial fallback: front half, elevated
+    zoneTest:(x,y,z) => z > 0.6 && y > 0.3,
+    // Mesh name patterns (regex)
+    meshRx:/hood|bonnet|engine.?cover|front.?lid|motorhaube|haube/i,
   },
+
   roof: {
-    num: '02', tag: 'ML Research', title: 'Deep Learning\n& Neural Nets',
-    navLabel: 'ML / AI',
+    num:'02', tag:'ML Research', title:'Deep Learning\n& Neural Nets',
+    nav:'ML / AI',
     desc:
-`Published research on Physics-Informed Neural Networks (PINNs) as surrogate CFD models. Trained transformer-based architectures on 40k+ CFD simulation snapshots.
+`Published research on Physics-Informed Neural Networks (PINNs) as surrogate CFD models. Trained transformer architectures on 40k+ CFD snapshots.
 
-Achieved 120× speed-up over full Navier-Stokes solvers with <2% error on unseen geometries.`,
-    chips: ['PyTorch','JAX','PINNs','Transformers','Navier-Stokes','HPC','CUDA','W&B'],
-    timeline: [
-      { yr:'2024', role:'ML Research Fellow', org:'IISER Pune · AI4Science Lab' },
-      { yr:'2023', role:'Research Assistant', org:'National Centre for Scientific Computing' },
+Achieved 120× speed-up over full Navier-Stokes solvers with under 2% error on unseen geometries.`,
+    chips:['PyTorch','JAX','PINNs','Transformers','Navier-Stokes','CUDA','W&B'],
+    tl:[
+      {yr:'2024',role:'ML Research Fellow',org:'IISER Pune · AI4Science Lab'},
+      {yr:'2023',role:'Research Assistant',org:'National Centre for Scientific Computing'},
     ],
-    cam: { pos: [0.2, 2.8, 0.2], target: [0, 1.2, -0.2], dur: 2.2 },
+    cam:{ pos:[0.3, 2.5, 0.3], target:[0, 1.1, -0.2], dur:2.0 },
+    zoneTest:(x,y,z) => y > 0.9 && Math.abs(z) < 0.7,
+    meshRx:/roof|dach|ceiling|top.?panel|headliner|dach/i,
   },
+
   doorLeft: {
-    num: '03', tag: 'Experience', title: 'Industry\nCareer',
-    navLabel: 'Experience',
+    num:'03', tag:'Experience', title:'Industry\nCareer',
+    nav:'Experience',
     desc:
 `4+ years shipping production systems across simulation software, EV startups, and deep-tech R&D.
 
-Led cross-functional teams bridging physics and ML — from CUDA kernels to React dashboards. Shipped code used by 200+ engineers daily.`,
-    chips: ['Python','C++17','React','TypeScript','CUDA','Docker','k8s','Rust'],
-    timeline: [
-      { yr:'2024–Now', role:'Senior Simulation Engineer', org:'Ola Electric · Vehicle Dynamics' },
-      { yr:'2022–24',  role:'Software Engineer II',        org:'Siemens Digital Industries' },
-      { yr:'2021–22',  role:'Graduate Research Engineer',  org:'TIFR Hyderabad' },
+Led teams bridging physics and ML — CUDA kernels to React dashboards. Code used by 200+ engineers daily.`,
+    chips:['Python','C++17','React','TypeScript','CUDA','Docker','k8s','Rust'],
+    tl:[
+      {yr:'2024–Now',role:'Senior Simulation Engineer',org:'Ola Electric · Vehicle Dynamics'},
+      {yr:'2022–24', role:'Software Engineer II',       org:'Siemens Digital Industries'},
+      {yr:'2021–22', role:'Graduate Research Engineer', org:'TIFR Hyderabad'},
     ],
-    cam: { pos: [-2.8, 0.9, 0.2], target: [-1.0, 0.4, 0.0], dur: 2.3 },
+    cam:{ pos:[-2.8, 0.9, 0.2], target:[-1.2, 0.4, 0], dur:2.2 },
+    zoneTest:(x,y,z) => x < -0.55 && y > 0.08 && y < 0.85,
+    meshRx:/door.?l|left.?door|driver.?door|tur_l|fahrer/i,
   },
-  doorRight: {
-    num: '04', tag: 'Skills', title: 'Technical\nStack',
-    navLabel: 'Skills',
-    desc:
-`Multi-domain skill stack from CUDA kernels to React UIs. Comfortable owning the full simulation pipeline: meshing → solver → post-processing → web visualisation.`,
-    chips: ['CFD','FEA','OpenFOAM','SU2','PyTorch','Three.js','C++','Python','Rust','React','CUDA','K8s'],
-    timeline: [
-      { yr:'Numerical',  role:'OpenFOAM · ANSYS · SU2 · FEniCS · Gmsh', org:'' },
-      { yr:'ML / AI',    role:'PyTorch · JAX · Hugging Face · ONNX',     org:'' },
-      { yr:'Software',   role:'C++ · Python · Rust · TypeScript · Go',    org:'' },
-      { yr:'Infra',      role:'K8s · Slurm · AWS HPC · Docker · CUDA',   org:'' },
-    ],
-    cam: { pos: [2.8, 0.9, 0.2], target: [1.0, 0.4, 0.0], dur: 2.3 },
-  },
-  boot: {
-    num: '05', tag: 'Education', title: 'Academic\nBackground',
-    navLabel: 'Education',
-    desc:
-`Dual degree in Mechanical Engineering and Computational Mathematics. Thesis on data-driven turbulence modelling awarded Best Thesis Prize at IIT Madras.
 
-Published 3 peer-reviewed papers in Journal of Fluid Mechanics and Computers & Fluids.`,
-    chips: ['IIT Madras','Fluid Mechanics','Turbulence','Numerical Methods','JFM','MATLAB'],
-    timeline: [
-      { yr:'2020–24', role:'B.Tech + M.Tech Dual Degree · Mech Eng', org:'IIT Madras · CGPA 9.1/10' },
-      { yr:'2018–20', role:'PCM + Computer Science',                   org:'CBSE · 98.4%' },
-    ],
-    cam: { pos: [0.0, 1.2, -3.2], target: [0, 0.5, -1.8], dur: 2.5 },
-  },
-  wheelFL: {
-    num: '06', tag: 'Projects', title: 'Featured\nProjects',
-    navLabel: 'Projects',
+  doorRight: {
+    num:'04', tag:'Skills', title:'Technical\nStack',
+    nav:'Skills',
     desc:
-`End-to-end engineering projects: aerodynamic optimisation, neural surrogate modelling, and full-stack SaaS tooling for simulation teams.`,
-    chips: ['AeroOpt','NeuralNS','SimDash','OpenWing','TurboPINN','CFDVis'],
-    timeline: [
-      { yr:'AeroOpt',   role:'Adjoint shape optimisation — 18% drag reduction on NACA4412', org:'JFM 2024' },
-      { yr:'NeuralNS',  role:'PINN surrogate for 2D Navier-Stokes — 120× speedup',         org:'GitHub · 1.2k ★' },
-      { yr:'SimDash',   role:'Real-time CFD dashboard (React + WebGL)',                      org:'40+ active researchers' },
+`Multi-domain stack from CUDA kernels to React UIs. Full simulation pipeline ownership: meshing → solver → post-processing → web visualisation.`,
+    chips:['CFD','FEA','OpenFOAM','SU2','PyTorch','Three.js','C++','Python','React','CUDA','K8s'],
+    tl:[
+      {yr:'Numerical', role:'OpenFOAM · ANSYS · SU2 · FEniCS · Gmsh', org:''},
+      {yr:'ML / AI',   role:'PyTorch · JAX · Hugging Face · ONNX',    org:''},
+      {yr:'Software',  role:'C++ · Python · Rust · TypeScript · Go',   org:''},
+      {yr:'Infra',     role:'K8s · Slurm · AWS HPC · Docker · CUDA',  org:''},
     ],
-    cam: { pos: [-2.2, 0.5, 2.0], target: [-1.4, 0.2, 1.4], dur: 2.1 },
+    cam:{ pos:[2.8, 0.9, 0.2], target:[1.2, 0.4, 0], dur:2.2 },
+    zoneTest:(x,y,z) => x > 0.55 && y > 0.08 && y < 0.85,
+    meshRx:/door.?r|right.?door|passenger.?door|tur_r|beif/i,
   },
+
+  rear: {
+    num:'05', tag:'Education', title:'Academic\nBackground',
+    nav:'Education',
+    desc:
+`Dual degree in Mechanical Engineering and Computational Mathematics. Thesis on data-driven turbulence modelling — Best Thesis Prize, IIT Madras.
+
+3 peer-reviewed papers in Journal of Fluid Mechanics and Computers & Fluids.`,
+    chips:['IIT Madras','Fluid Mechanics','Turbulence','Numerical Methods','JFM','MATLAB'],
+    tl:[
+      {yr:'2020–24',role:'B.Tech + M.Tech Dual · Mech Eng',org:'IIT Madras · CGPA 9.1/10'},
+      {yr:'2018–20',role:'PCM + Computer Science',          org:'CBSE · 98.4%'},
+    ],
+    cam:{ pos:[0, 1.0, -3.2], target:[0, 0.4, -1.8], dur:2.4 },
+    zoneTest:(x,y,z) => z < -0.65 && y > 0.1,
+    meshRx:/trunk|boot|heck|rear.?(lid|deck|bumper)|diffuser|spoiler|heckstoß/i,
+  },
+
+  wheel: {
+    num:'06', tag:'Projects', title:'Featured\nProjects',
+    nav:'Projects',
+    desc:
+`End-to-end projects spanning aerodynamic optimisation, neural surrogate modelling, and full-stack SaaS tooling for simulation teams.`,
+    chips:['AeroOpt','NeuralNS','SimDash','OpenWing','TurboPINN','CFDVis'],
+    tl:[
+      {yr:'AeroOpt',  role:'Adjoint shape optimisation — 18% drag reduction on NACA4412', org:'JFM 2024'},
+      {yr:'NeuralNS', role:'PINN surrogate for 2D Navier-Stokes — 120× speedup',         org:'1.2k ★ on GitHub'},
+      {yr:'SimDash',  role:'Real-time CFD dashboard (React + WebGL)',                     org:'40+ researchers'},
+    ],
+    cam:{ pos:[-2.0, 0.5, 2.1], target:[-1.5, 0.15, 1.6], dur:2.0 },
+    zoneTest:(x,y,z) => y < 0.22,
+    meshRx:/wheel|tire|tyre|rim|felge|reifen|brake|caliper|rad_/i,
+  },
+
 };
 
-// ═══════════════════════════════════════════════════════════
-//  BUILD NAV
-// ═══════════════════════════════════════════════════════════
-const navEl = document.getElementById('section-nav');
-Object.entries(SECTIONS).forEach(([key, sec]) => {
-  const btn = document.createElement('div');
-  btn.className = 'sec-btn'; btn.dataset.key = key;
-  btn.innerHTML = `<div class="sec-dot"></div><div class="sec-label">${sec.navLabel}</div>`;
-  btn.addEventListener('click', () => openSection(key));
-  navEl.appendChild(btn);
+// ─────────────────────────────────────────────────────────────
+//  BUILD SIDEBAR NAV
+// ─────────────────────────────────────────────────────────────
+const sidenav = document.getElementById('sidenav');
+Object.entries(SECTIONS).forEach(([key,sec])=>{
+  const b = document.createElement('div');
+  b.className='snav'; b.dataset.key=key;
+  b.innerHTML=`<div class="snav-dot"></div><div class="snav-lbl">${sec.nav}</div>`;
+  b.addEventListener('click',()=>openSection(key));
+  sidenav.appendChild(b);
 });
 
-// ═══════════════════════════════════════════════════════════
-//  CFD AMBIENT LINES (canvas overlay)
-// ═══════════════════════════════════════════════════════════
-const cfdCanvas = document.getElementById('cfd');
-const cfdCtx = cfdCanvas.getContext('2d');
-cfdCanvas.width = window.innerWidth;
-cfdCanvas.height = window.innerHeight;
+// ─────────────────────────────────────────────────────────────
+//  THREE.JS SETUP
+// ─────────────────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.outputEncoding = THREE.sRGBEncoding;
+document.body.insertBefore(renderer.domElement, document.getElementById('cfd'));
 
-const particles = Array.from({length: 60}, () => ({
-  x: Math.random() * window.innerWidth,
-  y: window.innerHeight * 0.1 + Math.random() * window.innerHeight * 0.8,
-  speed: (0.5 + Math.random()) * 2.2,
-  len: 50 + Math.random() * 140,
-  alpha: 0.06 + Math.random() * 0.18,
-  col: Math.random() < 0.7 ? '0,255,224' : '123,94,167',
-}));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x04050d);
+scene.fog = new THREE.FogExp2(0x04050d, 0.022);
 
-function stepCFD() {
-  cfdCtx.clearRect(0, 0, cfdCanvas.width, cfdCanvas.height);
-  particles.forEach(p => {
-    p.x += p.speed;
-    if (p.x > cfdCanvas.width + p.len) {
-      p.x = -p.len;
-      p.y = cfdCanvas.height * 0.1 + Math.random() * cfdCanvas.height * 0.8;
-    }
-    const g = cfdCtx.createLinearGradient(p.x - p.len, 0, p.x, 0);
-    g.addColorStop(0, `rgba(${p.col},0)`);
-    g.addColorStop(1, `rgba(${p.col},${p.alpha})`);
-    cfdCtx.beginPath();
-    cfdCtx.moveTo(p.x - p.len, p.y);
-    cfdCtx.lineTo(p.x, p.y);
-    cfdCtx.strokeStyle = g;
-    cfdCtx.lineWidth = 0.7;
-    cfdCtx.stroke();
-  });
-  requestAnimationFrame(stepCFD);
-}
-stepCFD();
+const W = innerWidth, H = innerHeight;
+const camera = new THREE.PerspectiveCamera(38, W/H, 0.05, 200);
 
-// ═══════════════════════════════════════════════════════════
-//  SKETCHFAB VIEWER API INIT
-// ═══════════════════════════════════════════════════════════
-const iframe = document.getElementById('api-frame');
-const loaderText = document.getElementById('loader-text');
-const progressFill = document.getElementById('progress-fill');
+// ─── Lights ───────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x0a1020, 3.5));
 
-let sketchfabApi = null;
-let nodeMap = null;
-let activeKey = null;
-let zoomAnimId = null;
+const key = new THREE.DirectionalLight(0xe0ff4f, 1.6);
+key.position.set(4, 9, 5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048,2048);
+key.shadow.camera.near=0.5; key.shadow.camera.far=40;
+[-10,10].forEach(v=>{ key.shadow.camera.left=key.shadow.camera.bottom=v; key.shadow.camera.right=key.shadow.camera.top=-v; });
+scene.add(key);
 
-// Simulate progress while loading
-let fakeProgress = 0;
-const progressTimer = setInterval(() => {
-  fakeProgress = Math.min(fakeProgress + (Math.random() * 4), 88);
-  progressFill.style.width = fakeProgress + '%';
-}, 200);
+const rim = new THREE.DirectionalLight(0x38b6ff, 1.0);
+rim.position.set(-5,3,-5); scene.add(rim);
 
-const client = new Sketchfab(iframe);
-client.init(MODEL_UID, {
-  success: function(api) {
-    sketchfabApi = api;
+const fill = new THREE.DirectionalLight(0xff3f5b, 0.4);
+fill.position.set(0,2,6); scene.add(fill);
 
-    loaderText.textContent = 'Loading model…';
+const under = new THREE.PointLight(0xe0ff4f, 0.5, 15);
+under.position.set(0,0.1,0); scene.add(under);
 
-    api.start({
-      // Embed parameters
-      ui_controls: 0,       // hide default controls bar
-      ui_infos: 0,
-      ui_stop: 0,
-      ui_watermark: 0,
-      ui_annotations: 0,
-      ui_color: '00ffe0',
-      transparent: 0,
-      autostart: 1,
-      preload: 1,
-    });
-
-    api.addEventListener('viewerready', function() {
-      loaderText.textContent = 'Building scene…';
-      progressFill.style.width = '95%';
-
-      // Get the node map (mesh names → IDs)
-      api.getNodeMap(function(err, nodes) {
-        if (!err) nodeMap = nodes;
-        logNodes(nodes); // helps you find mesh names in devtools
-      });
-
-      // Set initial dark background
-      api.setBackground({ color: [0.012, 0.016, 0.039] }, function() {});
-
-      // Fly to overview camera
-      api.setCameraLookAt(
-        OVERVIEW_CAM.pos,
-        OVERVIEW_CAM.target,
-        OVERVIEW_CAM.dur,
-        function() {}
-      );
-
-      // Set up the CLICK event on the 3D viewer
-      // 'pick: slow' gives us accurate mesh picking
-      api.addEventListener('click', function(e) {
-        if (!e.position3D) return; // clicked empty space
-
-        // The click event gives us the clicked 3D position.
-        // We map it to a section based on Z and X coordinates
-        // (calibrated to the Supercar GT model's coordinate space).
-        const p = e.position3D;
-        const sec = mapPositionToSection(p, e);
-        if (sec) openSection(sec);
-      }, { pick: 'slow' });
-
-      // Done loading
-      clearInterval(progressTimer);
-      progressFill.style.width = '100%';
-      setTimeout(() => {
-        document.getElementById('loader').classList.add('gone');
-        iframe.classList.add('ready');
-      }, 600);
-    });
-  },
-  error: function() {
-    loaderText.textContent = 'Error loading model';
-    clearInterval(progressTimer);
-  }
+// ─── Floor ────────────────────────────────────────────────
+const floorMat = new THREE.MeshStandardMaterial({
+  color:0x060818, roughness:0.96, metalness:0.05
 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60,60), floorMat);
+floor.rotation.x = -Math.PI/2; floor.receiveShadow=true; scene.add(floor);
 
-// ── Map 3D click position → section key ──
-// This maps spatial zones of the car to sections.
-// Adjust these ranges after checking getCameraLookAt() for your exact model scale.
-function mapPositionToSection(pos, e) {
-  const x = pos[0], y = pos[1], z = pos[2];
+// Grid
+const grid = new THREE.GridHelper(50,60,0x0d1526,0x0a1120);
+grid.material.opacity=0.65; grid.material.transparent=true; scene.add(grid);
 
-  // Also check mesh name from the click event if available
-  const meshName = (e.instanceID && nodeMap) ?
-    (nodeMap[e.instanceID] ? nodeMap[e.instanceID].name || '' : '') : '';
+// Gloss reflection plane
+const gloss = new THREE.Mesh(
+  new THREE.PlaneGeometry(16,24),
+  new THREE.MeshStandardMaterial({color:0x060a18,roughness:0.04,metalness:0.95,opacity:0.55,transparent:true})
+);
+gloss.rotation.x=-Math.PI/2; gloss.position.y=0.003; scene.add(gloss);
 
-  const name = meshName.toLowerCase();
-
-  // Check by mesh name first (most accurate)
-  if (name.includes('hood') || name.includes('bonnet') || name.includes('engine_cover')) return 'bonnet';
-  if (name.includes('roof') || name.includes('top') || name.includes('ceiling')) return 'roof';
-  if (name.includes('door_l') || name.includes('left_door') || (name.includes('door') && x < 0)) return 'doorLeft';
-  if (name.includes('door_r') || name.includes('right_door') || (name.includes('door') && x > 0)) return 'doorRight';
-  if (name.includes('trunk') || name.includes('boot') || name.includes('rear_lid')) return 'boot';
-  if (name.includes('wheel') || name.includes('tire') || name.includes('rim')) return 'wheelFL';
-
-  // Spatial fallback based on 3D position
-  if (y > 0.6 && z > 0.8)   return 'bonnet';     // front-top
-  if (y > 0.9 && Math.abs(z) < 0.8) return 'roof'; // top-centre
-  if (x < -0.7 && y > 0.0)  return 'doorLeft';   // left side
-  if (x >  0.7 && y > 0.0)  return 'doorRight';  // right side
-  if (y > 0.2 && z < -0.8)  return 'boot';       // rear
-  if (y < 0.35)              return 'wheelFL';    // low = wheels
-
-  return null; // unknown region — ignore
-}
-
-function logNodes(nodes) {
-  if (!nodes) return;
-  // Open devtools console and check window._sfNodes to see mesh names
-  // Use these to refine mapPositionToSection() above
-  window._sfNodes = nodes;
-  // console.table(Object.entries(nodes).map(([id,n])=>({id,name:n.name,type:n.type})));
-}
-
-// ═══════════════════════════════════════════════════════════
-//  OPEN SECTION — Prezi zoom + panel
-// ═══════════════════════════════════════════════════════════
-const overlay  = document.getElementById('overlay');
-const pTag     = document.getElementById('p-tag');
-const pNum     = document.getElementById('p-num');
-const pTitle   = document.getElementById('p-title');
-const pDesc    = document.getElementById('p-desc');
-const pChips   = document.getElementById('p-chips');
-const pTimeline= document.getElementById('p-timeline');
-const backBtn  = document.getElementById('back-btn');
-const hint     = document.getElementById('hint');
-const zoomBar  = document.getElementById('zoom-bar');
-
-function openSection(key) {
-  if (!sketchfabApi || !SECTIONS[key]) return;
-  activeKey = key;
-  const sec = SECTIONS[key];
-
-  // ── 1. Fly camera into the part (Prezi zoom) ──
-  const cam = sec.cam;
-  animateZoomBar(cam.dur);
-
-  sketchfabApi.setCameraLookAt(cam.pos, cam.target, cam.dur, function() {
-    // camera arrived — show panel now
-  });
-
-  // ── 2. Show panel content ──
-  pTag.textContent = sec.tag;
-  pNum.textContent = sec.num;
-  pTitle.innerHTML = sec.title.replace('\n', '<br>');
-  pDesc.textContent = sec.desc;
-  pChips.innerHTML = sec.chips.map(c => `<span class="chip">${c}</span>`).join('');
-  pTimeline.innerHTML = sec.timeline.map(e => `
-    <div class="t-entry">
-      ${e.yr ? `<div class="t-yr">${e.yr}</div>` : ''}
-      <div class="t-role">${e.role}</div>
-      ${e.org ? `<div class="t-org">${e.org}</div>` : ''}
-    </div>`).join('');
-
-  // ── 3. Show overlay with delay (let zoom start first) ──
-  setTimeout(() => {
-    overlay.classList.add('open');
-    hint.classList.add('hidden');
-    backBtn.classList.add('show');
-  }, cam.dur * 400); // show panel ~40% through the camera animation
-
-  // ── 4. Nav active state ──
-  document.querySelectorAll('.sec-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.key === key));
-}
-
-function closeSection() {
-  if (!sketchfabApi) return;
-  activeKey = null;
-  overlay.classList.remove('open');
-  backBtn.classList.remove('show');
-  hint.classList.remove('hidden');
-  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
-
-  // Fly back to overview
-  animateZoomBar(OVERVIEW_CAM.dur);
-  sketchfabApi.setCameraLookAt(
-    OVERVIEW_CAM.pos, OVERVIEW_CAM.target, OVERVIEW_CAM.dur, function() {}
+// Ground glow strips
+[-1.2,1.2].forEach(x=>{
+  const s = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.07,12),
+    new THREE.MeshStandardMaterial({color:0xe0ff4f,emissive:0xe0ff4f,emissiveIntensity:.7,transparent:true,opacity:.45})
   );
-}
-
-document.getElementById('close-btn').addEventListener('click', closeSection);
-document.getElementById('back-btn').addEventListener('click', closeSection);
-document.getElementById('overlay-curtain').addEventListener('click', closeSection);
-
-// ── Zoom bar animation ──
-function animateZoomBar(dur) {
-  const start = performance.now();
-  const total = dur * 1000;
-  cancelAnimationFrame(zoomAnimId);
-  function step(now) {
-    const t = Math.min((now - start) / total, 1);
-    const ease = 1 - Math.pow(1 - t, 3);
-    zoomBar.style.width = (ease * 100) + '%';
-    if (t < 1) zoomAnimId = requestAnimationFrame(step);
-    else setTimeout(() => { zoomBar.style.width = '0%'; }, 400);
-  }
-  zoomAnimId = requestAnimationFrame(step);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  RESIZE
-// ═══════════════════════════════════════════════════════════
-window.addEventListener('resize', () => {
-  cfdCanvas.width = window.innerWidth;
-  cfdCanvas.height = window.innerHeight;
+  s.rotation.x=-Math.PI/2; s.position.set(x,-0.002,0); scene.add(s);
 });
 
-// ═══════════════════════════════════════════════════════════
-//  DEBUG MODE  (add ?debug to URL)
-// ═══════════════════════════════════════════════════════════
-if (location.search.includes('debug')) {
-  const dbg = document.getElementById('cam-debug');
-  dbg.style.display = 'block';
-  setInterval(() => {
-    if (!sketchfabApi) return;
-    sketchfabApi.getCameraLookAt(function(err, cam) {
-      if (err) return;
-      dbg.textContent =
-        `pos: [${cam.position.map(v=>v.toFixed(2)).join(', ')}]\n` +
-        `tgt: [${cam.target.map(v=>v.toFixed(2)).join(', ')}]`;
-    });
+// ─────────────────────────────────────────────────────────────
+//  LOAD GLB
+// ─────────────────────────────────────────────────────────────
+const clickableMeshes = [];   // meshes that can be raycasted
+const meshSectionMap  = new Map(); // mesh.uuid → sectionKey
+let   carGroup        = null;
+let   modelLoaded     = false;
+
+// Fake progress
+let fp=0;
+const fakeT = setInterval(()=>{
+  fp=Math.min(fp+Math.random()*3,82);
+  document.getElementById('lfill').style.width=fp+'%';
+},200);
+
+const loader = new THREE.GLTFLoader();
+
+// Draco support (optional — handles compressed GLBs)
+const draco = new THREE.DRACOLoader();
+draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/libs/draco/');
+loader.setDRACOLoader(draco);
+
+loader.load(
+  'sports car.glb',            // ← file in same folder as index.html
+  onModelLoad,
+  onProgress,
+  onError
+);
+
+function onProgress(xhr) {
+  if (xhr.lengthComputable) {
+    const pct = (xhr.loaded/xhr.total)*100;
+    document.getElementById('lfill').style.width = Math.max(pct,fp)+'%';
+    document.getElementById('ltxt').textContent =
+      `Loading model… ${Math.round(pct)}%`;
+  }
+}
+
+function onError(err) {
+  console.error('GLB load error:', err);
+  document.getElementById('ltxt').textContent =
+    '⚠ Could not load "sports car.glb" — check it\'s in the same folder as index.html';
+}
+
+function onModelLoad(gltf) {
+  clearInterval(fakeT);
+  document.getElementById('lfill').style.width='100%';
+  document.getElementById('ltxt').textContent='Building scene…';
+
+  carGroup = gltf.scene;
+  scene.add(carGroup);
+
+  // ── Auto-centre and scale the model ──
+  const box = new THREE.Box3().setFromObject(carGroup);
+  const ctr = box.getCenter(new THREE.Vector3());
+  const sz  = box.getSize(new THREE.Vector3());
+  const maxD= Math.max(sz.x, sz.y, sz.z);
+  const scale = 5.0 / maxD;   // normalise longest axis to 5 units
+
+  carGroup.scale.setScalar(scale);
+  carGroup.position.sub(ctr.multiplyScalar(scale));
+  // Sit on the floor
+  const box2 = new THREE.Box3().setFromObject(carGroup);
+  carGroup.position.y -= box2.min.y;
+
+  // ── Shadow casting ──
+  carGroup.traverse(child=>{
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+      // Enhance materials for dark theme
+      if (child.material) {
+        const mats = Array.isArray(child.material)?child.material:[child.material];
+        mats.forEach(m=>{
+          m.envMapIntensity = 1.4;
+          // If very bright, darken slightly
+          if (m.color && m.color.r+m.color.g+m.color.b > 2.4) {
+            m.color.multiplyScalar(0.75);
+          }
+        });
+      }
+    }
+  });
+
+  // ── Map meshes to sections by name ──
+  const meshNames = [];
+  carGroup.traverse(child=>{
+    if (!child.isMesh) return;
+    const name = child.name || '';
+    meshNames.push({name, uuid:child.uuid});
+    const key = matchMeshToSection(name);
+    if (key) {
+      clickableMeshes.push(child);
+      meshSectionMap.set(child.uuid, key);
+    } else {
+      // Still add to clickable for spatial fallback
+      clickableMeshes.push(child);
+    }
+  });
+
+  // Debug: list all mesh names
+  if (DEBUG) populateDebugMeshList(meshNames);
+
+  // ── Initial camera ──
+  // Auto-compute a nice overview from model size
+  const ext = box2.getSize(new THREE.Vector3());
+  OVERVIEW_CAM.pos    = [ext.x*0.8, ext.y*1.1, ext.z*0.95];
+  OVERVIEW_CAM.target = [0, ext.y*0.3, 0];
+  camera.position.set(...OVERVIEW_CAM.pos);
+  camera.lookAt(new THREE.Vector3(...OVERVIEW_CAM.target));
+  camState.curLook.set(...OVERVIEW_CAM.target);
+
+  // Sync spherical from initial camera position
+  syncSphericalFromCamera();
+
+  modelLoaded = true;
+
+  // Hide loader
+  setTimeout(()=>{
+    document.getElementById('loader').classList.add('done');
   }, 500);
 }
+
+// ── Match mesh name → section key ──────────────────────────
+function matchMeshToSection(name) {
+  for (const [key,sec] of Object.entries(SECTIONS)) {
+    if (sec.meshRx && sec.meshRx.test(name)) return key;
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  OVERVIEW CAMERA (computed after model loads)
+// ─────────────────────────────────────────────────────────────
+const OVERVIEW_CAM = { pos:[5,3,7], target:[0,0.5,0], dur:1.8 };
+
+// ─────────────────────────────────────────────────────────────
+//  ORBIT CONTROLS (lightweight, no import needed)
+// ─────────────────────────────────────────────────────────────
+const sph = { theta:-0.3, phi:0.82, r:9 };
+let isDragging=false, lastMouse={x:0,y:0};
+let autoRot=true, activeKey=null;
+
+function syncSphericalFromCamera() {
+  const p = camera.position;
+  sph.r     = p.length();
+  sph.phi   = Math.acos(p.y/sph.r);
+  sph.theta = Math.atan2(p.x, p.z);
+}
+
+function applyOrbit() {
+  if (activeKey) return;
+  camera.position.set(
+    sph.r*Math.sin(sph.phi)*Math.sin(sph.theta),
+    sph.r*Math.cos(sph.phi),
+    sph.r*Math.sin(sph.phi)*Math.cos(sph.theta)
+  );
+  camera.lookAt(new THREE.Vector3(...OVERVIEW_CAM.target));
+  camState.curLook.set(...OVERVIEW_CAM.target);
+}
+
+document.addEventListener('mousedown',e=>{
+  if(e.target.closest('#panel,#sidenav,#back,#dbg')) return;
+  isDragging=true; lastMouse={x:e.clientX,y:e.clientY}; autoRot=false;
+});
+document.addEventListener('mouseup',()=>{
+  isDragging=false;
+  if(!activeKey) setTimeout(()=>{ autoRot=true; },2500);
+});
+document.addEventListener('mousemove',e=>{
+  // Custom cursor
+  document.getElementById('cur').style.left=e.clientX+'px';
+  document.getElementById('cur').style.top =e.clientY+'px';
+  document.getElementById('cur-ring').style.left=e.clientX+'px';
+  document.getElementById('cur-ring').style.top =e.clientY+'px';
+
+  if(isDragging && !activeKey && modelLoaded){
+    const dx=e.clientX-lastMouse.x, dy=e.clientY-lastMouse.y;
+    sph.theta -= dx*0.006;
+    sph.phi    = Math.max(0.2, Math.min(1.5, sph.phi-dy*0.006));
+    lastMouse  = {x:e.clientX,y:e.clientY};
+    applyOrbit();
+  }
+  if(!activeKey && modelLoaded) doHover(e);
+});
+document.addEventListener('wheel',e=>{
+  if(activeKey||!modelLoaded) return;
+  sph.r=Math.max(3,Math.min(20,sph.r+e.deltaY*0.018));
+  applyOrbit();
+},{passive:true});
+
+// ─────────────────────────────────────────────────────────────
+//  CAMERA ANIMATION STATE (Prezi zoom)
+// ─────────────────────────────────────────────────────────────
+const camState = {
+  active:false, t:0, dur:2.0,
+  fromPos: new THREE.Vector3(),
+  fromLook:new THREE.Vector3(),
+  toPos:   new THREE.Vector3(),
+  toLook:  new THREE.Vector3(),
+  curLook: new THREE.Vector3(),
+};
+
+function easeInOutQuart(t){ return t<.5 ? 8*t*t*t*t : 1-Math.pow(-2*t+2,4)/2; }
+
+function flyTo(pos, look, dur) {
+  camState.fromPos.copy(camera.position);
+  camState.fromLook.copy(camState.curLook);
+  camState.toPos.set(pos[0],pos[1],pos[2]);
+  camState.toLook.set(look[0],look[1],look[2]);
+  camState.t=0; camState.dur=dur; camState.active=true;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  RAYCASTING — hover + click
+// ─────────────────────────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+const ptr       = new THREE.Vector2();
+const hlabel    = document.getElementById('hlabel');
+let   hoveredKey= null, hovMeshes=[];
+
+function doHover(e) {
+  ptr.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
+  raycaster.setFromCamera(ptr, camera);
+  const hits = raycaster.intersectObjects(clickableMeshes,false);
+
+  // Reset previous emissive
+  hovMeshes.forEach(m=>{
+    if(m.material&&!isAccentMat(m.material)){
+      const mats=Array.isArray(m.material)?m.material:[m.material];
+      mats.forEach(mat=>{ mat.emissive?.set(0,0,0); mat.emissiveIntensity=0; });
+    }
+  }); hovMeshes=[];
+
+  if(hits.length){
+    const hit  = hits[0];
+    const key  = meshSectionMap.get(hit.object.uuid)
+              || spatialFallback(hit.point.x,hit.point.y,hit.point.z);
+    document.getElementById('cur').classList.add('hover');
+
+    if(key){
+      // Glow all meshes of same section
+      clickableMeshes.forEach(m=>{
+        if(meshSectionMap.get(m.uuid)===key && m.material){
+          const mats=Array.isArray(m.material)?m.material:[m.material];
+          mats.forEach(mat=>{
+            if(!isAccentMat(mat)){
+              mat.emissive = mat.emissive || new THREE.Color();
+              mat.emissive.set(0.08,0.12,0.02);
+              mat.emissiveIntensity=1;
+            }
+          }); hovMeshes.push(m);
+        }
+      });
+      // Show label
+      hlabel.textContent=SECTIONS[key].nav;
+      hlabel.style.left=e.clientX+'px';
+      hlabel.style.top =e.clientY+'px';
+      hlabel.classList.add('show');
+      hoveredKey=key;
+    }
+  } else {
+    document.getElementById('cur').classList.remove('hover');
+    hlabel.classList.remove('show');
+    hoveredKey=null;
+  }
+}
+
+function isAccentMat(mat){
+  return mat.emissive &&
+    (mat.emissive.r>0.3||mat.emissive.g>0.3||mat.emissive.b>0.3) &&
+    mat.emissiveIntensity>0.5;
+}
+
+document.addEventListener('click',e=>{
+  if(!modelLoaded) return;
+  if(e.target.closest('#panel,#sidenav,#back,#dbg,#ov-bg')) return;
+
+  ptr.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
+  raycaster.setFromCamera(ptr,camera);
+  const hits=raycaster.intersectObjects(clickableMeshes,false);
+  if(!hits.length) return;
+
+  const hit=hits[0];
+  const key = meshSectionMap.get(hit.object.uuid)
+            || spatialFallback(hit.point.x,hit.point.y,hit.point.z);
+
+  if(DEBUG){
+    document.getElementById('d-hit').textContent =
+      `hit pos: [${hit.point.x.toFixed(3)}, ${hit.point.y.toFixed(3)}, ${hit.point.z.toFixed(3)}]`;
+    document.getElementById('d-mesh').textContent=`mesh: "${hit.object.name}"`;
+    document.getElementById('d-sec').textContent =`→ section: ${key||'none'}`;
+  }
+
+  if(key) openSection(key);
+});
+
+function spatialFallback(x,y,z){
+  for(const [key,sec] of Object.entries(SECTIONS)){
+    if(sec.zoneTest && sec.zoneTest(x,y,z)) return key;
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  OPEN / CLOSE SECTION
+// ─────────────────────────────────────────────────────────────
+const overlay=document.getElementById('overlay');
+const back   =document.getElementById('back');
+const hint   =document.getElementById('hint');
+const zbar   =document.getElementById('zbar');
+let zbAnimId=null;
+
+function openSection(key){
+  if(!SECTIONS[key]||activeKey===key) return;
+  activeKey=key; autoRot=false;
+
+  const sec=SECTIONS[key];
+
+  // ── Fly camera into the part ──
+  const {pos,target,dur}=sec.cam;
+  flyTo(pos,target,dur);
+  animZbar(dur);
+
+  // ── Fill panel ──
+  document.getElementById('ptag').textContent  =sec.tag;
+  document.getElementById('pnum').textContent  =sec.num;
+  document.getElementById('ptitle').innerHTML  =sec.title.replace('\n','<br>');
+  document.getElementById('pdesc').textContent =sec.desc;
+  document.getElementById('pchips').innerHTML  =sec.chips.map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('ptl').innerHTML     =sec.tl.map(t=>`
+    <div class="te">
+      ${t.yr?`<div class="te-yr">${t.yr}</div>`:''}
+      <div class="te-role">${t.role}</div>
+      ${t.org?`<div class="te-org">${t.org}</div>`:''}
+    </div>`).join('');
+
+  // ── Show overlay partway through zoom ──
+  setTimeout(()=>{
+    overlay.classList.add('open');
+    hint.classList.add('off');
+    back.classList.add('show');
+    hlabel.classList.remove('show');
+  }, dur*380);
+
+  // Nav active
+  document.querySelectorAll('.snav').forEach(b=>b.classList.toggle('on',b.dataset.key===key));
+}
+
+function closeSection(){
+  activeKey=null;
+  overlay.classList.remove('open');
+  back.classList.remove('show');
+  hint.classList.remove('off');
+  document.querySelectorAll('.snav').forEach(b=>b.classList.remove('on'));
+
+  // Fly back
+  flyTo(OVERVIEW_CAM.pos, OVERVIEW_CAM.target, OVERVIEW_CAM.dur);
+  animZbar(OVERVIEW_CAM.dur);
+  setTimeout(()=>{ autoRot=true; }, (OVERVIEW_CAM.dur+0.3)*1000);
+}
+
+document.getElementById('pclose').addEventListener('click',closeSection);
+document.getElementById('back').addEventListener('click',closeSection);
+document.getElementById('ov-bg').addEventListener('click',closeSection);
+
+// ── Zoom bar ──────────────────────────────────────────────
+function animZbar(dur){
+  const t0=performance.now(), total=dur*1000;
+  cancelAnimationFrame(zbAnimId);
+  function step(now){
+    const p=Math.min((now-t0)/total,1);
+    zbar.style.width=(easeInOutQuart(p)*100)+'%';
+    if(p<1) zbAnimId=requestAnimationFrame(step);
+    else setTimeout(()=>{ zbar.style.width='0%'; },500);
+  }
+  zbAnimId=requestAnimationFrame(step);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  CFD AMBIENT LINES
+// ─────────────────────────────────────────────────────────────
+const cC=document.getElementById('cfd');
+const cX=cC.getContext('2d');
+cC.width=innerWidth; cC.height=innerHeight;
+const PARS=Array.from({length:55},()=>({
+  x:Math.random()*innerWidth,
+  y:innerHeight*.1+Math.random()*innerHeight*.8,
+  spd:(0.5+Math.random())*2.3,
+  len:40+Math.random()*170,
+  a:0.04+Math.random()*.17,
+  col:Math.random()<.65?'224,255,79':'56,182,255',
+}));
+function stepCFD(){
+  cX.clearRect(0,0,cC.width,cC.height);
+  PARS.forEach(p=>{
+    p.x+=p.spd;
+    if(p.x>cC.width+p.len){p.x=-p.len;p.y=cC.height*.1+Math.random()*cC.height*.8;}
+    const g=cX.createLinearGradient(p.x-p.len,0,p.x,0);
+    g.addColorStop(0,`rgba(${p.col},0)`);g.addColorStop(1,`rgba(${p.col},${p.a})`);
+    cX.beginPath();cX.moveTo(p.x-p.len,p.y);cX.lineTo(p.x,p.y);
+    cX.strokeStyle=g;cX.lineWidth=.7;cX.stroke();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  DEBUG MODE  (?debug in URL)
+// ─────────────────────────────────────────────────────────────
+const DEBUG = location.search.includes('debug');
+if(DEBUG){
+  document.getElementById('dbg').style.display='block';
+  setInterval(()=>{
+    const p=camera.position;
+    const L=camState.curLook;
+    document.getElementById('d-cam').textContent=
+      `cam pos: [${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)}]`;
+    document.getElementById('d-tgt').textContent=
+      `cam tgt: [${L.x.toFixed(3)}, ${L.y.toFixed(3)}, ${L.z.toFixed(3)}]`;
+  },250);
+}
+
+function populateDebugMeshList(names){
+  const el=document.getElementById('dbg-meshlist');
+  el.innerHTML='<div style="color:rgba(224,255,79,.5);margin-bottom:4px">── all meshes ──</div>';
+  names.slice(0,60).forEach(({name,uuid})=>{
+    const d=document.createElement('div');
+    const sec=meshSectionMap.get(uuid);
+    d.textContent=`${name}${sec?' → '+sec:''}`;
+    d.style.color=sec?'rgba(224,255,79,.75)':'rgba(224,255,79,.3)';
+    el.appendChild(d);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  RESIZE
+// ─────────────────────────────────────────────────────────────
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  cC.width=innerWidth; cC.height=innerHeight;
+});
+
+// ─────────────────────────────────────────────────────────────
+//  ANIMATE LOOP
+// ─────────────────────────────────────────────────────────────
+const clock=new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta();
+
+  // Auto-rotate when idle
+  if(autoRot && !activeKey && modelLoaded){
+    sph.theta+=0.0011;
+    applyOrbit();
+  }
+
+  // Prezi camera animation
+  if(camState.active){
+    camState.t = Math.min(camState.t + dt/camState.dur, 1);
+    const et   = easeInOutQuart(camState.t);
+    camera.position.lerpVectors(camState.fromPos, camState.toPos, et);
+    camState.curLook.lerpVectors(camState.fromLook, camState.toLook, et);
+    camera.lookAt(camState.curLook);
+    if(camState.t>=1) camState.active=false;
+  }
+
+  // Gentle car float
+  if(carGroup && !camState.active){
+    carGroup.position.y += (Math.sin(clock.elapsedTime*0.6)*0.018 - carGroup.position.y)*0.04;
+  }
+
+  stepCFD();
+  renderer.render(scene,camera);
+}
+animate();
 </script>
 </body>
 </html>
