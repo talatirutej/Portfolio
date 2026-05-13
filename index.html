@@ -318,7 +318,7 @@ rL.position.set(-5,3,-5); scene.add(rL);
 const fL=new THREE.DirectionalLight(0xff3f5b,0.35);
 fL.position.set(0,2,6); scene.add(fL);
 
-scene.add(Object.assign(new THREE.PointLight(0xe0ff4f,0.5,15),{position:{x:0,y:0.1,z:0}}));
+const uL=new THREE.PointLight(0xe0ff4f,0.5,15); uL.position.set(0,0.1,0); scene.add(uL);
 
 // ── Floor & environment ─────────────────────────────────────
 const floor=new THREE.Mesh(
@@ -330,10 +330,12 @@ floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
 const grid=new THREE.GridHelper(50,60,0x0d1526,0x0a1120);
 grid.material.opacity=0.65; grid.material.transparent=true; scene.add(grid);
 
-scene.add(Object.assign(new THREE.Mesh(
+
+const gloss=new THREE.Mesh(
   new THREE.PlaneGeometry(16,26),
   new THREE.MeshStandardMaterial({color:0x060a18,roughness:0.04,metalness:0.95,opacity:0.55,transparent:true})
-),{rotation:{x:-Math.PI/2},position:{x:0,y:0.003,z:0}}));
+);
+gloss.rotation.x=-Math.PI/2; gloss.position.set(0,0.003,0); scene.add(gloss);
 
 [-1.2,1.2].forEach(x=>{
   const s=new THREE.Mesh(
