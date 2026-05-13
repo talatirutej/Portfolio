@@ -4,300 +4,97 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Portfolio · RUF RT 35 S</title>
-
-<!-- Three.js r134 — has GLTFLoader built into addons -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
-
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg:       #04050d;
-  --acc:      #e0ff4f;
-  --acc2:     #ff3f5b;
-  --acc3:     #38b6ff;
-  --txt:      #dde4f0;
-  --muted:    #3d4d60;
-  --glass:    rgba(4,5,18,0.95);
-  --border:   rgba(224,255,79,0.13);
-  --pw:       450px;
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04050d;--acc:#e0ff4f;--acc2:#ff3f5b;--acc3:#38b6ff;
+  --txt:#dde4f0;--muted:#3d4d60;--glass:rgba(4,5,18,0.95);
+  --border:rgba(224,255,79,0.14);--pw:450px;
 }
-
-html, body {
-  width:100%; height:100%;
-  background: var(--bg);
-  overflow: hidden;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--txt);
-  cursor: none;
-}
-
-/* custom cursor */
-#cur {
-  position:fixed; width:10px; height:10px; border-radius:50%;
-  background:var(--acc); pointer-events:none; z-index:9999;
-  transform:translate(-50%,-50%);
-  box-shadow:0 0 14px var(--acc), 0 0 30px rgba(224,255,79,0.3);
-  transition: transform .08s, width .2s, height .2s, background .2s;
-  mix-blend-mode: screen;
-}
-#cur.hover {
-  width:28px; height:28px; background:var(--acc2);
-  box-shadow:0 0 18px var(--acc2);
-}
-#cur-ring {
-  position:fixed; width:38px; height:38px; border-radius:50%;
-  border:1px solid rgba(224,255,79,0.35); pointer-events:none; z-index:9998;
-  transform:translate(-50%,-50%); transition:transform .16s ease-out;
-}
-
-/* canvas */
-canvas {
-  position:fixed; inset:0;
-  width:100%!important; height:100%!important;
-  z-index:1;
-}
-
-/* ── LOADER ── */
-#loader {
-  position:fixed; inset:0; background:var(--bg);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:800; transition: opacity .9s, visibility .9s;
-}
-#loader.done { opacity:0; visibility:hidden; pointer-events:none; }
-
-.ld-ring { width:70px; height:70px; margin-bottom:26px; }
-.ld-ring svg { width:100%; height:100%; }
-.r1 { animation:spin 1.5s linear infinite; transform-origin:35px 35px; }
-.r2 { animation:spin 2.2s linear infinite reverse; transform-origin:35px 35px; }
-@keyframes spin { to { transform:rotate(360deg); } }
-
-.ld-label {
-  font-family:'Orbitron',monospace;
-  font-size:.58rem; letter-spacing:.32em; text-transform:uppercase;
-  color:var(--acc); margin-bottom:18px;
-}
-.ld-bar { width:200px; height:1px; background:rgba(224,255,79,.08); overflow:hidden; }
-.ld-fill {
-  height:100%; width:0%;
-  background:linear-gradient(90deg,var(--acc),var(--acc3));
-  transition:width .2s;
-  box-shadow:0 0 10px var(--acc);
-}
-
-/* ── VIGNETTE ── */
-#vig {
-  position:fixed; inset:0; z-index:2; pointer-events:none;
-  background: radial-gradient(ellipse 75% 75% at 50% 55%, transparent 35%, rgba(4,5,13,.72) 100%);
-}
-
-/* ── HEADER ── */
-#hdr {
-  position:fixed; top:0; left:0; right:0;
-  display:flex; justify-content:space-between; align-items:flex-start;
-  padding:20px 34px; z-index:30; pointer-events:none;
-  background:linear-gradient(to bottom,rgba(4,5,13,.9) 0%,transparent 100%);
-}
-.hdr-name {
-  font-family:'Orbitron',monospace;
-  font-size:clamp(.9rem,2vw,1.25rem); font-weight:900; letter-spacing:.06em;
-}
-.hdr-name s { text-decoration:none; color:var(--acc); }
-.hdr-sub {
-  font-size:.55rem; letter-spacing:.22em; color:var(--muted);
-  text-transform:uppercase; margin-top:5px;
-}
-.hdr-badge {
-  font-family:'Orbitron',monospace;
-  font-size:.46rem; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--acc); border:1px solid var(--border);
-  padding:6px 14px; background:rgba(224,255,79,.025);
-}
-
-/* ── SIDEBAR ── */
-#sidenav {
-  position:fixed; right:22px; top:50%; transform:translateY(-50%);
-  display:flex; flex-direction:column; gap:5px; z-index:30;
-}
-.snav {
-  display:flex; align-items:center; gap:9px;
-  cursor:pointer; padding:7px 12px 7px 9px;
-  border:1px solid transparent; background:rgba(4,5,13,.55);
-  transition:all .22s; pointer-events:all; backdrop-filter:blur(8px);
-}
-.snav:hover,.snav.on { border-color:var(--border); background:rgba(224,255,79,.04); }
-.snav-dot {
-  width:5px; height:5px; border-radius:50%; background:var(--muted);
-  flex-shrink:0; transition:background .2s,box-shadow .2s;
-}
-.snav:hover .snav-dot,.snav.on .snav-dot {
-  background:var(--acc); box-shadow:0 0 8px var(--acc);
-}
-.snav-lbl {
-  font-family:'Orbitron',monospace;
-  font-size:.48rem; letter-spacing:.13em; text-transform:uppercase;
-  color:var(--muted); transition:color .2s; white-space:nowrap;
-}
-.snav:hover .snav-lbl,.snav.on .snav-lbl { color:var(--acc); }
-
-/* ── HINT ── */
-#hint {
-  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-  font-size:.56rem; letter-spacing:.18em; color:var(--muted);
-  text-transform:uppercase; z-index:30; pointer-events:none;
-  text-align:center; transition:opacity .5s;
-}
-#hint em { color:var(--acc); font-style:normal; }
-#hint.off { opacity:0; }
-
-/* ── HOVER LABEL ── */
-#hlabel {
-  position:fixed; pointer-events:none; z-index:35;
-  font-family:'Orbitron',monospace;
-  font-size:.5rem; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--acc); padding:5px 12px;
-  border-left:2px solid var(--acc);
-  background:rgba(4,5,13,.8);
-  text-shadow:0 0 10px rgba(224,255,79,.5);
-  opacity:0; transition:opacity .18s;
-  transform:translate(14px,-50%); white-space:nowrap;
-}
-#hlabel.show { opacity:1; }
-
-/* ── BACK ── */
-#back {
-  position:fixed; top:22px; left:50%; transform:translateX(-50%);
-  font-family:'Orbitron',monospace;
-  font-size:.54rem; letter-spacing:.16em; text-transform:uppercase;
-  color:var(--muted); cursor:pointer; pointer-events:all;
-  padding:10px 26px; border:1px solid rgba(255,255,255,.08);
-  background:rgba(4,5,13,.9); z-index:60;
-  transition:all .2s; display:none; backdrop-filter:blur(10px);
-}
-#back:hover { color:var(--acc); border-color:var(--border); }
-#back.show { display:block; }
-
-/* ── ZOOM BAR ── */
-#zbar {
-  position:fixed; bottom:0; left:0; height:2px;
-  background:linear-gradient(90deg,var(--acc),var(--acc3));
-  z-index:70; width:0%; pointer-events:none;
-  box-shadow:0 0 8px var(--acc);
-}
-
-/* ── OVERLAY PANEL ── */
-#overlay {
-  position:fixed; inset:0; z-index:50;
-  pointer-events:none; opacity:0; transition:opacity .45s;
-}
-#overlay.open { opacity:1; pointer-events:all; }
-
-#ov-bg {
-  position:absolute; inset:0;
-  background:rgba(4,5,13,.55); backdrop-filter:blur(4px);
-}
-
-#panel {
-  position:absolute; right:0; top:0; bottom:0;
-  width:var(--pw); max-width:100vw;
-  background:var(--glass); border-left:1px solid var(--border);
-  overflow-y:auto;
-  transform:translateX(calc(var(--pw) + 10px));
-  transition:transform .55s cubic-bezier(.16,1,.3,1);
-  scrollbar-width:thin; scrollbar-color:var(--muted) transparent;
-}
-#overlay.open #panel { transform:translateX(0); }
-
-.p-stripe {
-  height:2px;
-  background:linear-gradient(90deg,var(--acc) 0%,var(--acc3) 55%,transparent 100%);
-}
-
-/* scanlines */
-#panel::after {
-  content:''; position:fixed; right:0; top:0;
-  width:var(--pw); height:100%; pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);
-  z-index:1; opacity:.5;
-}
-
-.p-body { padding:30px 36px 52px; position:relative; z-index:2; }
-
-.p-close {
-  position:absolute; top:26px; right:26px;
-  font-family:'Orbitron',monospace;
-  font-size:.5rem; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--muted); cursor:pointer; z-index:3;
-  padding:6px 13px; border:1px solid rgba(255,255,255,.08);
-  transition:all .2s;
-}
-.p-close:hover { color:var(--acc); border-color:var(--border); }
-
-.p-tag {
-  font-family:'Orbitron',monospace;
-  font-size:.46rem; letter-spacing:.26em; text-transform:uppercase;
-  background:var(--acc); color:var(--bg); font-weight:700;
-  display:inline-block; padding:4px 13px; margin-bottom:14px;
-}
-.p-num {
-  display:block; font-family:'Orbitron',monospace;
-  font-size:5.5rem; font-weight:900; line-height:1;
-  color:rgba(224,255,79,.05); margin-bottom:-30px; user-select:none;
-}
-.p-title {
-  font-family:'Orbitron',monospace;
-  font-size:clamp(1.2rem,2.2vw,1.7rem); font-weight:700;
-  line-height:1.2; color:var(--txt); margin-bottom:12px;
-}
-.p-bar { width:30px; height:2px; background:var(--acc2); margin-bottom:18px; }
-.p-desc {
-  font-size:.77rem; line-height:1.9; color:rgba(221,228,240,.58);
-  margin-bottom:22px; white-space:pre-line;
-}
-.p-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
-.chip {
-  font-size:.53rem; letter-spacing:.1em; text-transform:uppercase;
-  padding:4px 11px; border:1px solid rgba(255,255,255,.09);
-  color:var(--muted); transition:all .18s; cursor:default;
-}
-.chip:hover { border-color:var(--acc); color:var(--acc); }
-.timeline { border-left:1px solid var(--border); padding-left:15px; }
-.te { margin-bottom:15px; }
-.te-yr {
-  font-family:'Orbitron',monospace;
-  font-size:.48rem; letter-spacing:.17em; color:var(--acc); margin-bottom:2px;
-}
-.te-role { font-size:.75rem; color:var(--txt); margin-bottom:1px; }
-.te-org  { font-size:.64rem; color:var(--muted); }
-
-/* ── DEBUG PANEL ── */
-#dbg {
-  position:fixed; bottom:14px; left:14px; z-index:200;
-  background:rgba(4,5,13,.94); border:1px solid rgba(224,255,79,.2);
-  padding:12px 16px; font-family:monospace;
-  font-size:.6rem; color:rgba(224,255,79,.75);
-  line-height:1.7; display:none; min-width:300px;
-  pointer-events:all;
-}
-#dbg b { color:var(--acc); letter-spacing:.1em; }
-#dbg .tip { margin-top:6px; font-size:.52rem; color:rgba(224,255,79,.3); font-style:italic; }
-#dbg-meshlist { max-height:140px; overflow-y:auto; margin-top:6px; font-size:.54rem; color:rgba(224,255,79,.5); }
-#dbg-meshlist div { cursor:pointer; }
-#dbg-meshlist div:hover { color:var(--acc); }
-
-/* ── CFD LINES ── */
-#cfd { position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.13; }
-
-/* ── CREDIT ── */
-#credit {
-  position:fixed; bottom:12px; right:14px; z-index:30;
-  font-size:.46rem; letter-spacing:.12em; color:var(--muted);
-  text-transform:uppercase; pointer-events:none;
-}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--txt);cursor:none}
+#cur{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--acc);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 14px var(--acc),0 0 28px rgba(224,255,79,.3);transition:width .2s,height .2s,background .2s;mix-blend-mode:screen}
+#cur.hover{width:26px;height:26px;background:var(--acc2);box-shadow:0 0 16px var(--acc2)}
+#cur-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1px solid rgba(224,255,79,.3);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .15s ease-out}
+canvas{position:fixed;inset:0;width:100%!important;height:100%!important;z-index:1}
+/* loader */
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:800;transition:opacity .9s,visibility .9s;gap:0}
+#loader.done{opacity:0;visibility:hidden;pointer-events:none}
+.ld-ring{width:70px;height:70px;margin-bottom:24px}
+.ld-ring svg{width:100%;height:100%}
+.r1{animation:spin 1.5s linear infinite;transform-origin:35px 35px}
+.r2{animation:spin 2.3s linear infinite reverse;transform-origin:35px 35px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-txt{font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--acc);margin-bottom:16px;text-align:center;max-width:420px;line-height:1.7;padding:0 20px}
+.ld-bar{width:200px;height:1px;background:rgba(224,255,79,.08);overflow:hidden}
+.ld-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--acc3));transition:width .2s;box-shadow:0 0 10px var(--acc)}
+#err-box{display:none;margin-top:28px;border:1px solid var(--acc2);padding:20px 26px;max-width:500px;font-size:.72rem;line-height:1.85;color:rgba(221,228,240,.65);text-align:left}
+#err-box b{color:var(--acc2);font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:.12em;display:block;margin-bottom:10px}
+#err-box code{color:var(--acc);font-family:monospace;font-size:.8rem;background:rgba(224,255,79,.06);padding:1px 5px}
+/* vignette */
+#vig{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 75% 75% at 50% 55%,transparent 35%,rgba(4,5,13,.72) 100%)}
+/* header */
+#hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:20px 34px;z-index:30;pointer-events:none;background:linear-gradient(to bottom,rgba(4,5,13,.9) 0%,transparent 100%)}
+.hdr-name{font-family:'Orbitron',monospace;font-size:clamp(.9rem,2vw,1.25rem);font-weight:900;letter-spacing:.06em}
+.hdr-name mark{background:none;color:var(--acc)}
+.hdr-sub{font-size:.55rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:5px}
+.hdr-badge{font-family:'Orbitron',monospace;font-size:.46rem;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);border:1px solid var(--border);padding:6px 14px;background:rgba(224,255,79,.025)}
+/* sidebar */
+#sidenav{position:fixed;right:22px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px;z-index:30}
+.snav{display:flex;align-items:center;gap:9px;cursor:pointer;padding:7px 12px 7px 9px;border:1px solid transparent;background:rgba(4,5,13,.55);transition:all .22s;pointer-events:all;backdrop-filter:blur(8px)}
+.snav:hover,.snav.on{border-color:var(--border);background:rgba(224,255,79,.04)}
+.snav-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .2s,box-shadow .2s}
+.snav:hover .snav-dot,.snav.on .snav-dot{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.snav-lbl{font-family:'Orbitron',monospace;font-size:.48rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);transition:color .2s;white-space:nowrap}
+.snav:hover .snav-lbl,.snav.on .snav-lbl{color:var(--acc)}
+/* hint */
+#hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:.56rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;z-index:30;pointer-events:none;text-align:center;transition:opacity .5s}
+#hint em{color:var(--acc);font-style:normal}
+#hint.off{opacity:0}
+/* hover label */
+#hlabel{position:fixed;pointer-events:none;z-index:35;font-family:'Orbitron',monospace;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);padding:5px 12px;border-left:2px solid var(--acc);background:rgba(4,5,13,.82);text-shadow:0 0 10px rgba(224,255,79,.5);opacity:0;transition:opacity .18s;transform:translate(14px,-50%);white-space:nowrap}
+#hlabel.show{opacity:1}
+/* back */
+#back{position:fixed;top:22px;left:50%;transform:translateX(-50%);font-family:'Orbitron',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);cursor:pointer;pointer-events:all;padding:10px 26px;border:1px solid rgba(255,255,255,.08);background:rgba(4,5,13,.9);z-index:60;transition:all .2s;display:none;backdrop-filter:blur(10px)}
+#back:hover{color:var(--acc);border-color:var(--border)}
+#back.show{display:block}
+/* zoom bar */
+#zbar{position:fixed;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--acc),var(--acc3));z-index:70;width:0%;pointer-events:none;box-shadow:0 0 8px var(--acc)}
+/* overlay */
+#overlay{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:0;transition:opacity .45s}
+#overlay.open{opacity:1;pointer-events:all}
+#ov-bg{position:absolute;inset:0;background:rgba(4,5,13,.55);backdrop-filter:blur(4px)}
+#panel{position:absolute;right:0;top:0;bottom:0;width:var(--pw);max-width:100vw;background:var(--glass);border-left:1px solid var(--border);overflow-y:auto;transform:translateX(calc(var(--pw) + 10px));transition:transform .55s cubic-bezier(.16,1,.3,1);scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
+#overlay.open #panel{transform:translateX(0)}
+.p-stripe{height:2px;background:linear-gradient(90deg,var(--acc) 0%,var(--acc3) 55%,transparent 100%)}
+#panel::after{content:'';position:fixed;right:0;top:0;width:var(--pw);height:100%;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);z-index:1;opacity:.5}
+.p-body{padding:30px 36px 52px;position:relative;z-index:2}
+.p-close{position:absolute;top:26px;right:26px;font-family:'Orbitron',monospace;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:pointer;z-index:3;padding:6px 13px;border:1px solid rgba(255,255,255,.08);transition:all .2s}
+.p-close:hover{color:var(--acc);border-color:var(--border)}
+.p-tag{font-family:'Orbitron',monospace;font-size:.46rem;letter-spacing:.26em;text-transform:uppercase;background:var(--acc);color:var(--bg);font-weight:700;display:inline-block;padding:4px 13px;margin-bottom:14px}
+.p-num{display:block;font-family:'Orbitron',monospace;font-size:5.5rem;font-weight:900;line-height:1;color:rgba(224,255,79,.05);margin-bottom:-30px;user-select:none}
+.p-title{font-family:'Orbitron',monospace;font-size:clamp(1.2rem,2.2vw,1.7rem);font-weight:700;line-height:1.2;color:var(--txt);margin-bottom:12px}
+.p-bar{width:30px;height:2px;background:var(--acc2);margin-bottom:18px}
+.p-desc{font-size:.77rem;line-height:1.9;color:rgba(221,228,240,.58);margin-bottom:22px;white-space:pre-line}
+.p-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+.chip{font-size:.53rem;letter-spacing:.1em;text-transform:uppercase;padding:4px 11px;border:1px solid rgba(255,255,255,.09);color:var(--muted);transition:all .18s;cursor:default}
+.chip:hover{border-color:var(--acc);color:var(--acc)}
+.timeline{border-left:1px solid var(--border);padding-left:15px}
+.te{margin-bottom:15px}
+.te-yr{font-family:'Orbitron',monospace;font-size:.48rem;letter-spacing:.17em;color:var(--acc);margin-bottom:2px}
+.te-role{font-size:.75rem;color:var(--txt);margin-bottom:1px}
+.te-org{font-size:.64rem;color:var(--muted)}
+/* debug */
+#dbg{position:fixed;bottom:14px;left:14px;z-index:200;background:rgba(4,5,13,.95);border:1px solid rgba(224,255,79,.22);padding:12px 16px;font-family:monospace;font-size:.6rem;color:rgba(224,255,79,.75);line-height:1.7;display:none;min-width:300px;pointer-events:all}
+#dbg b{color:var(--acc);letter-spacing:.1em}
+.dbg-tip{margin-top:6px;font-size:.52rem;color:rgba(224,255,79,.3);font-style:italic}
+/* cfd canvas */
+#cfd{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.13}
+/* credit */
+#credit{position:fixed;bottom:12px;right:14px;z-index:30;font-size:.46rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;pointer-events:none}
 </style>
 </head>
 <body>
@@ -312,11 +109,9 @@ canvas {
   <div class="ld-ring">
     <svg viewBox="0 0 70 70" fill="none">
       <circle cx="35" cy="35" r="32" stroke="rgba(224,255,79,.06)" stroke-width="1.5"/>
-      <circle cx="35" cy="35" r="32" stroke="url(#g1)" stroke-width="1.5"
-        stroke-dasharray="52 149" class="r1"/>
+      <circle cx="35" cy="35" r="32" stroke="url(#g1)" stroke-width="1.5" stroke-dasharray="52 149" class="r1"/>
       <circle cx="35" cy="35" r="23" stroke="rgba(56,182,255,.1)" stroke-width="1"/>
-      <circle cx="35" cy="35" r="23" stroke="url(#g2)" stroke-width="1"
-        stroke-dasharray="26 118" class="r2"/>
+      <circle cx="35" cy="35" r="23" stroke="url(#g2)" stroke-width="1" stroke-dasharray="26 118" class="r2"/>
       <text x="35" y="39" text-anchor="middle" fill="rgba(224,255,79,.8)"
         font-family="monospace" font-size="7.5" letter-spacing="1">RUF</text>
       <defs>
@@ -329,32 +124,34 @@ canvas {
       </defs>
     </svg>
   </div>
-  <div class="ld-label" id="ltxt">Loading model…</div>
+  <div class="ld-txt" id="ltxt">Loading model…</div>
   <div class="ld-bar"><div class="ld-fill" id="lfill"></div></div>
+  <div id="err-box">
+    <b>⚠ GLB FILE NOT FOUND</b>
+    GitHub Pages could not load the car model. Fix checklist:<br><br>
+    1. The GLB file must be <b>committed &amp; pushed</b> to your repo — not just saved locally.<br>
+    2. Rename the file to <code>sportscar.glb</code> (no space) — spaces in filenames cause issues on some servers.<br>
+    3. In <code>index.html</code>, update the filename in <code>CANDIDATES</code> to match.<br>
+    4. GitHub Pages must be enabled: Settings → Pages → Branch: <code>main</code> → folder: <code>/ (root)</code>.<br>
+    5. Wait ~60 seconds after pushing for Pages to rebuild.
+  </div>
 </div>
 
 <!-- HEADER -->
 <div id="hdr">
   <div>
-    <div class="hdr-name">A<s>.</s>Rivera <span style="color:var(--muted);font-family:'DM Sans';font-weight:300;font-size:.82em">/ Portfolio</span></div>
+    <div class="hdr-name">A<mark>.</mark>Rivera
+      <span style="color:var(--muted);font-family:'DM Sans';font-weight:300;font-size:.82em"> / Portfolio</span>
+    </div>
     <div class="hdr-sub">CFD · ML Research · Full-Stack Engineering</div>
   </div>
   <div class="hdr-badge">Interactive 3D Portfolio</div>
 </div>
 
-<!-- SIDEBAR -->
 <nav id="sidenav"></nav>
-
-<!-- BACK -->
 <button id="back">← Overview</button>
-
-<!-- HINT -->
 <div id="hint"><em>Click any region</em> of the car &nbsp;·&nbsp; drag to orbit &nbsp;·&nbsp; scroll to zoom</div>
-
-<!-- HOVER LABEL -->
 <div id="hlabel"></div>
-
-<!-- ZOOM BAR -->
 <div id="zbar"></div>
 
 <!-- OVERLAY PANEL -->
@@ -375,579 +172,507 @@ canvas {
   </div>
 </div>
 
-<!-- DEBUG PANEL -->
+<!-- DEBUG PANEL (visible with ?debug in URL) -->
 <div id="dbg">
   <b>⚙ DEBUG MODE</b><br>
-  <span id="d-cam">cam pos: —</span><br>
-  <span id="d-tgt">cam tgt: —</span><br>
-  <span id="d-hit">hit pos: —</span><br>
+  <span id="d-cam">pos: —</span><br>
+  <span id="d-tgt">tgt: —</span><br>
+  <span id="d-hit">hit: —</span><br>
   <span id="d-mesh">mesh: —</span><br>
-  <span id="d-sec">→ section: —</span>
-  <div id="dbg-meshlist"></div>
-  <div class="tip">Add ?debug to URL · orbit to part → copy coords into SECTIONS.cam</div>
+  <span id="d-sec">section: —</span>
+  <div class="dbg-tip">Orbit to part → read coords → paste into SECTIONS.cam</div>
 </div>
 
-<!-- CREDIT -->
-<div id="credit">RUF RT 35 S · Mona x Supercars · Sketchfab</div>
+<div id="credit">RUF RT 35 S · Mona x Supercars · Sketchfab CC</div>
 
 <script>
 'use strict';
 
-// ═══════════════════════════════════════════════════════════
-//  ██████╗  ██████╗ ██████╗ ████████╗███████╗ ██████╗ ██╗     ██╗ ██████╗
-//  ██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝██╔═══██╗██║     ██║██╔═══██╗
-//  ██████╔╝██║   ██║██████╔╝   ██║   █████╗  ██║   ██║██║     ██║██║   ██║
-//  ██╔═══╝ ██║   ██║██╔══██╗   ██║   ██╔══╝  ██║   ██║██║     ██║██║   ██║
-//  ██║     ╚██████╔╝██║  ██║   ██║   ██║     ╚██████╔╝███████╗██║╚██████╔╝
-// ═══════════════════════════════════════════════════════════
-
-// ─────────────────────────────────────────────────────────────
-//  SECTION DATA
-//  cam.pos    = camera eye position for the Prezi zoom
-//  cam.target = what the camera looks at (part centroid)
-//  cam.dur    = zoom duration (seconds)
-//  zoneTest   = spatial fallback (x,y,z in model space)
-//
-//  HOW TO CALIBRATE cam.pos / cam.target:
-//  1. Open index.html?debug in your browser
-//  2. Orbit the camera until the car part fills the screen nicely
-//  3. Read "cam pos" and "cam tgt" from the debug box (bottom-left)
-//  4. Paste those numbers into the matching section below
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  PORTFOLIO CONTENT  — edit everything here
+// ═══════════════════════════════════════════════════════════════
 const SECTIONS = {
-
   bonnet: {
-    num:'01', tag:'CFD Research', title:'Aerodynamic\nSimulation',
-    nav:'CFD',
-    desc:
-`Led CFD research on bluff-body aerodynamics and boundary-layer separation in high-speed flows.
-
-Developed a refined k-ω SST turbulence model cutting drag-prediction error by 34% versus Ahmed body benchmarks, validated with wind-tunnel data.`,
+    num:'01', tag:'CFD Research', title:'Aerodynamic\nSimulation', nav:'CFD',
+    desc:`Led CFD research on bluff-body aerodynamics and boundary-layer separation in high-speed flows.\n\nDeveloped a refined k-ω SST turbulence model cutting drag-prediction error by 34% versus Ahmed body benchmarks, validated with wind-tunnel data.`,
     chips:['OpenFOAM','ParaView','ANSYS Fluent','Python','k-ω SST','CFD Post'],
     tl:[
-      {yr:'2023–24',role:'Lead CFD Researcher',org:'Aero Lab, IIT Madras'},
-      {yr:'2022',role:'Simulation Eng Intern',org:'Volkswagen Group R&D'},
+      {yr:'2023–24',role:'Lead CFD Researcher',    org:'Aero Lab, IIT Madras'},
+      {yr:'2022',   role:'Simulation Eng Intern',   org:'Volkswagen Group R&D'},
     ],
-    // ← CALIBRATE THESE with ?debug
-    cam:{ pos:[0, 1.2, 2.6], target:[0, 0.5, 1.4], dur:2.3 },
-    // Spatial fallback: front half, elevated
-    zoneTest:(x,y,z) => z > 0.6 && y > 0.3,
-    // Mesh name patterns (regex)
+    // ← CALIBRATE with ?debug: orbit to bonnet → read pos/tgt → paste here
+    cam:{ pos:[0,1.2,2.6], target:[0,0.5,1.4], dur:2.3 },
+    zoneTest:(x,y,z)=> z>0.55 && y>0.25,
     meshRx:/hood|bonnet|engine.?cover|front.?lid|motorhaube|haube/i,
   },
-
   roof: {
-    num:'02', tag:'ML Research', title:'Deep Learning\n& Neural Nets',
-    nav:'ML / AI',
-    desc:
-`Published research on Physics-Informed Neural Networks (PINNs) as surrogate CFD models. Trained transformer architectures on 40k+ CFD snapshots.
-
-Achieved 120× speed-up over full Navier-Stokes solvers with under 2% error on unseen geometries.`,
+    num:'02', tag:'ML Research', title:'Deep Learning\n& Neural Nets', nav:'ML / AI',
+    desc:`Published research on Physics-Informed Neural Networks (PINNs) as surrogate CFD models. Trained transformer architectures on 40k+ CFD snapshots.\n\nAchieved 120× speed-up over full Navier-Stokes solvers with under 2% error on unseen geometries.`,
     chips:['PyTorch','JAX','PINNs','Transformers','Navier-Stokes','CUDA','W&B'],
     tl:[
-      {yr:'2024',role:'ML Research Fellow',org:'IISER Pune · AI4Science Lab'},
-      {yr:'2023',role:'Research Assistant',org:'National Centre for Scientific Computing'},
+      {yr:'2024',role:'ML Research Fellow',  org:'IISER Pune · AI4Science Lab'},
+      {yr:'2023',role:'Research Assistant',  org:'National Centre for Scientific Computing'},
     ],
-    cam:{ pos:[0.3, 2.5, 0.3], target:[0, 1.1, -0.2], dur:2.0 },
-    zoneTest:(x,y,z) => y > 0.9 && Math.abs(z) < 0.7,
-    meshRx:/roof|dach|ceiling|top.?panel|headliner|dach/i,
+    cam:{ pos:[0.3,2.5,0.3], target:[0,1.1,-0.2], dur:2.0 },
+    zoneTest:(x,y,z)=> y>0.88 && Math.abs(z)<0.75,
+    meshRx:/roof|dach|ceiling|top.?panel|headliner/i,
   },
-
   doorLeft: {
-    num:'03', tag:'Experience', title:'Industry\nCareer',
-    nav:'Experience',
-    desc:
-`4+ years shipping production systems across simulation software, EV startups, and deep-tech R&D.
-
-Led teams bridging physics and ML — CUDA kernels to React dashboards. Code used by 200+ engineers daily.`,
+    num:'03', tag:'Experience', title:'Industry\nCareer', nav:'Experience',
+    desc:`4+ years shipping production systems across simulation software, EV startups, and deep-tech R&D.\n\nLed teams bridging physics and ML — CUDA kernels to React dashboards. Code used by 200+ engineers daily.`,
     chips:['Python','C++17','React','TypeScript','CUDA','Docker','k8s','Rust'],
     tl:[
-      {yr:'2024–Now',role:'Senior Simulation Engineer',org:'Ola Electric · Vehicle Dynamics'},
-      {yr:'2022–24', role:'Software Engineer II',       org:'Siemens Digital Industries'},
-      {yr:'2021–22', role:'Graduate Research Engineer', org:'TIFR Hyderabad'},
+      {yr:'2024–Now',role:'Senior Simulation Engineer', org:'Ola Electric · Vehicle Dynamics'},
+      {yr:'2022–24', role:'Software Engineer II',        org:'Siemens Digital Industries'},
+      {yr:'2021–22', role:'Graduate Research Engineer',  org:'TIFR Hyderabad'},
     ],
-    cam:{ pos:[-2.8, 0.9, 0.2], target:[-1.2, 0.4, 0], dur:2.2 },
-    zoneTest:(x,y,z) => x < -0.55 && y > 0.08 && y < 0.85,
+    cam:{ pos:[-2.8,0.9,0.2], target:[-1.2,0.4,0], dur:2.2 },
+    zoneTest:(x,y,z)=> x<-0.55 && y>0.08 && y<0.88,
     meshRx:/door.?l|left.?door|driver.?door|tur_l|fahrer/i,
   },
-
   doorRight: {
-    num:'04', tag:'Skills', title:'Technical\nStack',
-    nav:'Skills',
-    desc:
-`Multi-domain stack from CUDA kernels to React UIs. Full simulation pipeline ownership: meshing → solver → post-processing → web visualisation.`,
+    num:'04', tag:'Skills', title:'Technical\nStack', nav:'Skills',
+    desc:`Multi-domain stack from CUDA kernels to React UIs. Full simulation pipeline ownership: meshing → solver → post-processing → web visualisation.`,
     chips:['CFD','FEA','OpenFOAM','SU2','PyTorch','Three.js','C++','Python','React','CUDA','K8s'],
     tl:[
-      {yr:'Numerical', role:'OpenFOAM · ANSYS · SU2 · FEniCS · Gmsh', org:''},
-      {yr:'ML / AI',   role:'PyTorch · JAX · Hugging Face · ONNX',    org:''},
-      {yr:'Software',  role:'C++ · Python · Rust · TypeScript · Go',   org:''},
-      {yr:'Infra',     role:'K8s · Slurm · AWS HPC · Docker · CUDA',  org:''},
+      {yr:'Numerical',role:'OpenFOAM · ANSYS · SU2 · FEniCS · Gmsh',org:''},
+      {yr:'ML / AI',  role:'PyTorch · JAX · Hugging Face · ONNX',   org:''},
+      {yr:'Software', role:'C++ · Python · Rust · TypeScript · Go',  org:''},
+      {yr:'Infra',    role:'K8s · Slurm · AWS HPC · Docker · CUDA', org:''},
     ],
-    cam:{ pos:[2.8, 0.9, 0.2], target:[1.2, 0.4, 0], dur:2.2 },
-    zoneTest:(x,y,z) => x > 0.55 && y > 0.08 && y < 0.85,
+    cam:{ pos:[2.8,0.9,0.2], target:[1.2,0.4,0], dur:2.2 },
+    zoneTest:(x,y,z)=> x>0.55 && y>0.08 && y<0.88,
     meshRx:/door.?r|right.?door|passenger.?door|tur_r|beif/i,
   },
-
   rear: {
-    num:'05', tag:'Education', title:'Academic\nBackground',
-    nav:'Education',
-    desc:
-`Dual degree in Mechanical Engineering and Computational Mathematics. Thesis on data-driven turbulence modelling — Best Thesis Prize, IIT Madras.
-
-3 peer-reviewed papers in Journal of Fluid Mechanics and Computers & Fluids.`,
+    num:'05', tag:'Education', title:'Academic\nBackground', nav:'Education',
+    desc:`Dual degree in Mechanical Engineering and Computational Mathematics. Thesis on data-driven turbulence modelling — Best Thesis Prize, IIT Madras.\n\n3 peer-reviewed papers in Journal of Fluid Mechanics and Computers & Fluids.`,
     chips:['IIT Madras','Fluid Mechanics','Turbulence','Numerical Methods','JFM','MATLAB'],
     tl:[
       {yr:'2020–24',role:'B.Tech + M.Tech Dual · Mech Eng',org:'IIT Madras · CGPA 9.1/10'},
       {yr:'2018–20',role:'PCM + Computer Science',          org:'CBSE · 98.4%'},
     ],
-    cam:{ pos:[0, 1.0, -3.2], target:[0, 0.4, -1.8], dur:2.4 },
-    zoneTest:(x,y,z) => z < -0.65 && y > 0.1,
-    meshRx:/trunk|boot|heck|rear.?(lid|deck|bumper)|diffuser|spoiler|heckstoß/i,
+    cam:{ pos:[0,1.0,-3.2], target:[0,0.4,-1.8], dur:2.4 },
+    zoneTest:(x,y,z)=> z<-0.6 && y>0.1,
+    meshRx:/trunk|boot|heck|rear.?(lid|deck|bumper)|diffuser|spoiler/i,
   },
-
   wheel: {
-    num:'06', tag:'Projects', title:'Featured\nProjects',
-    nav:'Projects',
-    desc:
-`End-to-end projects spanning aerodynamic optimisation, neural surrogate modelling, and full-stack SaaS tooling for simulation teams.`,
-    chips:['AeroOpt','NeuralNS','SimDash','OpenWing','TurboPINN','CFDVis'],
+    num:'06', tag:'Projects', title:'Featured\nProjects', nav:'Projects',
+    desc:`End-to-end projects spanning aerodynamic optimisation, neural surrogate modelling, and full-stack SaaS tooling for simulation teams.`,
+    chips:['AeroOpt','NeuralNS','SimDash','OpenWing','TurboPINN'],
     tl:[
-      {yr:'AeroOpt',  role:'Adjoint shape optimisation — 18% drag reduction on NACA4412', org:'JFM 2024'},
-      {yr:'NeuralNS', role:'PINN surrogate for 2D Navier-Stokes — 120× speedup',         org:'1.2k ★ on GitHub'},
-      {yr:'SimDash',  role:'Real-time CFD dashboard (React + WebGL)',                     org:'40+ researchers'},
+      {yr:'AeroOpt', role:'Adjoint shape optimisation — 18% drag reduction on NACA4412',org:'JFM 2024'},
+      {yr:'NeuralNS',role:'PINN surrogate for 2D N-S — 120× speedup',                  org:'1.2k ★ GitHub'},
+      {yr:'SimDash', role:'Real-time CFD dashboard (React + WebGL)',                    org:'40+ researchers'},
     ],
-    cam:{ pos:[-2.0, 0.5, 2.1], target:[-1.5, 0.15, 1.6], dur:2.0 },
-    zoneTest:(x,y,z) => y < 0.22,
+    cam:{ pos:[-2.0,0.5,2.1], target:[-1.5,0.15,1.6], dur:2.0 },
+    zoneTest:(x,y,z)=> y<0.22,
     meshRx:/wheel|tire|tyre|rim|felge|reifen|brake|caliper|rad_/i,
   },
-
 };
 
-// ─────────────────────────────────────────────────────────────
-//  BUILD SIDEBAR NAV
-// ─────────────────────────────────────────────────────────────
-const sidenav = document.getElementById('sidenav');
+// ── Build sidebar ──────────────────────────────────────────
+const sidenav=document.getElementById('sidenav');
 Object.entries(SECTIONS).forEach(([key,sec])=>{
-  const b = document.createElement('div');
+  const b=document.createElement('div');
   b.className='snav'; b.dataset.key=key;
   b.innerHTML=`<div class="snav-dot"></div><div class="snav-lbl">${sec.nav}</div>`;
   b.addEventListener('click',()=>openSection(key));
   sidenav.appendChild(b);
 });
 
-// ─────────────────────────────────────────────────────────────
-//  THREE.JS SETUP
-// ─────────────────────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+// ═══════════════════════════════════════════════════════════════
+//  THREE.JS RENDERER
+// ═══════════════════════════════════════════════════════════════
+const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.95;
-renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=0.95;
+renderer.outputEncoding=THREE.sRGBEncoding;
+// Insert BEFORE the cfd canvas so WebGL is below the 2D overlay
 document.body.insertBefore(renderer.domElement, document.getElementById('cfd'));
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x04050d);
-scene.fog = new THREE.FogExp2(0x04050d, 0.022);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x04050d);
+scene.fog=new THREE.FogExp2(0x04050d,0.022);
 
-const W = innerWidth, H = innerHeight;
-const camera = new THREE.PerspectiveCamera(38, W/H, 0.05, 200);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,0.05,200);
 
-// ─── Lights ───────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0x0a1020, 3.5));
+// ── Lights ──────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x0a1020,3.5));
 
-const key = new THREE.DirectionalLight(0xe0ff4f, 1.6);
-key.position.set(4, 9, 5);
-key.castShadow = true;
-key.shadow.mapSize.set(2048,2048);
-key.shadow.camera.near=0.5; key.shadow.camera.far=40;
-[-10,10].forEach(v=>{ key.shadow.camera.left=key.shadow.camera.bottom=v; key.shadow.camera.right=key.shadow.camera.top=-v; });
-scene.add(key);
+const kL=new THREE.DirectionalLight(0xe0ff4f,1.6);
+kL.position.set(4,9,5); kL.castShadow=true;
+kL.shadow.mapSize.set(2048,2048);
+kL.shadow.camera.near=0.5; kL.shadow.camera.far=40;
+kL.shadow.camera.left=-10; kL.shadow.camera.right=10;
+kL.shadow.camera.top=10;   kL.shadow.camera.bottom=-10;
+scene.add(kL);
 
-const rim = new THREE.DirectionalLight(0x38b6ff, 1.0);
-rim.position.set(-5,3,-5); scene.add(rim);
+const rL=new THREE.DirectionalLight(0x38b6ff,1.0);
+rL.position.set(-5,3,-5); scene.add(rL);
 
-const fill = new THREE.DirectionalLight(0xff3f5b, 0.4);
-fill.position.set(0,2,6); scene.add(fill);
+const fL=new THREE.DirectionalLight(0xff3f5b,0.35);
+fL.position.set(0,2,6); scene.add(fL);
 
-const under = new THREE.PointLight(0xe0ff4f, 0.5, 15);
-under.position.set(0,0.1,0); scene.add(under);
+scene.add(Object.assign(new THREE.PointLight(0xe0ff4f,0.5,15),{position:{x:0,y:0.1,z:0}}));
 
-// ─── Floor ────────────────────────────────────────────────
-const floorMat = new THREE.MeshStandardMaterial({
-  color:0x060818, roughness:0.96, metalness:0.05
-});
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(60,60), floorMat);
-floor.rotation.x = -Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+// ── Floor & environment ─────────────────────────────────────
+const floor=new THREE.Mesh(
+  new THREE.PlaneGeometry(60,60),
+  new THREE.MeshStandardMaterial({color:0x060818,roughness:0.96,metalness:0.05})
+);
+floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
 
-// Grid
-const grid = new THREE.GridHelper(50,60,0x0d1526,0x0a1120);
+const grid=new THREE.GridHelper(50,60,0x0d1526,0x0a1120);
 grid.material.opacity=0.65; grid.material.transparent=true; scene.add(grid);
 
-// Gloss reflection plane
-const gloss = new THREE.Mesh(
-  new THREE.PlaneGeometry(16,24),
+scene.add(Object.assign(new THREE.Mesh(
+  new THREE.PlaneGeometry(16,26),
   new THREE.MeshStandardMaterial({color:0x060a18,roughness:0.04,metalness:0.95,opacity:0.55,transparent:true})
-);
-gloss.rotation.x=-Math.PI/2; gloss.position.y=0.003; scene.add(gloss);
+),{rotation:{x:-Math.PI/2},position:{x:0,y:0.003,z:0}}));
 
-// Ground glow strips
 [-1.2,1.2].forEach(x=>{
-  const s = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.07,12),
-    new THREE.MeshStandardMaterial({color:0xe0ff4f,emissive:0xe0ff4f,emissiveIntensity:.7,transparent:true,opacity:.45})
+  const s=new THREE.Mesh(
+    new THREE.PlaneGeometry(0.07,13),
+    new THREE.MeshStandardMaterial({color:0xe0ff4f,emissive:0xe0ff4f,emissiveIntensity:.7,transparent:true,opacity:.4})
   );
-  s.rotation.x=-Math.PI/2; s.position.set(x,-0.002,0); scene.add(s);
+  s.rotation.x=-Math.PI/2; s.position.set(x,-0.001,0); scene.add(s);
 });
 
-// ─────────────────────────────────────────────────────────────
-//  LOAD GLB
-// ─────────────────────────────────────────────────────────────
-const clickableMeshes = [];   // meshes that can be raycasted
-const meshSectionMap  = new Map(); // mesh.uuid → sectionKey
-let   carGroup        = null;
-let   modelLoaded     = false;
+// ═══════════════════════════════════════════════════════════════
+//  GLB LOADING
+//  ─────────────────────────────────────────────────────────────
+//  GitHub Pages rule: the GLB must be COMMITTED to your repo.
+//  Spaces in filenames → URL-encode as %20.
+//  We try multiple filename variants so it works regardless.
+// ═══════════════════════════════════════════════════════════════
+const clickableMeshes=[], meshSectionMap=new Map();
+let carGroup=null, modelLoaded=false;
 
-// Fake progress
 let fp=0;
-const fakeT = setInterval(()=>{
-  fp=Math.min(fp+Math.random()*3,82);
+const fakeT=setInterval(()=>{
+  fp=Math.min(fp+Math.random()*2.5,80);
   document.getElementById('lfill').style.width=fp+'%';
-},200);
+},220);
 
-const loader = new THREE.GLTFLoader();
+const gltfLoader=new THREE.GLTFLoader();
+const dracoLoader=new THREE.DRACOLoader();
+dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/libs/draco/');
+gltfLoader.setDRACOLoader(dracoLoader);
 
-// Draco support (optional — handles compressed GLBs)
-const draco = new THREE.DRACOLoader();
-draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/libs/draco/');
-loader.setDRACOLoader(draco);
+// ─────────────────────────────────────────────────────────────
+//  CANDIDATES — tried in order until one succeeds.
+//  If your file is named differently, add it here.
+// ─────────────────────────────────────────────────────────────
+const CANDIDATES=[
+  'sports%20car.glb',   // space URL-encoded  ← most likely to work on GitHub Pages
+  'sports car.glb',     // raw space          ← works on local servers
+  'sportscar.glb',      // no space           ← rename your file to this if all else fails
+  'sports_car.glb',     // underscore
+  'ruf.glb',
+  'car.glb',
+];
 
-loader.load(
-  'sports car.glb',            // ← file in same folder as index.html
-  onModelLoad,
-  onProgress,
-  onError
-);
+function tryNext(list){
+  if(!list.length){ onFail(); return; }
+  const path=list[0];
+  document.getElementById('ltxt').textContent=`Trying ${decodeURIComponent(path)}…`;
+  gltfLoader.load(
+    path,
+    onLoaded,
+    xhr=>{
+      if(xhr.lengthComputable){
+        const p=(xhr.loaded/xhr.total)*100;
+        document.getElementById('lfill').style.width=Math.max(p,fp)+'%';
+        document.getElementById('ltxt').textContent=`Loading… ${Math.round(p)}%`;
+      }
+    },
+    ()=>tryNext(list.slice(1))
+  );
+}
+tryNext(CANDIDATES);
 
-function onProgress(xhr) {
-  if (xhr.lengthComputable) {
-    const pct = (xhr.loaded/xhr.total)*100;
-    document.getElementById('lfill').style.width = Math.max(pct,fp)+'%';
-    document.getElementById('ltxt').textContent =
-      `Loading model… ${Math.round(pct)}%`;
-  }
+function onFail(){
+  clearInterval(fakeT);
+  document.getElementById('lfill').style.cssText='width:100%;background:#ff3f5b;box-shadow:none';
+  document.getElementById('ltxt').style.color='#ff3f5b';
+  document.getElementById('ltxt').textContent='⚠ Could not load GLB — see checklist below';
+  document.getElementById('err-box').style.display='block';
 }
 
-function onError(err) {
-  console.error('GLB load error:', err);
-  document.getElementById('ltxt').textContent =
-    '⚠ Could not load "sports car.glb" — check it\'s in the same folder as index.html';
-}
-
-function onModelLoad(gltf) {
+function onLoaded(gltf){
   clearInterval(fakeT);
   document.getElementById('lfill').style.width='100%';
   document.getElementById('ltxt').textContent='Building scene…';
 
-  carGroup = gltf.scene;
+  carGroup=gltf.scene;
   scene.add(carGroup);
 
-  // ── Auto-centre and scale the model ──
-  const box = new THREE.Box3().setFromObject(carGroup);
-  const ctr = box.getCenter(new THREE.Vector3());
-  const sz  = box.getSize(new THREE.Vector3());
-  const maxD= Math.max(sz.x, sz.y, sz.z);
-  const scale = 5.0 / maxD;   // normalise longest axis to 5 units
-
+  // ── Auto-scale & centre ──
+  const box=new THREE.Box3().setFromObject(carGroup);
+  const ctr=box.getCenter(new THREE.Vector3());
+  const sz =box.getSize(new THREE.Vector3());
+  const scale=5.0/Math.max(sz.x,sz.y,sz.z);
   carGroup.scale.setScalar(scale);
-  carGroup.position.sub(ctr.multiplyScalar(scale));
-  // Sit on the floor
-  const box2 = new THREE.Box3().setFromObject(carGroup);
-  carGroup.position.y -= box2.min.y;
+  carGroup.position.sub(ctr.clone().multiplyScalar(scale));
+  // Sit on floor
+  const box2=new THREE.Box3().setFromObject(carGroup);
+  carGroup.position.y-=box2.min.y;
 
-  // ── Shadow casting ──
+  // ── Shadows + material tweaks for dark theme ──
   carGroup.traverse(child=>{
-    if (child.isMesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-      // Enhance materials for dark theme
-      if (child.material) {
-        const mats = Array.isArray(child.material)?child.material:[child.material];
-        mats.forEach(m=>{
-          m.envMapIntensity = 1.4;
-          // If very bright, darken slightly
-          if (m.color && m.color.r+m.color.g+m.color.b > 2.4) {
-            m.color.multiplyScalar(0.75);
-          }
-        });
-      }
-    }
+    if(!child.isMesh) return;
+    child.castShadow=true; child.receiveShadow=true;
+    [child.material].flat().forEach(m=>{
+      if(!m) return;
+      m.envMapIntensity=1.3;
+      if(m.color&&(m.color.r+m.color.g+m.color.b)>2.5) m.color.multiplyScalar(0.7);
+    });
+    // Register for raycasting
+    clickableMeshes.push(child);
+    const sKey=matchMesh(child.name);
+    if(sKey) meshSectionMap.set(child.uuid,sKey);
   });
 
-  // ── Map meshes to sections by name ──
-  const meshNames = [];
-  carGroup.traverse(child=>{
-    if (!child.isMesh) return;
-    const name = child.name || '';
-    meshNames.push({name, uuid:child.uuid});
-    const key = matchMeshToSection(name);
-    if (key) {
-      clickableMeshes.push(child);
-      meshSectionMap.set(child.uuid, key);
-    } else {
-      // Still add to clickable for spatial fallback
-      clickableMeshes.push(child);
-    }
-  });
+  // ── Auto-compute overview camera from model bounds ──
+  const box3=new THREE.Box3().setFromObject(carGroup);
+  const ext=box3.getSize(new THREE.Vector3());
+  OVERVIEW.pos   =[ext.x*0.9, ext.y*1.1, ext.z*1.05];
+  OVERVIEW.target=[0, ext.y*0.3, 0];
+  camera.position.set(...OVERVIEW.pos);
+  camera.lookAt(new THREE.Vector3(...OVERVIEW.target));
+  camState.curLook.set(...OVERVIEW.target);
+  syncSph();
 
-  // Debug: list all mesh names
-  if (DEBUG) populateDebugMeshList(meshNames);
-
-  // ── Initial camera ──
-  // Auto-compute a nice overview from model size
-  const ext = box2.getSize(new THREE.Vector3());
-  OVERVIEW_CAM.pos    = [ext.x*0.8, ext.y*1.1, ext.z*0.95];
-  OVERVIEW_CAM.target = [0, ext.y*0.3, 0];
-  camera.position.set(...OVERVIEW_CAM.pos);
-  camera.lookAt(new THREE.Vector3(...OVERVIEW_CAM.target));
-  camState.curLook.set(...OVERVIEW_CAM.target);
-
-  // Sync spherical from initial camera position
-  syncSphericalFromCamera();
-
-  modelLoaded = true;
-
-  // Hide loader
-  setTimeout(()=>{
-    document.getElementById('loader').classList.add('done');
-  }, 500);
+  modelLoaded=true;
+  setTimeout(()=>document.getElementById('loader').classList.add('done'), 500);
 }
 
-// ── Match mesh name → section key ──────────────────────────
-function matchMeshToSection(name) {
-  for (const [key,sec] of Object.entries(SECTIONS)) {
-    if (sec.meshRx && sec.meshRx.test(name)) return key;
+function matchMesh(name){
+  if(!name) return null;
+  for(const [key,sec] of Object.entries(SECTIONS)){
+    if(sec.meshRx&&sec.meshRx.test(name)) return key;
   }
   return null;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  OVERVIEW CAMERA (computed after model loads)
-// ─────────────────────────────────────────────────────────────
-const OVERVIEW_CAM = { pos:[5,3,7], target:[0,0.5,0], dur:1.8 };
+// ═══════════════════════════════════════════════════════════════
+//  OVERVIEW CAMERA (auto-filled after model loads)
+// ═══════════════════════════════════════════════════════════════
+const OVERVIEW={pos:[5,3,7],target:[0,0.5,0],dur:1.8};
 
-// ─────────────────────────────────────────────────────────────
-//  ORBIT CONTROLS (lightweight, no import needed)
-// ─────────────────────────────────────────────────────────────
-const sph = { theta:-0.3, phi:0.82, r:9 };
-let isDragging=false, lastMouse={x:0,y:0};
-let autoRot=true, activeKey=null;
+// ═══════════════════════════════════════════════════════════════
+//  ORBIT CONTROLS
+// ═══════════════════════════════════════════════════════════════
+const sph={theta:-0.3,phi:0.82,r:9};
+let dragging=false,lastXY={x:0,y:0},autoRot=true,activeKey=null;
 
-function syncSphericalFromCamera() {
-  const p = camera.position;
-  sph.r     = p.length();
-  sph.phi   = Math.acos(p.y/sph.r);
-  sph.theta = Math.atan2(p.x, p.z);
+function syncSph(){
+  const p=camera.position;
+  sph.r    =p.length();
+  sph.phi  =Math.acos(Math.max(-1,Math.min(1,p.y/sph.r)));
+  sph.theta=Math.atan2(p.x,p.z);
 }
-
-function applyOrbit() {
-  if (activeKey) return;
+function applyOrbit(){
+  if(activeKey) return;
   camera.position.set(
     sph.r*Math.sin(sph.phi)*Math.sin(sph.theta),
     sph.r*Math.cos(sph.phi),
     sph.r*Math.sin(sph.phi)*Math.cos(sph.theta)
   );
-  camera.lookAt(new THREE.Vector3(...OVERVIEW_CAM.target));
-  camState.curLook.set(...OVERVIEW_CAM.target);
+  camera.lookAt(new THREE.Vector3(...OVERVIEW.target));
+  camState.curLook.set(...OVERVIEW.target);
 }
 
 document.addEventListener('mousedown',e=>{
   if(e.target.closest('#panel,#sidenav,#back,#dbg')) return;
-  isDragging=true; lastMouse={x:e.clientX,y:e.clientY}; autoRot=false;
+  dragging=true; lastXY={x:e.clientX,y:e.clientY}; autoRot=false;
 });
 document.addEventListener('mouseup',()=>{
-  isDragging=false;
+  dragging=false;
   if(!activeKey) setTimeout(()=>{ autoRot=true; },2500);
 });
 document.addEventListener('mousemove',e=>{
-  // Custom cursor
-  document.getElementById('cur').style.left=e.clientX+'px';
-  document.getElementById('cur').style.top =e.clientY+'px';
-  document.getElementById('cur-ring').style.left=e.clientX+'px';
-  document.getElementById('cur-ring').style.top =e.clientY+'px';
-
-  if(isDragging && !activeKey && modelLoaded){
-    const dx=e.clientX-lastMouse.x, dy=e.clientY-lastMouse.y;
-    sph.theta -= dx*0.006;
-    sph.phi    = Math.max(0.2, Math.min(1.5, sph.phi-dy*0.006));
-    lastMouse  = {x:e.clientX,y:e.clientY};
+  const cur=document.getElementById('cur');
+  const ring=document.getElementById('cur-ring');
+  cur.style.left=e.clientX+'px'; cur.style.top=e.clientY+'px';
+  ring.style.left=e.clientX+'px'; ring.style.top=e.clientY+'px';
+  if(dragging&&!activeKey&&modelLoaded){
+    sph.theta-=(e.clientX-lastXY.x)*0.006;
+    sph.phi=Math.max(0.18,Math.min(1.52,sph.phi-(e.clientY-lastXY.y)*0.006));
+    lastXY={x:e.clientX,y:e.clientY};
     applyOrbit();
   }
-  if(!activeKey && modelLoaded) doHover(e);
+  if(!activeKey&&modelLoaded) doHover(e.clientX,e.clientY);
 });
 document.addEventListener('wheel',e=>{
   if(activeKey||!modelLoaded) return;
-  sph.r=Math.max(3,Math.min(20,sph.r+e.deltaY*0.018));
+  sph.r=Math.max(2.5,Math.min(22,sph.r+e.deltaY*0.018));
   applyOrbit();
 },{passive:true});
 
-// ─────────────────────────────────────────────────────────────
-//  CAMERA ANIMATION STATE (Prezi zoom)
-// ─────────────────────────────────────────────────────────────
-const camState = {
-  active:false, t:0, dur:2.0,
-  fromPos: new THREE.Vector3(),
-  fromLook:new THREE.Vector3(),
-  toPos:   new THREE.Vector3(),
-  toLook:  new THREE.Vector3(),
-  curLook: new THREE.Vector3(),
+// ── Touch ──────────────────────────────────────────────────
+let lt=null, tapStart=null;
+document.addEventListener('touchstart',e=>{
+  lt=e.touches; autoRot=false;
+  tapStart={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()};
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!modelLoaded||activeKey||!lt) return;
+  if(e.touches.length===1){
+    sph.theta-=(e.touches[0].clientX-lt[0].clientX)*0.006;
+    sph.phi=Math.max(0.18,Math.min(1.52,sph.phi-(e.touches[0].clientY-lt[0].clientY)*0.006));
+    applyOrbit();
+  }
+  lt=e.touches;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  lt=null;
+  if(!tapStart||!modelLoaded) return;
+  const dx=e.changedTouches[0].clientX-tapStart.x;
+  const dy=e.changedTouches[0].clientY-tapStart.y;
+  if(Math.hypot(dx,dy)<10&&Date.now()-tapStart.t<300){
+    const cx=e.changedTouches[0].clientX, cy=e.changedTouches[0].clientY;
+    ptr.set((cx/innerWidth)*2-1,-(cy/innerHeight)*2+1);
+    RC.setFromCamera(ptr,camera);
+    const hits=RC.intersectObjects(clickableMeshes,false);
+    if(hits.length){
+      const key=meshSectionMap.get(hits[0].object.uuid)
+              ||spatialFallback(hits[0].point.x,hits[0].point.y,hits[0].point.z);
+      if(key) openSection(key);
+    }
+  }
+  tapStart=null;
+  if(!activeKey) setTimeout(()=>{ autoRot=true; },2500);
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  CAMERA ANIMATION — eased lerp (Prezi-style)
+// ═══════════════════════════════════════════════════════════════
+const camState={
+  active:false,t:0,dur:2,
+  fromPos:new THREE.Vector3(),fromLook:new THREE.Vector3(),
+  toPos:  new THREE.Vector3(),toLook:  new THREE.Vector3(),
+  curLook:new THREE.Vector3(),
 };
+function eio4(t){ return t<.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2; }
 
-function easeInOutQuart(t){ return t<.5 ? 8*t*t*t*t : 1-Math.pow(-2*t+2,4)/2; }
-
-function flyTo(pos, look, dur) {
+function flyTo(pos,look,dur){
   camState.fromPos.copy(camera.position);
   camState.fromLook.copy(camState.curLook);
-  camState.toPos.set(pos[0],pos[1],pos[2]);
-  camState.toLook.set(look[0],look[1],look[2]);
+  camState.toPos.set(...pos);
+  camState.toLook.set(...look);
   camState.t=0; camState.dur=dur; camState.active=true;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  RAYCASTING — hover + click
-// ─────────────────────────────────────────────────────────────
-const raycaster = new THREE.Raycaster();
-const ptr       = new THREE.Vector2();
-const hlabel    = document.getElementById('hlabel');
-let   hoveredKey= null, hovMeshes=[];
+// ═══════════════════════════════════════════════════════════════
+//  RAYCASTING — hover highlights + click detection
+// ═══════════════════════════════════════════════════════════════
+const RC=new THREE.Raycaster();
+const ptr=new THREE.Vector2();
+const hlabel=document.getElementById('hlabel');
+let hovMeshes=[];
 
-function doHover(e) {
-  ptr.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
-  raycaster.setFromCamera(ptr, camera);
-  const hits = raycaster.intersectObjects(clickableMeshes,false);
+function doHover(cx,cy){
+  ptr.set((cx/innerWidth)*2-1,-(cy/innerHeight)*2+1);
+  RC.setFromCamera(ptr,camera);
+  const hits=RC.intersectObjects(clickableMeshes,false);
 
-  // Reset previous emissive
-  hovMeshes.forEach(m=>{
-    if(m.material&&!isAccentMat(m.material)){
-      const mats=Array.isArray(m.material)?m.material:[m.material];
-      mats.forEach(mat=>{ mat.emissive?.set(0,0,0); mat.emissiveIntensity=0; });
-    }
-  }); hovMeshes=[];
+  // Reset previous highlight
+  hovMeshes.forEach(m=>[m.material].flat().forEach(mat=>{
+    if(mat?.emissive){ mat.emissive.set(0,0,0); mat.emissiveIntensity=0; }
+  }));
+  hovMeshes=[];
 
+  const cur=document.getElementById('cur');
   if(hits.length){
-    const hit  = hits[0];
-    const key  = meshSectionMap.get(hit.object.uuid)
-              || spatialFallback(hit.point.x,hit.point.y,hit.point.z);
-    document.getElementById('cur').classList.add('hover');
-
+    const h=hits[0];
+    const key=meshSectionMap.get(h.object.uuid)||spatialFallback(h.point.x,h.point.y,h.point.z);
+    cur.classList.add('hover');
     if(key){
-      // Glow all meshes of same section
       clickableMeshes.forEach(m=>{
-        if(meshSectionMap.get(m.uuid)===key && m.material){
-          const mats=Array.isArray(m.material)?m.material:[m.material];
-          mats.forEach(mat=>{
-            if(!isAccentMat(mat)){
-              mat.emissive = mat.emissive || new THREE.Color();
-              mat.emissive.set(0.08,0.12,0.02);
-              mat.emissiveIntensity=1;
-            }
-          }); hovMeshes.push(m);
+        if(meshSectionMap.get(m.uuid)===key){
+          [m.material].flat().forEach(mat=>{
+            if(mat){ mat.emissive=mat.emissive||new THREE.Color(); mat.emissive.set(.07,.11,.01); mat.emissiveIntensity=1; }
+          });
+          hovMeshes.push(m);
         }
       });
-      // Show label
       hlabel.textContent=SECTIONS[key].nav;
-      hlabel.style.left=e.clientX+'px';
-      hlabel.style.top =e.clientY+'px';
+      hlabel.style.left=cx+'px'; hlabel.style.top=cy+'px';
       hlabel.classList.add('show');
-      hoveredKey=key;
     }
   } else {
-    document.getElementById('cur').classList.remove('hover');
+    cur.classList.remove('hover');
     hlabel.classList.remove('show');
-    hoveredKey=null;
   }
-}
-
-function isAccentMat(mat){
-  return mat.emissive &&
-    (mat.emissive.r>0.3||mat.emissive.g>0.3||mat.emissive.b>0.3) &&
-    mat.emissiveIntensity>0.5;
 }
 
 document.addEventListener('click',e=>{
-  if(!modelLoaded) return;
-  if(e.target.closest('#panel,#sidenav,#back,#dbg,#ov-bg')) return;
-
-  ptr.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
-  raycaster.setFromCamera(ptr,camera);
-  const hits=raycaster.intersectObjects(clickableMeshes,false);
+  if(!modelLoaded||e.target.closest('#panel,#sidenav,#back,#dbg,#ov-bg')) return;
+  ptr.set((e.clientX/innerWidth)*2-1,-(e.clientY/innerHeight)*2+1);
+  RC.setFromCamera(ptr,camera);
+  const hits=RC.intersectObjects(clickableMeshes,false);
   if(!hits.length) return;
-
-  const hit=hits[0];
-  const key = meshSectionMap.get(hit.object.uuid)
-            || spatialFallback(hit.point.x,hit.point.y,hit.point.z);
-
+  const h=hits[0];
+  const key=meshSectionMap.get(h.object.uuid)||spatialFallback(h.point.x,h.point.y,h.point.z);
   if(DEBUG){
-    document.getElementById('d-hit').textContent =
-      `hit pos: [${hit.point.x.toFixed(3)}, ${hit.point.y.toFixed(3)}, ${hit.point.z.toFixed(3)}]`;
-    document.getElementById('d-mesh').textContent=`mesh: "${hit.object.name}"`;
-    document.getElementById('d-sec').textContent =`→ section: ${key||'none'}`;
+    document.getElementById('d-hit').textContent =`hit:[${h.point.x.toFixed(2)},${h.point.y.toFixed(2)},${h.point.z.toFixed(2)}]`;
+    document.getElementById('d-mesh').textContent=`mesh:"${h.object.name}"`;
+    document.getElementById('d-sec').textContent =`→ section:${key||'none'}`;
   }
-
   if(key) openSection(key);
 });
 
 function spatialFallback(x,y,z){
-  for(const [key,sec] of Object.entries(SECTIONS)){
-    if(sec.zoneTest && sec.zoneTest(x,y,z)) return key;
-  }
+  for(const [key,sec] of Object.entries(SECTIONS))
+    if(sec.zoneTest&&sec.zoneTest(x,y,z)) return key;
   return null;
 }
 
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 //  OPEN / CLOSE SECTION
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 const overlay=document.getElementById('overlay');
 const back   =document.getElementById('back');
 const hint   =document.getElementById('hint');
 const zbar   =document.getElementById('zbar');
-let zbAnimId=null;
+let zbA=null;
 
 function openSection(key){
   if(!SECTIONS[key]||activeKey===key) return;
   activeKey=key; autoRot=false;
-
   const sec=SECTIONS[key];
 
-  // ── Fly camera into the part ──
-  const {pos,target,dur}=sec.cam;
-  flyTo(pos,target,dur);
-  animZbar(dur);
+  // Fly camera into part
+  flyTo(sec.cam.pos, sec.cam.target, sec.cam.dur);
+  animZbar(sec.cam.dur);
 
-  // ── Fill panel ──
-  document.getElementById('ptag').textContent  =sec.tag;
-  document.getElementById('pnum').textContent  =sec.num;
-  document.getElementById('ptitle').innerHTML  =sec.title.replace('\n','<br>');
-  document.getElementById('pdesc').textContent =sec.desc;
-  document.getElementById('pchips').innerHTML  =sec.chips.map(c=>`<span class="chip">${c}</span>`).join('');
-  document.getElementById('ptl').innerHTML     =sec.tl.map(t=>`
+  // Fill panel
+  document.getElementById('ptag').textContent =sec.tag;
+  document.getElementById('pnum').textContent =sec.num;
+  document.getElementById('ptitle').innerHTML =sec.title.replace('\n','<br>');
+  document.getElementById('pdesc').textContent=sec.desc;
+  document.getElementById('pchips').innerHTML =sec.chips.map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('ptl').innerHTML    =sec.tl.map(t=>`
     <div class="te">
       ${t.yr?`<div class="te-yr">${t.yr}</div>`:''}
       <div class="te-role">${t.role}</div>
       ${t.org?`<div class="te-org">${t.org}</div>`:''}
     </div>`).join('');
 
-  // ── Show overlay partway through zoom ──
+  // Show panel partway through zoom
   setTimeout(()=>{
     overlay.classList.add('open');
     hint.classList.add('off');
     back.classList.add('show');
     hlabel.classList.remove('show');
-  }, dur*380);
+  }, sec.cam.dur*380);
 
-  // Nav active
   document.querySelectorAll('.snav').forEach(b=>b.classList.toggle('on',b.dataset.key===key));
 }
 
@@ -957,35 +682,30 @@ function closeSection(){
   back.classList.remove('show');
   hint.classList.remove('off');
   document.querySelectorAll('.snav').forEach(b=>b.classList.remove('on'));
-
-  // Fly back
-  flyTo(OVERVIEW_CAM.pos, OVERVIEW_CAM.target, OVERVIEW_CAM.dur);
-  animZbar(OVERVIEW_CAM.dur);
-  setTimeout(()=>{ autoRot=true; }, (OVERVIEW_CAM.dur+0.3)*1000);
+  flyTo(OVERVIEW.pos, OVERVIEW.target, OVERVIEW.dur);
+  animZbar(OVERVIEW.dur);
+  setTimeout(()=>{ autoRot=true; }, (OVERVIEW.dur+0.3)*1000);
 }
 
 document.getElementById('pclose').addEventListener('click',closeSection);
 document.getElementById('back').addEventListener('click',closeSection);
 document.getElementById('ov-bg').addEventListener('click',closeSection);
 
-// ── Zoom bar ──────────────────────────────────────────────
 function animZbar(dur){
   const t0=performance.now(), total=dur*1000;
-  cancelAnimationFrame(zbAnimId);
-  function step(now){
+  cancelAnimationFrame(zbA);
+  (function s(now){
     const p=Math.min((now-t0)/total,1);
-    zbar.style.width=(easeInOutQuart(p)*100)+'%';
-    if(p<1) zbAnimId=requestAnimationFrame(step);
+    zbar.style.width=(eio4(p)*100)+'%';
+    if(p<1) zbA=requestAnimationFrame(s);
     else setTimeout(()=>{ zbar.style.width='0%'; },500);
-  }
-  zbAnimId=requestAnimationFrame(step);
+  })(t0);
 }
 
-// ─────────────────────────────────────────────────────────────
-//  CFD AMBIENT LINES
-// ─────────────────────────────────────────────────────────────
-const cC=document.getElementById('cfd');
-const cX=cC.getContext('2d');
+// ═══════════════════════════════════════════════════════════════
+//  CFD PARTICLE LINES
+// ═══════════════════════════════════════════════════════════════
+const cC=document.getElementById('cfd'), cX=cC.getContext('2d');
 cC.width=innerWidth; cC.height=innerHeight;
 const PARS=Array.from({length:55},()=>({
   x:Math.random()*innerWidth,
@@ -999,45 +719,33 @@ function stepCFD(){
   cX.clearRect(0,0,cC.width,cC.height);
   PARS.forEach(p=>{
     p.x+=p.spd;
-    if(p.x>cC.width+p.len){p.x=-p.len;p.y=cC.height*.1+Math.random()*cC.height*.8;}
+    if(p.x>cC.width+p.len){p.x=-p.len; p.y=cC.height*.1+Math.random()*cC.height*.8;}
     const g=cX.createLinearGradient(p.x-p.len,0,p.x,0);
-    g.addColorStop(0,`rgba(${p.col},0)`);g.addColorStop(1,`rgba(${p.col},${p.a})`);
-    cX.beginPath();cX.moveTo(p.x-p.len,p.y);cX.lineTo(p.x,p.y);
-    cX.strokeStyle=g;cX.lineWidth=.7;cX.stroke();
+    g.addColorStop(0,`rgba(${p.col},0)`);
+    g.addColorStop(1,`rgba(${p.col},${p.a})`);
+    cX.beginPath(); cX.moveTo(p.x-p.len,p.y); cX.lineTo(p.x,p.y);
+    cX.strokeStyle=g; cX.lineWidth=.7; cX.stroke();
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-//  DEBUG MODE  (?debug in URL)
-// ─────────────────────────────────────────────────────────────
-const DEBUG = location.search.includes('debug');
+// ═══════════════════════════════════════════════════════════════
+//  DEBUG MODE — open index.html?debug to enable
+// ═══════════════════════════════════════════════════════════════
+const DEBUG=location.search.includes('debug');
 if(DEBUG){
   document.getElementById('dbg').style.display='block';
   setInterval(()=>{
-    const p=camera.position;
-    const L=camState.curLook;
+    const p=camera.position, L=camState.curLook;
     document.getElementById('d-cam').textContent=
-      `cam pos: [${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)}]`;
+      `pos:[${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}]`;
     document.getElementById('d-tgt').textContent=
-      `cam tgt: [${L.x.toFixed(3)}, ${L.y.toFixed(3)}, ${L.z.toFixed(3)}]`;
+      `tgt:[${L.x.toFixed(2)},${L.y.toFixed(2)},${L.z.toFixed(2)}]`;
   },250);
 }
 
-function populateDebugMeshList(names){
-  const el=document.getElementById('dbg-meshlist');
-  el.innerHTML='<div style="color:rgba(224,255,79,.5);margin-bottom:4px">── all meshes ──</div>';
-  names.slice(0,60).forEach(({name,uuid})=>{
-    const d=document.createElement('div');
-    const sec=meshSectionMap.get(uuid);
-    d.textContent=`${name}${sec?' → '+sec:''}`;
-    d.style.color=sec?'rgba(224,255,79,.75)':'rgba(224,255,79,.3)';
-    el.appendChild(d);
-  });
-}
-
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 //  RESIZE
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 window.addEventListener('resize',()=>{
   camera.aspect=innerWidth/innerHeight;
   camera.updateProjectionMatrix();
@@ -1045,40 +753,32 @@ window.addEventListener('resize',()=>{
   cC.width=innerWidth; cC.height=innerHeight;
 });
 
-// ─────────────────────────────────────────────────────────────
-//  ANIMATE LOOP
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  RENDER LOOP
+// ═══════════════════════════════════════════════════════════════
 const clock=new THREE.Clock();
-
-function animate(){
+(function animate(){
   requestAnimationFrame(animate);
   const dt=clock.getDelta();
 
-  // Auto-rotate when idle
-  if(autoRot && !activeKey && modelLoaded){
-    sph.theta+=0.0011;
-    applyOrbit();
-  }
+  if(autoRot&&!activeKey&&modelLoaded){ sph.theta+=0.0011; applyOrbit(); }
 
-  // Prezi camera animation
   if(camState.active){
-    camState.t = Math.min(camState.t + dt/camState.dur, 1);
-    const et   = easeInOutQuart(camState.t);
-    camera.position.lerpVectors(camState.fromPos, camState.toPos, et);
-    camState.curLook.lerpVectors(camState.fromLook, camState.toLook, et);
+    camState.t=Math.min(camState.t+dt/camState.dur,1);
+    const et=eio4(camState.t);
+    camera.position.lerpVectors(camState.fromPos,camState.toPos,et);
+    camState.curLook.lerpVectors(camState.fromLook,camState.toLook,et);
     camera.lookAt(camState.curLook);
     if(camState.t>=1) camState.active=false;
   }
 
-  // Gentle car float
-  if(carGroup && !camState.active){
-    carGroup.position.y += (Math.sin(clock.elapsedTime*0.6)*0.018 - carGroup.position.y)*0.04;
-  }
+  // Gentle float
+  if(carGroup&&!camState.active)
+    carGroup.position.y+=(Math.sin(clock.elapsedTime*.6)*.018-carGroup.position.y)*.04;
 
   stepCFD();
   renderer.render(scene,camera);
-}
-animate();
+})();
 </script>
 </body>
 </html>
