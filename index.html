@@ -371,12 +371,9 @@ gltfLoader.setDRACOLoader(dracoLoader);
 //  If your file is named differently, add it here.
 // ─────────────────────────────────────────────────────────────
 const CANDIDATES=[
-  'sports%20car.glb',   // space URL-encoded  ← most likely to work on GitHub Pages
-  'sports car.glb',     // raw space          ← works on local servers
-  'sportscar.glb',      // no space           ← rename your file to this if all else fails
-  'sports_car.glb',     // underscore
-  'ruf.glb',
-  'car.glb',
+  'sportscar.glb',      // ← your file in the repo
+  'sports%20car.glb',   // URL-encoded space fallback
+  'sports car.glb',     // raw space fallback
 ];
 
 function tryNext(list){
